@@ -1314,7 +1314,7 @@ app.addEventListener('click', (e) => {
   } else if (el.dataset.srcId) {
     openedRecipe(el.dataset.srcId, Number(el.dataset.pos || 0), el.dataset.from || 'results', el.dataset.key);
   } else if (el.dataset.support) {
-    track('Opened Support Link', { experiment: EXPERIMENT, source: el.dataset.support, link_kind: el.dataset.kind || 'link', from: el.dataset.from || 'results' });
+    track('Opened Support Link', { experiment: EXPERIMENT, source: el.dataset.support, link_kind: el.dataset.kind || 'link', opened_from: el.dataset.from || 'results' });
   } else if (el.dataset.other) {
     track('Opened Other Search', { experiment: EXPERIMENT, site: el.dataset.other });
   }

@@ -23,6 +23,7 @@ const index = {
     sources: [
       { id: 'woks-yt', name: 'The Woks of Life', channel: 'https://www.youtube.com/@woks', site: 'woks', count: 1 },
       { id: 'kenji', name: 'J. Kenji López-Alt', channel: 'https://www.youtube.com/@kenji', site: '', count: 1 },
+      { id: 'joc-yt', name: 'Just One Cookbook', channel: 'https://www.youtube.com/@joc', site: 'joc', count: 0 },
     ],
     rows: [
       [0, 'Restaurant Mapo Tofu', 'abc123', '2026-01-02', [2]],
@@ -30,6 +31,7 @@ const index = {
     ],
   },
   support: { htk: [{ label: 'Patreon', url: 'https://www.patreon.com/x' }], woks: [{ label: 'The Woks of Life', url: 'https://bookshop.org/book/1', book: true }] },
+  paused: [{ id: 'joc', name: 'Just One Cookbook', site: 'https://www.justonecookbook.com', why: 'paused' }],
   linkOnly: [{ name: 'Serious Eats', search: 'https://www.seriouseats.com/search?q={q}' }],
   cuisines: [['Chinese', 3], ['Thai', 2]],
   diet: { vegetarian: [0, 1], vegan: [0, 1] },
@@ -134,4 +136,11 @@ test('recipes with a list: vegetarian, limits, and too little to go on', () => {
   assert.equal(recipesWith(ready, { with: ['tofu'] }).total, 0);
   assert.equal(recipesWith(ready, {}).total, 0);
   assert.equal(recipesWith(ready, { with: 'tofu,pork' }).total, 0); // a list, not a string
+});
+
+test('list_sources gives a paused site its address, so apps can match its pages', () => {
+  const joc = listSources(ready).creators.find((c) => c.name === 'Just One Cookbook');
+  assert.equal(joc.site, 'https://www.justonecookbook.com');
+  const kenji = listSources(ready).creators.find((c) => c.name === 'J. Kenji López-Alt');
+  assert.equal(kenji.site, undefined);
 });

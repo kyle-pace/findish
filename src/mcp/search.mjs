@@ -62,9 +62,12 @@ export function prepare(index) {
 
   const creators = new Map();
   for (const s of index.sources) creators.set(s.id, { id: s.id, name: s.name, site: s.site, recipes: s.count, videos: 0 });
+  const pausedSite = new Map((index.paused || []).map((p) => [p.id, p.site]));
   const channelCreator = index.videos.sources.map((c) => {
     const id = c.site || c.id;
-    const known = creators.get(id) ?? { id, name: c.name, site: '', recipes: 0, videos: 0 };
+    // A paused site (Just One Cookbook) has no recipes in the index but still has a site,
+    // which apps like Henwood use to tell whose page is open.
+    const known = creators.get(id) ?? { id, name: c.name, site: pausedSite.get(id) || '', recipes: 0, videos: 0 };
     known.videos += c.count;
     known.youtube = c.channel;
     creators.set(id, known);

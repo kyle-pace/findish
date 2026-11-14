@@ -794,6 +794,13 @@ import '../../styles/theme.css';
     font-weight: 400;
   }
 
+  /* Inside a result row, lift the support links above the row's stretched recipe link
+     so they can be clicked on their own. */
+  :global(.row .support a) {
+    position: relative;
+    z-index: 1;
+  }
+
   .picked :global(.support) {
     margin-top: var(--space-4);
     color: var(--ink);

@@ -253,7 +253,7 @@ const addToClaude = `https://claude.ai/customize/connectors?modal=add-custom-con
     import { track } from 'kp-design/analytics';
     document.querySelector('.about')!.addEventListener('click', (e) => {
       const a = (e.target as HTMLElement).closest<HTMLAnchorElement>('a[data-support]');
-      if (a) track('Opened Support Link', { experiment: 'recipe-search', source: a.dataset.support!, link_kind: a.dataset.kind || 'link' });
+      if (a) track('Opened Support Link', { experiment: 'recipe-search', source: a.dataset.support!, link_kind: a.dataset.kind || 'link', from: 'about' });
     });
 
     // Copy address: copies data-copy and says so in the status beside the button, which

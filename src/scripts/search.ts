@@ -617,7 +617,7 @@ function usesLine(h: Hit): string {
 
 // Result names aren't highlighted: every result matches, so marking the words again is
 // noise. Suggestions still highlight, since there it shows what you've typed so far.
-function row(h: Hit, position: number, _q: string[], from = 'results'): string {
+function row(h: Hit, position: number, _q: string[], from = 'results', support = ''): string {
   const { r } = h;
   const photo = r.img
     ? `<img src="${esc(r.img)}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" width="480" height="360">`
@@ -626,7 +626,7 @@ function row(h: Hit, position: number, _q: string[], from = 'results'): string {
   return `<article class="row">
     <div class="text">
       <h3><a href="${esc(r.url)}" data-pos="${position}" data-src-id="${esc(r.src.id)}" data-key="${esc(r.key)}" data-from="${from}">${esc(r.name)}</a></h3>
-      <p class="meta">${metaLine(r)}</p>${usesLine(h)}
+      <p class="meta">${metaLine(r)}</p>${usesLine(h)}${support}
     </div>
     <div class="photo">${photo}</div>
   </article>`;
@@ -660,7 +660,16 @@ function render() {
   if (loose) hits = search({ loose: true });
   const videos = state.show === 'recipes' ? [] : searchVideos();
   const shown = hits.slice(0, state.shown);
-  resultsEl.innerHTML = shown.map((h, n) => `<li>${row(h, n + 1, q)}</li>`).join('');
+  // Ways to support a creator go under their first recipe on the page, not under every one,
+  // so a page of Woks of Life results doesn't repeat the same line twenty times.
+  const supported = new Set<string>();
+  resultsEl.innerHTML = shown
+    .map((h, n) => {
+      const first = !supported.has(h.r.src.id);
+      supported.add(h.r.src.id);
+      return `<li>${row(h, n + 1, q, 'results', first ? supportLine(h.r.src.id) : '')}</li>`;
+    })
+    .join('');
   moreBtn.hidden = hits.length <= state.shown;
   moreBtn.textContent = `Show ${Math.min(PAGE, hits.length - shown.length)} more of ${(hits.length - shown.length).toLocaleString()}`;
 
@@ -773,11 +782,11 @@ function renderAlso() {
 }
 
 /** "Support them: Patreon, YouTube, or their books Hot Thai Kitchen and Sabai." */
-function supportLine(id: string): string {
+function supportLine(id: string, from = 'results'): string {
   const all = data.support[id] || [];
   if (!all.length) return '';
   const a = (l: { label: string; url: string; book?: boolean }) =>
-    `<a href="${esc(l.url)}" data-support="${esc(id)}" data-kind="${l.book ? 'book' : 'link'}">${l.book ? `<cite>${esc(l.label)}</cite>` : esc(l.label)}</a>`;
+    `<a href="${esc(l.url)}" data-support="${esc(id)}" data-kind="${l.book ? 'book' : 'link'}" data-from="${from}">${l.book ? `<cite>${esc(l.label)}</cite>` : esc(l.label)}</a>`;
   const links = all.filter((l) => !l.book).map(a);
   const books = all.filter((l) => l.book).map(a);
   const bookPart = books.length ? `${books.length === 1 ? 'their book' : 'their books'} ${andList(books)}` : '';
@@ -814,7 +823,7 @@ function renderPicked() {
   const r = recipes[state.picked];
   const used = state.with.filter((p) => r.pos.has(p));
   const missing = r.own.filter((p) => !covers(state.with, p)).length;
-  $('picked-card').innerHTML = row({ r, score: 0, used, missing }, 0, words(state.q), 'random') + supportLine(r.src.id);
+  $('picked-card').innerHTML = row({ r, score: 0, used, missing }, 0, words(state.q), 'random') + supportLine(r.src.id, 'random');
   box.hidden = false;
 }
 
@@ -1305,7 +1314,7 @@ app.addEventListener('click', (e) => {
   } else if (el.dataset.srcId) {
     openedRecipe(el.dataset.srcId, Number(el.dataset.pos || 0), el.dataset.from || 'results', el.dataset.key);
   } else if (el.dataset.support) {
-    track('Opened Support Link', { experiment: EXPERIMENT, source: el.dataset.support, link_kind: el.dataset.kind || 'link' });
+    track('Opened Support Link', { experiment: EXPERIMENT, source: el.dataset.support, link_kind: el.dataset.kind || 'link', from: el.dataset.from || 'results' });
   } else if (el.dataset.other) {
     track('Opened Other Search', { experiment: EXPERIMENT, site: el.dataset.other });
   }

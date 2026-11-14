@@ -199,7 +199,7 @@ Working name. One search box across the recipe sites Kyle trusts, from our own s
 - Type is Atkinson Hyperlegible Next (and Mono for code). The display settings panel (theme, text size, font) is on every page.
 - Text meets WCAG 2.2 AA contrast. Interface motion under 300 ms, custom easing, only under `prefers-reduced-motion: no-preference`.
 - Ingredient names come from KitchenCatalog (kyle-pace/kitchen-catalog, which has a JS matcher), so ids match Grocery Deals and Maitake.
-- Pantry data never comes to this site. "Use what I have" in the app belongs in Maitake, reading this site's static index; on the web it's typed in.
+- Pantry data never comes to this site. "Use what I have" in the app belongs in Maitake, reading this site's static index; on the web it's typed in. The one exception is Grocery Deals' list lookup (next section), which Kyle approved on 2026-11-14: a few catalog ids, never typed text, answered and forgotten.
 
 ### Layout
 
@@ -232,4 +232,11 @@ Working name. One search box across the recipe sites Kyle trusts, from our own s
 - `npm test` covers the rules; `npm run try-mcp` calls every tool with the official client (against `npm run preview`, or pass the live address).
 - The About page has an "Ask your AI assistant" section (`#assistants`): an Add to Claude button (a prefilled claude.ai link that Claude doesn't document, tested 2026-11-11), the address with a copy button, and what the server keeps (nothing). A browser that opens the MCP address is sent there. If the server's address changes, change `mcpAddress` in `about.astro` too.
 - Seattle Grocery Deals has a sister server (`mcp/` in its repo, at mcp.seattlegrocery.deals) and stays separate on purpose (Kyle, 2026-11-11): recipes are for anyone, deals are only for Seattle. Henwood's is local, in the Mac app.
+### The list endpoint
+
+- `POST kylepace.dev/recipe-search/api/with` answers the Seattle Grocery Deals app's "Recipes with your list" (added 2026-11-14, Kyle's call): recipes that use two or more of a few ingredients. The app sends `{"with": [catalog ids], "diet"?, "limit"?}` for the list items it matched to this week's deals; the ids come from Grocery Deals' `recipes.json`, which takes them from this index, so they match exactly. It never sends what the person typed.
+- `src/pages/recipe-search/api/with.ts` (POST only, so the ids stay out of addresses that logs and caches keep; a 4 KB body cap), with the rules in `recipesWith` in `src/mcp/search.mjs` (same ranking as an ingredient search; tests in `src/mcp/search.test.mjs`). No analytics, no logging, `cache-control: no-store`.
+- If the answer's shape changes, change `RecipeFeed` and the list row in Grocery Deals' app (`apple/GroceryDeals/Sources`) too; older app versions are out there.
+- Grocery Deals' own per-ingredient and per-store ideas don't call this: its site build reads `index.json` once and writes them into its own `/api/recipes.json` (`scripts/recipes.mjs` there).
+
 - **Checking a change:** `npm run build`, then `npm run check` (the `page-check` skill): axe in light and dark, sideways scrolling, JavaScript weight, and screenshots in `.check/`. CI runs it on every push.

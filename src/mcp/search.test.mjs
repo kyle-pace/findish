@@ -1,7 +1,7 @@
 // Checks for the MCP search, on a small made-up index in the shape scripts/build-index.mjs writes.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { ingredientFor, listSources, prepare, searchRecipes, words } from './search.mjs';
+import { ingredientFor, listSources, prepare, recipesWith, searchRecipes, words } from './search.mjs';
 
 // ing: [id, name, recipe count, parent positions, ...other names]
 const ing = [
@@ -113,4 +113,25 @@ test('list_sources joins a site with its channel and lists support links', () =>
   assert.equal(woks.support[0].label, 'Book: The Woks of Life');
   assert.ok(s.creators.some((c) => c.name === 'J. Kenji López-Alt' && c.videos === 1));
   assert.deepEqual(s.not_indexed_but_searchable, ['Serious Eats']);
+});
+
+test('recipes with a list: by catalog id, two or more used, unknown and bad ids left out', () => {
+  const r = recipesWith(ready, { with: ['pork', 'tofu', 'scallions', 'saffron', '../etc', 'Not An Id'] });
+  assert.deepEqual(r.known, ['pork', 'tofu', 'scallions']);
+  assert.equal(r.recipes[0].name, 'Mapo Tofu');
+  assert.deepEqual(r.recipes[0].uses, ['Pork', 'Tofu', 'Scallions']);
+  assert.equal(r.recipes[0].also_needs, 0);
+  assert.equal(r.recipes[0].image, 'x.jpg');
+  assert.ok(r.recipes.every((x) => x.uses.length >= 2));
+  assert.ok(!names(r).includes('Pad See Ew')); // uses only pork of the three
+  assert.equal(r.recipes.find((x) => x.name === 'Vegan Mapo Tofu').veg, true);
+  assert.equal(r.recipes[0].veg, false);
+});
+
+test('recipes with a list: vegetarian, limits, and too little to go on', () => {
+  assert.deepEqual(names(recipesWith(ready, { with: ['pork', 'tofu', 'scallions'], diet: 'vegetarian' })), ['Vegan Mapo Tofu']);
+  assert.equal(recipesWith(ready, { with: ['pork', 'tofu', 'scallions'], limit: 1 }).recipes.length, 1);
+  assert.equal(recipesWith(ready, { with: ['tofu'] }).total, 0);
+  assert.equal(recipesWith(ready, {}).total, 0);
+  assert.equal(recipesWith(ready, { with: 'tofu,pork' }).total, 0); // a list, not a string
 });

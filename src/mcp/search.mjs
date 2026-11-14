@@ -52,6 +52,7 @@ export function prepare(index) {
       pos: new Set(r[5]),
       own: r[6],
       hasPhoto: Boolean(r[7]),
+      img: r[7] || null,
       title,
       titleText: ` ${title.join(' ')}`,
       other: words(`${r[8]} ${index.sources[r[0]].name}`),
@@ -329,5 +330,46 @@ export function listSources(ready) {
     crawled: index.crawled,
     source: SITE,
     more: `${SITE}about/`,
+  };
+}
+
+const ID = /^[a-z0-9][a-z0-9-]{0,59}$/;
+
+/**
+ * Recipes that use several of a few ingredients, by catalog id: the Grocery Deals app's
+ * "Recipes with your list" (src/pages/recipe-search/api/with.ts). Ids come from its
+ * recipes.json, which takes them from this index, so they match exactly; unknown ones are
+ * left out. With two or more known, recipes that use only one of them are left out too.
+ * Same ranking as an ingredient search: more of them first, then fewer other things to buy.
+ *   with   2 to 25 catalog ids ("ground-pork", "napa-cabbage")
+ *   diet   "vegetarian" or "vegan"
+ *   limit  1 to 24, default 12
+ */
+export function recipesWith(ready, opts = {}) {
+  const { index } = ready;
+  const ids = [...new Set((Array.isArray(opts.with) ? opts.with : []).map(String))].filter((id) => ID.test(id)).slice(0, 25);
+  const pos = new Map(index.ing.map((g, p) => [g[0], p]));
+  const f = { q: [], with: ids.filter((id) => pos.has(id)).map((id) => pos.get(id)), out: new Set(), notWords: [], creator: null, cuisine: '', maxMinutes: 0 };
+  if (f.with.length < 2) return { total: 0, recipes: [], known: f.with.map((p) => index.ing[p][0]) };
+  if (opts.diet === 'vegetarian' || opts.diet === 'vegan') for (const p of index.diet?.[opts.diet] || []) f.out.add(p);
+  const meat = new Set(index.diet?.vegetarian || []);
+  const limit = Math.min(Math.max(Number(opts.limit) || 12, 1), 24);
+  const found = findRecipes(ready, f, false);
+  const hits = found.hits.filter((h) => h.used.length >= 2);
+  const covers = (p) => f.with.includes(p) || index.ing[p][3].some((parent) => f.with.includes(parent));
+  return {
+    total: hits.length,
+    recipes: hits.slice(0, limit).map((h) => ({
+      name: h.r.name,
+      url: h.r.url,
+      site: h.r.src.name,
+      minutes: h.r.min ?? null,
+      image: h.r.img,
+      veg: ![...h.r.pos].some((p) => meat.has(p)),
+      uses: h.used.map((p) => index.ing[p][1]),
+      also_needs: h.r.own.filter((p) => !covers(p)).length,
+    })),
+    known: f.with.map((p) => index.ing[p][0]),
+    crawled: index.crawled,
   };
 }

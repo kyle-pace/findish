@@ -150,6 +150,17 @@ for (const s of sources.recipes) {
   }
 }
 
+// A photo that many recipes from one site share is the site's own stand-in ("Photo to come"
+// on Alton Brown's site), not the dish: those recipes show as having no photo.
+const PLACEHOLDER_SHARED = 5;
+{
+  const shared = new Map();
+  for (const r of recipes) if (r[7]) shared.set(r[7], (shared.get(r[7]) || 0) + 1);
+  let cleared = 0;
+  for (const r of recipes) if (r[7] && shared.get(r[7]) >= PLACEHOLDER_SHARED) { r[7] = ''; cleared++; }
+  if (cleared) console.log(`Photos: ${cleared} recipes had a site's stand-in photo, shown without one`);
+}
+
 // Videos from the YouTube Data API, once the key is in place (crawler/lib/youtube.mjs).
 // Each row: [channel index, title, video id, published date, ingredient positions].
 const videos = [];

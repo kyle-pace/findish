@@ -76,6 +76,14 @@
    "section": "pantry",
    "aliases": []
   },
+  "adzuki-beans": {
+   "name": "Adzuki Beans",
+   "section": "pantry",
+   "aliases": [
+    "azuki beans",
+    "aduki beans"
+   ]
+  },
   "aka-miso": {
    "name": "Aka Miso",
    "section": "international",
@@ -138,7 +146,8 @@
    "section": "pantry",
    "aliases": [
     "cider vinegar"
-   ]
+   ],
+   "parent": "vinegar"
   },
   "apples": {
    "name": "Apples",
@@ -294,7 +303,8 @@
   "balsamic-vinegar": {
    "name": "Balsamic Vinegar",
    "section": "pantry",
-   "aliases": []
+   "aliases": [],
+   "parent": "vinegar"
   },
   "bamboo-shoots": {
    "name": "Bamboo shoots",
@@ -305,6 +315,14 @@
    "deals": {
     "staple": false
    }
+  },
+  "banana-leaves": {
+   "name": "Banana Leaves",
+   "section": "frozen",
+   "aliases": [
+    "banana leaf"
+   ],
+   "popularity": "specialty"
   },
   "bananas": {
    "name": "Bananas",
@@ -346,6 +364,14 @@
     "steamed buns"
    ],
    "product": true
+  },
+  "barley": {
+   "name": "Barley",
+   "section": "pantry",
+   "aliases": [
+    "pearl barley",
+    "pearled barley"
+   ]
   },
   "basmati-rice": {
    "name": "Basmati Rice",
@@ -682,7 +708,8 @@
    "name": "Black Slab Sugar",
    "section": "pantry",
    "aliases": [],
-   "popularity": "specialty"
+   "popularity": "specialty",
+   "parent": "sugar"
   },
   "black-vinegar": {
    "name": "Black Vinegar",
@@ -693,7 +720,8 @@
     "mature vinegar",
     "shanxi vinegar",
     "zhenjiang vinegar"
-   ]
+   ],
+   "parent": "vinegar"
   },
   "blackberries": {
    "name": "Blackberries",
@@ -843,7 +871,8 @@
    "aliases": [
     "dark brown sugar",
     "light brown sugar"
-   ]
+   ],
+   "parent": "sugar"
   },
   "brussels-sprouts": {
    "name": "Brussels sprouts",
@@ -892,6 +921,11 @@
    },
    "popularity": "everyday"
   },
+  "buttermilk": {
+   "name": "Buttermilk",
+   "section": "dairy-eggs",
+   "aliases": []
+  },
   "cabbage": {
    "name": "Cabbage",
    "section": "produce",
@@ -911,6 +945,15 @@
     "snack cakes"
    ],
    "product": true
+  },
+  "candlenuts": {
+   "name": "Candlenuts",
+   "section": "international",
+   "aliases": [
+    "kemiri",
+    "buah keras"
+   ],
+   "popularity": "specialty"
   },
   "candy": {
    "name": "Candy",
@@ -984,6 +1027,14 @@
    "section": "pantry",
    "aliases": []
   },
+  "caraway-seeds": {
+   "name": "Caraway Seeds",
+   "section": "spices",
+   "aliases": [
+    "caraway",
+    "caraway seed"
+   ]
+  },
   "cardamom": {
    "name": "Cardamom",
    "section": "spices",
@@ -1018,6 +1069,14 @@
    "section": "pantry",
    "aliases": [],
    "parent": "nuts"
+  },
+  "cassava": {
+   "name": "Cassava",
+   "section": "produce",
+   "aliases": [
+    "yuca",
+    "manioc"
+   ]
   },
   "cassia-bark": {
    "name": "Cassia Bark",
@@ -1359,6 +1418,15 @@
    "popularity": "everyday",
    "parent": "chicken"
   },
+  "chickpea-flour": {
+   "name": "Chickpea Flour",
+   "section": "pantry",
+   "aliases": [
+    "besan",
+    "gram flour",
+    "garbanzo bean flour"
+   ]
+  },
   "chili-bamboo-shoot-slices": {
    "name": "Chili Bamboo Shoot Slices",
    "section": "international",
@@ -1385,6 +1453,15 @@
     "hot chili oil",
     "oil chili",
     "red oil"
+   ]
+  },
+  "chili-peppers": {
+   "name": "Chili Peppers",
+   "section": "produce",
+   "aliases": [
+    "chile peppers",
+    "chilli peppers",
+    "hot peppers"
    ]
   },
   "chili-powder": {
@@ -1437,7 +1514,8 @@
   "chinese-hot-mustard": {
    "name": "Chinese Hot Mustard",
    "section": "pantry",
-   "aliases": []
+   "aliases": [],
+   "parent": "mustard"
   },
   "chips": {
    "name": "Chips",
@@ -1690,6 +1768,14 @@
    "name": "Corned beef",
    "section": "pantry",
    "aliases": []
+  },
+  "cornmeal": {
+   "name": "Cornmeal",
+   "section": "pantry",
+   "aliases": [
+    "corn meal",
+    "polenta"
+   ]
   },
   "cornstarch": {
    "name": "Cornstarch",
@@ -1952,7 +2038,8 @@
    "section": "pantry",
    "aliases": [
     "dijon"
-   ]
+   ],
+   "parent": "mustard"
   },
   "dim-sum": {
    "name": "Dim sum",
@@ -2345,7 +2432,8 @@
     "fine salt",
     "sea salt",
     "table salt"
-   ]
+   ],
+   "parent": "salt"
   },
   "fish": {
    "name": "Fish",
@@ -2399,7 +2487,8 @@
   "flaky-finishing-salt": {
    "name": "Flaky Finishing Salt",
    "section": "pantry",
-   "aliases": []
+   "aliases": [],
+   "parent": "salt"
   },
   "flavored-milk": {
    "name": "Milk drinks",
@@ -2763,7 +2852,7 @@
    "name": "Golden Raisins",
    "section": "pantry",
    "aliases": [],
-   "parent": "dried-fruit"
+   "parent": "raisins"
   },
   "granola": {
    "name": "Granola",
@@ -2953,6 +3042,14 @@
     "tater tots"
    ]
   },
+  "hazelnuts": {
+   "name": "Hazelnuts",
+   "section": "pantry",
+   "aliases": [
+    "filberts"
+   ],
+   "parent": "nuts"
+  },
   "heavy-whipping-cream": {
    "name": "Heavy Whipping Cream",
    "section": "dairy-eggs",
@@ -3007,6 +3104,13 @@
     "honey dew"
    ],
    "parent": "melon"
+  },
+  "horseradish": {
+   "name": "Horseradish",
+   "section": "produce",
+   "aliases": [
+    "horseradish root"
+   ]
   },
   "hot-dogs": {
    "name": "Hot dogs",
@@ -3074,7 +3178,8 @@
     "instant coffee mix",
     "nescafe"
    ],
-   "parent": "coffee"
+   "parent": "coffee",
+   "product": true
   },
   "instant-noodles": {
    "name": "Instant noodles",
@@ -3139,7 +3244,8 @@
     "jalapeño",
     "jalapeños",
     "jalapeno peppers"
-   ]
+   ],
+   "parent": "chili-peppers"
   },
   "jam": {
    "name": "Jam",
@@ -3313,7 +3419,8 @@
    "aliases": [
     "coarse salt",
     "diamond crystal kosher salt"
-   ]
+   ],
+   "parent": "salt"
   },
   "lacinato-kale": {
    "name": "Lacinato Kale",
@@ -3333,6 +3440,14 @@
     "lamb chops",
     "lamb shoulder",
     "leg of lamb"
+   ]
+  },
+  "lard": {
+   "name": "Lard",
+   "section": "pantry",
+   "aliases": [
+    "pork lard",
+    "manteca"
    ]
   },
   "leaf-celery": {
@@ -3664,6 +3779,11 @@
    "section": "pantry",
    "aliases": []
   },
+  "margarine": {
+   "name": "Margarine",
+   "section": "dairy-eggs",
+   "aliases": []
+  },
   "masa-harina": {
    "name": "Masa Harina",
    "section": "pantry",
@@ -3791,6 +3911,15 @@
    ],
    "product": true
   },
+  "mung-beans": {
+   "name": "Mung Beans",
+   "section": "pantry",
+   "aliases": [
+    "dried mung beans",
+    "moong beans",
+    "green gram"
+   ]
+  },
   "mushroom-bouillon-powder": {
    "name": "Mushroom Bouillon Powder",
    "section": "international",
@@ -3834,6 +3963,14 @@
     "tahong"
    ],
    "parent": "shellfish"
+  },
+  "mustard": {
+   "name": "Mustard",
+   "section": "pantry",
+   "aliases": [
+    "yellow mustard",
+    "prepared mustard"
+   ]
   },
   "mustard-greens": {
    "name": "Mustard greens",
@@ -4139,6 +4276,16 @@
    },
    "parent": "shellfish"
   },
+  "palm-sugar": {
+   "name": "Palm Sugar",
+   "section": "international",
+   "aliases": [
+    "coconut sugar",
+    "gula melaka",
+    "gula jawa"
+   ],
+   "parent": "sugar"
+  },
   "panang-curry-paste": {
    "name": "Panang Curry Paste",
    "section": "international",
@@ -4342,6 +4489,17 @@
     "staple": true
    }
   },
+  "phyllo-dough": {
+   "name": "Phyllo Dough",
+   "section": "frozen",
+   "aliases": [
+    "phyllo",
+    "filo",
+    "fillo",
+    "filo pastry",
+    "phyllo pastry"
+   ]
+  },
   "pickled-jalapenos": {
    "name": "Pickled Jalapenos",
    "section": "international",
@@ -4359,6 +4517,21 @@
    "aliases": [
     "pineapples"
    ]
+  },
+  "pistachios": {
+   "name": "Pistachios",
+   "section": "pantry",
+   "aliases": [],
+   "parent": "nuts"
+  },
+  "pita": {
+   "name": "Pita",
+   "section": "bakery",
+   "aliases": [
+    "pita bread",
+    "pitta"
+   ],
+   "parent": "bread"
   },
   "pizza-sauce": {
    "name": "Pizza sauce",
@@ -4776,7 +4949,8 @@
    "aliases": [
     "confectioners' sugar",
     "icing sugar"
-   ]
+   ],
+   "parent": "sugar"
   },
   "prepared-meals": {
    "name": "Prepared meals",
@@ -4848,6 +5022,13 @@
    ],
    "product": true
   },
+  "puff-pastry": {
+   "name": "Puff Pastry",
+   "section": "frozen",
+   "aliases": [
+    "puff pastry sheets"
+   ]
+  },
   "pumpkin-seeds": {
    "name": "Pumpkin seeds",
    "section": "pantry",
@@ -4883,6 +5064,15 @@
     "red radishes"
    ]
   },
+  "raisins": {
+   "name": "Raisins",
+   "section": "pantry",
+   "aliases": [
+    "zante currants",
+    "dried currants"
+   ],
+   "parent": "dried-fruit"
+  },
   "rambutan": {
    "name": "Rambutan",
    "section": "produce",
@@ -4915,6 +5105,16 @@
    ],
    "product": true
   },
+  "red-bean-paste": {
+   "name": "Red Bean Paste",
+   "section": "international",
+   "aliases": [
+    "sweet red bean paste",
+    "anko",
+    "adzuki bean paste",
+    "azuki bean paste"
+   ]
+  },
   "red-curry-paste": {
    "name": "Red Curry Paste",
    "section": "international",
@@ -4929,7 +5129,8 @@
   "red-wine-vinegar": {
    "name": "Red Wine Vinegar",
    "section": "pantry",
-   "aliases": []
+   "aliases": [],
+   "parent": "vinegar"
   },
   "refried-beans": {
    "name": "Refried beans",
@@ -5051,7 +5252,8 @@
     "rice wine vinegar",
     "seasoned rice vinegar",
     "unseasoned rice vinegar"
-   ]
+   ],
+   "parent": "vinegar"
   },
   "rice-wine": {
    "name": "Rice cooking wine",
@@ -5069,7 +5271,8 @@
   "rock-sugar": {
    "name": "Rock sugar",
    "section": "pantry",
-   "aliases": []
+   "aliases": [],
+   "parent": "sugar"
   },
   "rockfish": {
    "name": "Rockfish",
@@ -5215,6 +5418,23 @@
     "pico de gallo"
    ]
   },
+  "salt": {
+   "name": "Salt",
+   "section": "pantry",
+   "aliases": [],
+   "popularity": "everyday"
+  },
+  "salt-cod": {
+   "name": "Salt Cod",
+   "section": "seafood",
+   "aliases": [
+    "bacalhau",
+    "baccala",
+    "dried salted cod"
+   ],
+   "parent": "cod",
+   "popularity": "specialty"
+  },
   "salted-black-beans": {
    "name": "Salted Black Beans",
    "section": "international",
@@ -5246,6 +5466,11 @@
     "wrap sandwiches"
    ],
    "product": true
+  },
+  "sauerkraut": {
+   "name": "Sauerkraut",
+   "section": "pantry",
+   "aliases": []
   },
   "sausage": {
    "name": "Sausage",
@@ -5369,13 +5594,23 @@
    "aliases": [],
    "popularity": "specialty"
   },
+  "semolina": {
+   "name": "Semolina",
+   "section": "pantry",
+   "aliases": [
+    "semolina flour",
+    "durum flour",
+    "durum semolina"
+   ]
+  },
   "serrano-peppers": {
    "name": "Serrano peppers",
    "section": "produce",
    "aliases": [
     "serrano chiles",
     "serrano chilies"
-   ]
+   ],
+   "parent": "chili-peppers"
   },
   "sesame-oil": {
    "name": "Sesame Oil",
@@ -5509,6 +5744,15 @@
    },
    "popularity": "everyday",
    "parent": "shellfish"
+  },
+  "shrimp-paste": {
+   "name": "Shrimp Paste",
+   "section": "international",
+   "aliases": [
+    "belacan",
+    "terasi",
+    "kapi"
+   ]
   },
   "sichuan-peppercorn": {
    "name": "Sichuan Peppercorn",
@@ -5795,6 +6039,12 @@
     "strawberry"
    ]
   },
+  "sugar": {
+   "name": "Sugar",
+   "section": "pantry",
+   "aliases": [],
+   "popularity": "everyday"
+  },
   "sugar-snap-peas": {
    "name": "Sugar snap peas",
    "section": "produce",
@@ -5993,6 +6243,11 @@
     "tulsi tea"
    ]
   },
+  "tempeh": {
+   "name": "Tempeh",
+   "section": "produce",
+   "aliases": []
+  },
   "thai-basil": {
    "name": "Thai Basil",
    "section": "produce",
@@ -6016,7 +6271,8 @@
     "red chilies",
     "siling labuyo",
     "thai bird chilies"
-   ]
+   ],
+   "parent": "chili-peppers"
   },
   "tilapia": {
    "name": "Tilapia",
@@ -6253,6 +6509,16 @@
     "vanilla"
    ]
   },
+  "veal": {
+   "name": "Veal",
+   "section": "meat",
+   "aliases": [
+    "veal cutlets",
+    "veal shank",
+    "veal chops"
+   ],
+   "popularity": "specialty"
+  },
   "vegetable-base": {
    "name": "Vegetable Base",
    "section": "pantry",
@@ -6264,6 +6530,11 @@
   "vegetarian-oyster-sauce": {
    "name": "Vegetarian Oyster Sauce",
    "section": "international",
+   "aliases": []
+  },
+  "vinegar": {
+   "name": "Vinegar",
+   "section": "pantry",
    "aliases": []
   },
   "walnuts": {
@@ -6338,7 +6609,8 @@
     "pure cane sugar",
     "superfine sugar"
    ],
-   "popularity": "everyday"
+   "popularity": "everyday",
+   "parent": "sugar"
   },
   "white-vinegar": {
    "name": "White Vinegar",
@@ -6346,12 +6618,14 @@
    "aliases": [
     "distilled vinegar",
     "distilled white vinegar"
-   ]
+   ],
+   "parent": "vinegar"
   },
   "white-wine-vinegar": {
    "name": "White Wine Vinegar",
    "section": "pantry",
-   "aliases": []
+   "aliases": [],
+   "parent": "vinegar"
   },
   "whole-dried-kombu": {
    "name": "Whole Dried Kombu",

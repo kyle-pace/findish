@@ -1,0 +1,143 @@
+---
+// Recipe search for AI assistants, at /recipe-search/assistants/: what the MCP server is
+// (src/pages/recipe-search/mcp.ts), a button that opens Claude's "add connector" dialog,
+// the address to copy for any other assistant, things to ask and what it can look up.
+// Modeled on Seattle Grocery Deals' /mcp/ page. A browser that opens the server's own
+// address is sent here (mcp.ts). Counts come from the index at build time.
+import LabLayout from 'kp-design/layouts/LabLayout.astro';
+import '../../styles/theme.css';
+import '../../styles/prose.css';
+import { ADD_TO_CLAUDE, MCP_ADDRESS, PRIVACY_PAGE } from '../../lib/assistants';
+import indexJson from '../../../public/recipe-search/index.json';
+const index: any = indexJson;
+
+const recipes = index.recipes.length.toLocaleString('en-US');
+const creators = index.sources.length + index.videos.sources.filter((c: any) => !c.site).length;
+
+const asks = [
+  'Find me a good mapo tofu recipe.',
+  'I have chicken thighs, bok choy and rice. What can I make tonight?',
+  'Vegetarian Thai dinners that take under 30 minutes.',
+  'Something with gochujang, but no pork.',
+  'What does The Woks of Life have for noodle soup?',
+  'Who’s in your recipe index, and how can I support them?',
+];
+---
+
+<LabLayout
+  lab={{ name: 'the search', href: '/recipe-search/' }}
+  about="/recipe-search/about/"
+  title="Recipe search for AI assistants"
+  description="Connect Claude or another AI assistant to Recipe search and ask it for recipes from a hand-picked set of independent creators, by dish or by what you have."
+  image="/recipe-search/og-assistants.png"
+  imageAlt="Recipe search for AI assistants: the question “I have chicken thighs and bok choy. What can I make?” answered with links to the creators’ own sites."
+  themeColor={{ light: '#f7f8f6', dark: '#151918' }}
+>
+  <article class="prose" data-page="assistants">
+    <h1>Ask your AI assistant for recipes</h1>
+    <p class="lede">
+      Connect Claude or another AI assistant to Recipe search and it can look through {recipes} recipes from {creators} creators I trust: by dish,
+      by what’s in your fridge, or by who made it. It answers with names and links, so you read each recipe on the creator’s own site.
+    </p>
+
+    <section aria-labelledby="claude">
+      <h2 id="claude">Add it to Claude</h2>
+      <p class="add"><a class="add-button" href={ADD_TO_CLAUDE} data-add-to-claude>Add to Claude</a></p>
+      <p class="fine">Opens Claude with the name and address filled in. Nothing is added until you say so there.</p>
+      <p>If the button doesn’t open the dialog, in Claude go to Customize, then Connectors, then Add custom connector, and paste the address below.</p>
+    </section>
+
+    <section aria-labelledby="other">
+      <h2 id="other">Any other assistant</h2>
+      <p>
+        It works with any assistant that can connect to a remote MCP server (MCP is the common way to give an assistant new tools).
+        Wherever it asks for a connector or server address, paste this one:
+      </p>
+      <p class="address">
+        <code>{MCP_ADDRESS}</code>
+        <button type="button" data-copy={MCP_ADDRESS}>Copy address</button>
+        <span role="status" data-copy-status></span>
+      </p>
+    </section>
+
+    <section aria-labelledby="ask">
+      <h2 id="ask">Things to ask</h2>
+      <ul class="asks">
+        {asks.map((a) => <li>{a}</li>)}
+      </ul>
+    </section>
+
+    <section aria-labelledby="looks">
+      <h2 id="looks">What it can look up</h2>
+      <ul class="looks">
+        <li>
+          <strong>Recipes:</strong> by dish, by ingredients you want to use up, or both. It can leave ingredients out, keep to vegetarian or vegan,
+          stay under a time, stick to one cuisine or one creator. With ingredients, recipes that use more of them and need fewer other things come first.
+        </li>
+        <li><strong>Videos:</strong> matching YouTube videos from the same creators, labeled as YouTube.</li>
+        <li>
+          <strong>The creators:</strong> who’s in the index, how many recipes each has, and ways to support them, like their cookbooks and memberships.
+        </li>
+      </ul>
+      <p>
+        It’s the same index as <a href="/recipe-search/">the search page</a>, updated every week. It can only look things up; it can’t change
+        anything.
+      </p>
+    </section>
+
+    <section aria-labelledby="good">
+      <h2 id="good">Good to know</h2>
+      <ul class="looks">
+        <li>It’s free, with no account or sign-in.</li>
+        <li>
+          It never holds a recipe’s method or the writing around it, only names, links, ingredients, times and cuisines. Your assistant is asked
+          to send you to the original and not to write the recipe out itself.
+        </li>
+        <li>
+          It keeps nothing about you or what you ask, and it isn’t counted in analytics. Your assistant has its own privacy rules for your
+          conversations. More on the <a href={PRIVACY_PAGE}>privacy page</a>.
+        </li>
+        <li>It covers only the creators on the <a href="/recipe-search/about/#who">About page</a>. For anything else, your assistant will look elsewhere.</li>
+      </ul>
+    </section>
+  </article>
+
+  <script>
+    import '../../scripts/assistants';
+  </script>
+</LabLayout>
+
+<style>
+  .lede {
+    margin-top: var(--space-4);
+    font-size: var(--step-1);
+    line-height: 1.45;
+    color: var(--ink-muted);
+  }
+
+  /* The things to ask read as what you'd type: plain lines, no quote marks or bubbles. */
+  .asks,
+  .looks {
+    max-width: 34em;
+    padding-left: 1.25rem;
+    color: var(--ink-muted);
+    line-height: 1.6;
+  }
+
+  .asks li,
+  .looks li {
+    margin-block: var(--space-2);
+  }
+
+  .asks li {
+    color: var(--ink);
+  }
+
+  .looks strong {
+    color: var(--ink);
+  }
+
+  .looks a {
+    color: var(--accent-ink);
+  }
+</style>

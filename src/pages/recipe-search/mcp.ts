@@ -108,9 +108,9 @@ function createServer(origin: string) {
   return server;
 }
 
-// Where a person who opens the address in a browser is sent: the About page's section on
-// AI assistants, which has the Add to Claude button.
-const PAGE = 'https://kylepace.dev/recipe-search/about/#assistants';
+// Where a person who opens the address in a browser is sent: the For AI assistants page
+// (assistants.astro), which has the Add to Claude button and the address to copy.
+const PAGE = 'https://kylepace.dev/recipe-search/assistants/';
 
 export const ALL: APIRoute = async ({ request, locals }) => {
   // A person opening the address in a browser is sent to the page about it, not shown an error.

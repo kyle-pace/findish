@@ -59,9 +59,10 @@ The same index is searchable by AI assistants over MCP (Model Context Protocol, 
 | --- | --- |
 | The endpoint (the only server-run part of the site) | `src/pages/recipe-search/mcp.ts` |
 | The search rules, as plain functions | `src/mcp/search.mjs`, tests in `src/mcp/search.test.mjs` (`npm test`) |
+| The server's address, the Claude link and the page paths | `src/lib/assistants.ts` |
 | Try every tool with the official MCP client | `npm run preview`, then `npm run try-mcp` (add the live address to check a deploy) |
 
-To connect: the About page has an Add to Claude button (kylepace.dev/recipe-search/about/#assistants). By hand in Claude: Customize > Connectors > Add custom connector, and paste the address. In Claude Code, `claude mcp add --transport http recipe-search https://kylepace.dev/recipe-search/mcp`.
+To connect: the For AI assistants page has an Add to Claude button and the address (kylepace.dev/recipe-search/assistants/, `src/pages/recipe-search/assistants.astro`). The privacy page, which is also the privacy policy for a Connectors Directory listing, is kylepace.dev/recipe-search/privacy/. By hand in Claude: Customize > Connectors > Add custom connector, and paste the address. In Claude Code, `claude mcp add --transport http recipe-search https://kylepace.dev/recipe-search/mcp`.
 
 ## The prototype
 

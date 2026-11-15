@@ -5,6 +5,7 @@
 // (public/recipe-search/index.json, written by scripts/build-index.mjs before astro build).
 import LabLayout from 'kp-design/layouts/LabLayout.astro';
 import '../../styles/theme.css';
+import '../../styles/prose.css';
 
 type Link = { label: string; url: string; book?: boolean };
 // Imported, not read from disk: the Cloudflare adapter prerenders inside its own runtime.
@@ -33,11 +34,7 @@ const crawled = index.crawled
   : '';
 const total = { recipes: index.recipes.length, videos: index.videos.rows.length };
 
-// For AI assistants: the MCP server's address (src/pages/recipe-search/mcp.ts) and a link
-// that opens Claude's "add connector" dialog with the name and address filled in. Claude
-// doesn't document that link (2026-11-11), so the address and written steps stay on the page.
-const mcpAddress = 'https://kylepace.dev/recipe-search/mcp';
-const addToClaude = `https://claude.ai/customize/connectors?modal=add-custom-connector&connectorName=Recipe+search&connectorUrl=${encodeURIComponent(mcpAddress)}`;
+import { ADD_TO_CLAUDE, ASSISTANTS_PAGE, PRIVACY_PAGE } from '../../lib/assistants';
 ---
 
 <LabLayout
@@ -50,7 +47,7 @@ const addToClaude = `https://claude.ai/customize/connectors?modal=add-custom-con
   themeColor={{ light: '#f7f8f6', dark: '#151918' }}
 >
 
-  <article class="about">
+  <article class="prose" data-page="about">
     <h1>About Recipe search</h1>
     <section aria-labelledby="what">
       <h2 id="what">What it is</h2>
@@ -190,22 +187,12 @@ const addToClaude = `https://claude.ai/customize/connectors?modal=add-custom-con
       <p>
         Claude and other AI assistants can search this same index for you: by dish, by what you have, or by creator.
         Like the page, it only finds recipes. It answers with names and links, never the recipe itself, so you still
-        read it on the creator’s site.
+        read it on the creator’s site. It’s free, with no account, and keeps nothing about what you ask.
       </p>
-      <p class="add"><a class="add-button" href={addToClaude}>Add to Claude</a></p>
+      <p class="add"><a class="add-button" href={ADD_TO_CLAUDE} data-add-to-claude>Add to Claude</a></p>
       <p class="fine">Opens Claude with the name and address filled in. Nothing is added until you say so there.</p>
       <p>
-        Any other assistant that can connect to a remote MCP server (the common way to give an assistant new tools)
-        works too. Wherever it asks for a connector or server address, paste this one:
-      </p>
-      <p class="address">
-        <code>{mcpAddress}</code>
-        <button type="button" data-copy={mcpAddress}>Copy address</button>
-        <span role="status" data-copy-status></span>
-      </p>
-      <p>
-        It’s free, with no account. A search through an assistant goes to this site’s server to be answered, and the
-        server keeps nothing about it. Your assistant has its own privacy rules for your conversations.
+        For other assistants, things to ask and what it can look up, see <a href={ASSISTANTS_PAGE}>Recipe search for AI assistants</a>.
       </p>
     </section>
 
@@ -231,7 +218,7 @@ const addToClaude = `https://claude.ai/customize/connectors?modal=add-custom-con
       <p>
         What you type never leaves your device. Photos load from each creator’s site when they come on screen. Anonymous counts, like how
         often a recipe gets opened, go to the site’s analytics; see the{' '}
-        <a href="https://kylepace.dev/privacy/">privacy page</a>.
+        <a href={PRIVACY_PAGE}>privacy page</a>.
       </p>
       <p>
         One thing does ask this site’s server: the Seattle Grocery Deals app, when you tap for recipes that use several
@@ -250,173 +237,12 @@ const addToClaude = `https://claude.ai/customize/connectors?modal=add-custom-con
   </article>
 
   <script>
+    import '../../scripts/assistants';
     import { track } from 'kp-design/analytics';
-    document.querySelector('.about')!.addEventListener('click', (e) => {
+    document.querySelector('.prose')!.addEventListener('click', (e) => {
       const a = (e.target as HTMLElement).closest<HTMLAnchorElement>('a[data-support]');
       if (a) track('Opened Support Link', { experiment: 'recipe-search', source: a.dataset.support!, link_kind: a.dataset.kind || 'link', opened_from: 'about' });
-    });
-
-    // Copy address: copies data-copy and says so in the status beside the button, which
-    // screen readers announce.
-    document.querySelector<HTMLButtonElement>('[data-copy]')?.addEventListener('click', async (e) => {
-      const button = e.currentTarget as HTMLButtonElement;
-      const status = button.parentElement!.querySelector<HTMLElement>('[data-copy-status]')!;
-      try {
-        await navigator.clipboard.writeText(button.dataset.copy!);
-        status.textContent = 'Copied';
-      } catch {
-        status.textContent = 'Couldn’t copy here. Select the address and copy it yourself.';
-      }
-      window.setTimeout(() => (status.textContent = ''), 4000);
     });
   </script>
 </LabLayout>
 
-<style>
-  .about {
-    width: min(100% - 2 * var(--gutter), 42rem);
-    margin-inline: auto;
-    padding-block: var(--space-8) var(--space-16);
-  }
-
-  h1 {
-    margin: 0;
-    font-size: clamp(2rem, 1.5rem + 2.4vw, 3rem);
-    line-height: 1.1;
-    letter-spacing: -0.03em;
-  }
-
-  h2 {
-    margin: var(--space-12) 0 var(--space-3);
-    font-size: var(--step-1);
-    line-height: 1.25;
-  }
-
-  p {
-    max-width: 34em;
-    line-height: 1.6;
-  }
-
-  section > p {
-    color: var(--ink-muted);
-  }
-
-  section > p a {
-    color: var(--accent-ink);
-  }
-
-  .creators {
-    padding: 0;
-    margin: var(--space-6) 0;
-    list-style: none;
-    border-top: 1px solid var(--line);
-  }
-
-  .creators li {
-    padding: var(--space-4) 0;
-    border-bottom: 1px solid var(--line);
-  }
-
-  h3 {
-    margin: 0;
-    font-size: var(--step-0);
-  }
-
-  section > h3 {
-    margin: var(--space-6) 0 var(--space-1);
-  }
-
-  section > p.where {
-    margin: 0 0 var(--space-2);
-    font-size: var(--step--1);
-  }
-
-  h3 a {
-    color: var(--ink);
-  }
-
-  .has {
-    margin: var(--space-1) 0 0;
-    color: var(--ink-muted);
-    font-size: var(--step--1);
-  }
-
-  .support {
-    margin: var(--space-1) 0 0;
-    font-size: var(--step--1);
-  }
-
-  .support a {
-    color: var(--accent-ink);
-  }
-
-  code {
-    font-family: inherit;
-    font-weight: 700;
-    color: var(--ink);
-  }
-
-  /* Ask your AI assistant. The button is ink and square-shouldered like the search button
-     (design/PLAN.md: actions are ink, nothing is a pill). */
-  .add {
-    margin: var(--space-6) 0 var(--space-2);
-  }
-
-  /* "section > p a" (the green text links) would otherwise win and color the label. */
-  section > p a.add-button {
-    color: var(--bg);
-  }
-
-  .add-button {
-    display: inline-flex;
-    align-items: center;
-    min-height: 3rem;
-    padding: 0 1.25rem;
-    border-radius: 0.5rem;
-    background: var(--ink);
-    font-weight: 600;
-    text-decoration: none;
-  }
-
-  .add-button:hover {
-    text-decoration: underline;
-  }
-
-  section > p.fine {
-    margin-top: 0;
-    font-size: var(--step--1);
-  }
-
-  .address {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--space-2) var(--space-4);
-  }
-
-  .address code {
-    padding: 0.6rem 0.8rem;
-    border: 1px solid var(--field-rule);
-    border-radius: 0.5rem;
-    background: var(--bg-raised);
-    font-weight: 600;
-    overflow-wrap: anywhere;
-  }
-
-  .address button {
-    min-height: 2.75rem;
-    padding: 0;
-    border: 0;
-    background: none;
-    color: var(--ink);
-    font: inherit;
-    text-decoration: underline;
-    text-decoration-color: var(--field-rule);
-    text-underline-offset: 0.2em;
-    cursor: pointer;
-  }
-
-  .address button:hover {
-    text-decoration-color: currentColor;
-  }
-</style>

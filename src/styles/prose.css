@@ -1,0 +1,151 @@
+/*
+  The reading pages (About, For AI assistants, Privacy) share one column and one set of
+  text styles. Each page wraps its content in <article class="prose">. Moved out of
+  about.astro on 2026-11-15 when the assistants and privacy pages were added.
+*/
+.prose {
+  width: min(100% - 2 * var(--gutter), 42rem);
+  margin-inline: auto;
+  padding-block: var(--space-8) var(--space-16);
+}
+
+.prose h1 {
+  margin: 0;
+  font-size: clamp(2rem, 1.5rem + 2.4vw, 3rem);
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+}
+
+.prose h2 {
+  margin: var(--space-12) 0 var(--space-3);
+  font-size: var(--step-1);
+  line-height: 1.25;
+}
+
+.prose p {
+  max-width: 34em;
+  line-height: 1.6;
+}
+
+.prose section > p {
+  color: var(--ink-muted);
+}
+
+.prose section > p a {
+  color: var(--accent-ink);
+}
+
+.prose .creators {
+  padding: 0;
+  margin: var(--space-6) 0;
+  list-style: none;
+  border-top: 1px solid var(--line);
+}
+
+.prose .creators li {
+  padding: var(--space-4) 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.prose h3 {
+  margin: 0;
+  font-size: var(--step-0);
+}
+
+.prose section > h3 {
+  margin: var(--space-6) 0 var(--space-1);
+}
+
+.prose section > p.where {
+  margin: 0 0 var(--space-2);
+  font-size: var(--step--1);
+}
+
+.prose h3 a {
+  color: var(--ink);
+}
+
+.prose .has {
+  margin: var(--space-1) 0 0;
+  color: var(--ink-muted);
+  font-size: var(--step--1);
+}
+
+.prose .support {
+  margin: var(--space-1) 0 0;
+  font-size: var(--step--1);
+}
+
+.prose .support a {
+  color: var(--accent-ink);
+}
+
+.prose code {
+  font-family: inherit;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+/* Ask your AI assistant. The button is ink and square-shouldered like the search button
+   (design/PLAN.md: actions are ink, nothing is a pill). */
+.prose .add {
+  margin: var(--space-6) 0 var(--space-2);
+}
+
+/* "section > p a" (the green text links) would otherwise win and color the label. */
+.prose section > p a.add-button {
+  color: var(--bg);
+}
+
+.prose .add-button {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+  padding: 0 1.25rem;
+  border-radius: 0.5rem;
+  background: var(--ink);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.prose .add-button:hover {
+  text-decoration: underline;
+}
+
+.prose section > p.fine {
+  margin-top: 0;
+  font-size: var(--step--1);
+}
+
+.prose .address {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+}
+
+.prose .address code {
+  padding: 0.6rem 0.8rem;
+  border: 1px solid var(--field-rule);
+  border-radius: 0.5rem;
+  background: var(--bg-raised);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.prose .address button {
+  min-height: 2.75rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--field-rule);
+  text-underline-offset: 0.2em;
+  cursor: pointer;
+}
+
+.prose .address button:hover {
+  text-decoration-color: currentColor;
+}

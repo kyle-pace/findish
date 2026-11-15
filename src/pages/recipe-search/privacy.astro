@@ -1,0 +1,186 @@
+---
+// Privacy for Recipe search, at /recipe-search/privacy/: the search page, the MCP server
+// for AI assistants, the Grocery Deals list lookup and the weekly program. This is the
+// privacy policy URL for the Connectors Directory listing, so it covers what's collected,
+// how it's used and stored, who it's shared with, how long it's kept and who to contact.
+// If anything here changes (a new service, a new kind of data, Session Replay's rate),
+// change this page and its date in the same piece of work.
+import LabLayout from 'kp-design/layouts/LabLayout.astro';
+import '../../styles/theme.css';
+import '../../styles/prose.css';
+import { ASSISTANTS_PAGE } from '../../lib/assistants';
+
+const updated = 'November 15, 2026';
+---
+
+<LabLayout
+  lab={{ name: 'the search', href: '/recipe-search/' }}
+  about="/recipe-search/about/"
+  title="Recipe search privacy"
+  description="What Recipe search and its server for AI assistants collect, what stays on your device, who it’s shared with and how long it’s kept."
+  image="/recipe-search/og-privacy.png"
+  imageAlt="Recipe search privacy: no accounts, no ads, nothing sold."
+  themeColor={{ light: '#f7f8f6', dark: '#151918' }}
+>
+  <article class="prose" data-page="privacy">
+    <h1>Recipe search privacy</h1>
+    <p class="updated">For the search page, its server for AI assistants and the weekly program that collects recipes. Updated {updated}.</p>
+
+    <section aria-labelledby="short">
+      <h2 id="short">The short version</h2>
+      <p>
+        There are no accounts, ads or sign-ups, and nothing is sold or shared for advertising. What you type into the search stays on your
+        device. The server for AI assistants answers each question and keeps nothing about it. The only thing collected is anonymous usage
+        from the search page, and you can turn that off below.
+      </p>
+    </section>
+
+    <section aria-labelledby="page">
+      <h2 id="page">The search page</h2>
+      <p>
+        The whole index of recipes downloads to your browser once, and the search runs there. What you type is never sent to this site or
+        anyone else.
+      </p>
+      <p>
+        Recipe photos load from each creator’s own site when they come on screen, without telling that site which page you came from. Like
+        any website, those sites see your IP address when they send a photo, and they have their own privacy rules. Opening a recipe takes
+        you to the creator’s site.
+      </p>
+    </section>
+
+    <section aria-labelledby="analytics">
+      <h2 id="analytics">Anonymous usage</h2>
+      <p>
+        The search page, like the rest of kylepace.dev, uses <a href="https://amplitude.com">Amplitude</a> to see which pages are viewed
+        and what gets clicked, so it can be improved. It records things like “searched with 2 ingredients and got 14 results”, “added tofu from the
+        suggestions” or “opened the third result, from The Woks of Life”, never the words you typed. It stores no IP address and sets
+        no cookies; a random ID in your browser’s storage tells a return visit from a new one, and basic details like browser type and
+        screen size come along.
+      </p>
+      <p>
+        About 1 in 20 visits is also recorded as a Session Replay to see where the page is confusing. In those recordings all text and
+        everything you type is hidden, so they show only the layout, scrolling and taps.
+      </p>
+      <p>
+        Once a day, the site counts how often each recipe was opened in the last 90 days, so popular recipes get a small boost in results.
+        That count is totals only, with nothing about who opened what.
+      </p>
+      <p>
+        The events stay in Amplitude for as long as the site runs, so trends can be compared over time. How Amplitude handles them is in{' '}
+        <a href="https://amplitude.com/privacy">Amplitude’s privacy notice</a>.
+      </p>
+      <h3>Turning it off</h3>
+      <p>
+        Nothing is sent if your browser sends Global Privacy Control or Do Not Track, or if you turn it off here. The choice covers all of
+        kylepace.dev in this browser.
+      </p>
+      <p class="toggle">
+        <button type="button" data-analytics-toggle>Turn off anonymous usage in this browser</button>
+        <span role="status" data-analytics-state></span>
+      </p>
+    </section>
+
+    <section aria-labelledby="assistants">
+      <h2 id="assistants">AI assistants</h2>
+      <p>
+        When you connect an assistant to the <a href={ASSISTANTS_PAGE}>Recipe search server</a> and it searches for you, your assistant
+        sends this site the words and ingredients for that search. The server answers with recipe names and links and then forgets the
+        request. It doesn’t save or log what was asked, it isn’t counted in analytics, and there’s no account, so it can’t tell one person
+        from another.
+      </p>
+      <p>
+        Cloudflare, which runs the site, keeps routine records of each request (the time, the address requested, whether it worked and
+        network details like an IP address) for a few days, to keep the site running and safe. Those records don’t include what was searched.
+      </p>
+      <p>Your assistant (Claude, ChatGPT or another) has its own privacy rules for your conversations, including whether it keeps them.</p>
+    </section>
+
+    <section aria-labelledby="deals">
+      <h2 id="deals">The Seattle Grocery Deals app</h2>
+      <p>
+        When you ask the Seattle Grocery Deals app for recipes that use several things on your shopping list, it sends this site only the
+        ingredients it matched to that week’s deals, never what you typed. The server answers and keeps nothing about it.
+      </p>
+    </section>
+
+    <section aria-labelledby="sharing">
+      <h2 id="sharing">Who else is involved</h2>
+      <p>
+        Nothing is sold, and nothing is shared for advertising. Two services help run the site and only do that job: Cloudflare hosts it and{' '}
+        <a href="https://amplitude.com">Amplitude</a> holds the anonymous usage. Apart from the recipe photos, everything, fonts included, is
+        served from this site.
+      </p>
+    </section>
+
+    <section aria-labelledby="collecting">
+      <h2 id="collecting">The weekly program</h2>
+      <p>
+        The program that collects recipes reads public recipe pages and newsletters’ public feeds. It keeps a recipe’s name, link, photo
+        link, ingredients, time and cuisine, and nothing about the people who read or comment on those sites. How it works, and how a site
+        owner can opt out, is on the <a href="/recipe-search/about/#owners">About page</a>.
+      </p>
+    </section>
+
+    <section aria-labelledby="contact">
+      <h2 id="contact">Questions</h2>
+      <p>
+        Email <a href="mailto:mail@kylepace.net?subject=Recipe%20search%20privacy">mail@kylepace.net</a>. If anything here changes, this page
+        and its date will change with it.
+      </p>
+    </section>
+  </article>
+
+  <script>
+    // The opt-out switch. kp-design keeps the choice in this browser's storage, which all of
+    // kylepace.dev shares. Under GPC or Do Not Track nothing is sent anyway, and it says so.
+    import { isOptedOut, setOptOut } from 'kp-design/analytics';
+    const button = document.querySelector<HTMLButtonElement>('[data-analytics-toggle]')!;
+    const state = document.querySelector<HTMLElement>('[data-analytics-state]')!;
+    const nav = navigator as Navigator & { globalPrivacyControl?: boolean };
+    const browserSaysNo = nav.globalPrivacyControl === true || nav.doNotTrack === '1';
+    function show() {
+      const off = isOptedOut();
+      button.textContent = off ? 'Turn anonymous usage back on in this browser' : 'Turn off anonymous usage in this browser';
+      state.textContent = browserSaysNo
+        ? 'Your browser asks sites not to track it, so nothing is sent either way.'
+        : off
+          ? 'Off. Nothing is sent from this browser.'
+          : 'On.';
+    }
+    button.addEventListener('click', () => {
+      setOptOut(!isOptedOut());
+      show();
+    });
+    show();
+  </script>
+</LabLayout>
+
+<style>
+  .updated {
+    margin-top: var(--space-3);
+    color: var(--ink-muted);
+  }
+
+  .toggle {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2) var(--space-4);
+  }
+
+  .toggle button {
+    min-height: 2.75rem;
+    padding: 0 1rem;
+    border: 1px solid var(--field-rule);
+    border-radius: 0.5rem;
+    background: var(--bg-raised);
+    color: var(--ink);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .toggle button:hover {
+    border-color: var(--ink);
+  }
+</style>

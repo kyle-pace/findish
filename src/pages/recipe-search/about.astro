@@ -4,7 +4,6 @@
 // user agent, so keep "For site owners" accurate. Built at build time from the same index the search uses
 // (public/recipe-search/index.json, written by scripts/build-index.mjs before astro build).
 import LabLayout from 'kp-design/layouts/LabLayout.astro';
-import LabLinks from '../../components/LabLinks.astro';
 import '../../styles/theme.css';
 
 type Link = { label: string; url: string; book?: boolean };
@@ -42,13 +41,14 @@ const addToClaude = `https://claude.ai/customize/connectors?modal=add-custom-con
 ---
 
 <LabLayout
+  lab={{ name: 'the search', href: '/recipe-search/' }}
+  about="/recipe-search/about/"
   title="About Recipe search"
   description="What Recipe search is, how it works, where its recipes and videos come from, how to support the people who make them, and what it collects."
   image="/recipe-search/og-about.png"
   imageAlt="About Recipe search: what it is, how it works, where its recipes come from and how to back the people who make them."
   themeColor={{ light: '#f7f8f6', dark: '#151918' }}
 >
-  <LabLinks slot="bar" current="about" />
 
   <article class="about">
     <h1>About Recipe search</h1>

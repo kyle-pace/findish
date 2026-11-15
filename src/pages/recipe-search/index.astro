@@ -9,11 +9,12 @@
 // It's a standalone lab: LabLayout gives it only a back link, a footer line, display
 // settings and analytics; its look is src/styles/theme.css.
 import LabLayout from 'kp-design/layouts/LabLayout.astro';
-import LabLinks from '../../components/LabLinks.astro';
 import '../../styles/theme.css';
 ---
 
 <LabLayout
+  lab={{ name: 'the search', href: '/recipe-search/' }}
+  about="/recipe-search/about/"
   title="Recipe search"
   description="Search The Woks of Life, Hot Thai Kitchen, Smitten Kitchen and more at once, by dish, by what you have or by creator. Every recipe opens on its own site."
   image="/recipe-search/og.png"
@@ -25,7 +26,6 @@ import '../../styles/theme.css';
     // The About section used to live at #about; it's its own page now.
     if (location.hash === '#about') location.replace('/recipe-search/about/');
   </script>
-  <LabLinks slot="bar" current="search" />
 
   <div class="page" id="page" data-mode="home">
     <div class="app" id="app" data-state="loading">

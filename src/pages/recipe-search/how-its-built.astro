@@ -1,0 +1,303 @@
+---
+// How Recipe search is built: the technical version of the About page, for the curious.
+// Diagrams are inline SVG in the lab's own colors, each with a title, a description and
+// the same facts in the text. Counts come from the index.
+import LabLayout from 'kp-design/layouts/LabLayout.astro';
+import '../../styles/theme.css';
+// Imported, not read from disk: the Cloudflare adapter prerenders inside its own runtime.
+import indexJson from '../../../public/recipe-search/index.json';
+const index: any = indexJson;
+const n = (x: number) => x.toLocaleString('en-US');
+const recipes: number = index.recipes.length;
+const videos: number = index.videos.rows.length;
+const creators: number = index.sources.length;
+---
+
+<LabLayout
+  lab={{ name: 'the search', href: '/recipe-search/' }}
+  about="/recipe-search/about/"
+  title="How Recipe search is built"
+  description="The technical version: a polite weekly crawler, one small index, and a search that runs in your browser, plus the MCP server and the Grocery Deals lookup that read the same index."
+  image="/recipe-search/og-about.png"
+  imageAlt="About Recipe search: the title beside the three parts of a search engine."
+  themeColor={{ light: '#f7f8f6', dark: '#151918' }}
+>
+  <article class="page">
+    <h1>How Recipe search is built</h1>
+    <p class="lede">
+      The <a href="/recipe-search/about/">About page</a> explains it as a small search engine: collect, index, search. This is the
+      technical version, with links into <a href="https://github.com/kyle-pace/recipe-search">the code</a>.
+    </p>
+
+    <section aria-labelledby="numbers-heading">
+      <h2 id="numbers-heading">The numbers</h2>
+      <dl class="numbers">
+        <div><dt>Recipes</dt><dd>{n(recipes)}</dd></div>
+        <div><dt>Videos</dt><dd>{n(videos)}</dd></div>
+        <div><dt>Creators</dt><dd>{n(creators)}</dd></div>
+        <div><dt>Search server</dt><dd>none</dd></div>
+      </dl>
+    </section>
+
+    <section aria-labelledby="pipe-heading">
+      <h2 id="pipe-heading">Collect, index, search</h2>
+      <figure tabindex="0" role="region" aria-label="Diagram: From recipe sites to search results. On narrow screens it scrolls sideways.">
+        <svg class="diagram" viewBox="0 0 950 200" role="img" aria-labelledby="pipe-title pipe-desc">
+          <title id="pipe-title">From recipe sites to search results</title>
+          <desc id="pipe-desc">A weekly crawler reads recipe sites, a few newsletters through their RSS feeds, and YouTube through its API. A build step turns what it keeps into one index file. Three things read that index: the search page in your browser, an MCP server for AI assistants, and the Grocery Deals app’s list lookup.</desc>
+          <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" class="ink-fill"></path>
+            </marker>
+          </defs>
+          <g class="box"><rect x="10" y="20" width="170" height="46" rx="6"></rect><text x="95.0" y="48.0">Recipe sites</text></g>
+          <g class="box"><rect x="10" y="80" width="170" height="46" rx="6"></rect><text x="95.0" y="108.0">Newsletters (RSS)</text></g>
+          <g class="box"><rect x="10" y="140" width="170" height="46" rx="6"></rect><text x="95.0" y="168.0">YouTube API</text></g>
+          <g class="box accent"><rect x="230" y="60" width="190" height="80" rx="6"></rect><text x="325.0" y="96.0">Weekly crawler</text><text x="325.0" y="116.0" class="small">robots.txt, sitemaps, slow</text></g>
+          <g class="box"><rect x="470" y="60" width="170" height="80" rx="6"></rect><text x="555.0" y="96.0">Build the index</text><text x="555.0" y="116.0" class="small">match ingredient names</text></g>
+          <g class="box accent"><rect x="690" y="20" width="250" height="46" rx="6"></rect><text x="815.0" y="48.0">Search page (your browser)</text></g>
+          <g class="box"><rect x="690" y="80" width="250" height="46" rx="6"></rect><text x="815.0" y="108.0">MCP server for AI assistants</text></g>
+          <g class="box"><rect x="690" y="140" width="250" height="46" rx="6"></rect><text x="815.0" y="168.0">Grocery Deals list lookup</text></g>
+          <path d="M180 43 C205 43 205 85 228 90" class="link" marker-end="url(#arrow)"></path>
+          <path d="M180 103 L228 103" class="link" marker-end="url(#arrow)"></path>
+          <path d="M180 163 C205 163 205 120 228 115" class="link" marker-end="url(#arrow)"></path>
+          <path d="M420 100 L468 100" class="link" marker-end="url(#arrow)"></path>
+          <path d="M640 90 C665 90 665 43 688 43" class="link" marker-end="url(#arrow)"></path>
+          <path d="M640 100 L688 103" class="link" marker-end="url(#arrow)"></path>
+          <path d="M640 110 C665 110 665 163 688 163" class="link" marker-end="url(#arrow)"></path>
+          <text x="555" y="160" class="small">index.json, one file</text>
+        </svg>
+      </figure>
+      <ol class="steps">
+        <li>
+          <strong>A polite crawler.</strong> <code>crawler/crawl.mjs</code> runs every Monday on GitHub Actions. It reads each site's
+          robots.txt and follows it, reads the sitemap, and fetches only pages that are new or changed, one at a time, seconds apart.
+          It keeps the recipe data sites publish for search engines (name, link, photo link, ingredients, time, cuisine) and never the
+          method or the writing around it.
+        </li>
+        <li>
+          <strong>Newsletters through their feeds only.</strong> One RSS request per run; a post is kept only if it has a run of
+          ingredient lines with amounts and a sign it's a recipe. Videos come from the official YouTube Data API.
+        </li>
+        <li>
+          <strong>One index file.</strong> <code>scripts/build-index.mjs</code> packs it all into <code>index.json</code>, matching every
+          ingredient line to KitchenCatalog, the grocery list the food projects share, so "scallions" and "green onions" are one thing.
+        </li>
+        <li>
+          <strong>No search server.</strong> The index is a few hundred kilobytes, so the browser downloads it once and searches it
+          locally. The same file feeds the MCP server (<code>src/pages/recipe-search/mcp.ts</code>) and the Grocery Deals lookup
+          (<code>api/with.ts</code>), the only parts that run on the server.
+        </li>
+      </ol>
+    </section>
+
+    <section aria-labelledby="rank-heading">
+      <h2 id="rank-heading">How results are ranked</h2>
+      <figure tabindex="0" role="region" aria-label="Diagram: What decides the order of results. On narrow screens it scrolls sideways.">
+        <svg class="diagram" viewBox="0 0 950 180" role="img" aria-labelledby="rank-title rank-desc">
+          <title id="rank-title">What decides the order of results</title>
+          <desc id="rank-desc">Your words are matched against names, ingredients, cuisines and creators. Matches in the name count most; with ingredients, recipes that use most of them and need the fewest other things come first. Recipes opened often get a small boost, and creators take turns when matches are close.</desc>
+          
+          <g class="box"><rect x="10" y="30" width="200" height="60" rx="6"></rect><text x="110.0" y="56.0">Your words</text><text x="110.0" y="76.0" class="small">chicken, ginger</text></g>
+          <g class="box"><rect x="260" y="10" width="210" height="46" rx="6"></rect><text x="365.0" y="38.0">Name matches count most</text></g>
+          <g class="box"><rect x="260" y="66" width="210" height="46" rx="6"></rect><text x="365.0" y="94.0">Most of your ingredients</text></g>
+          <g class="box"><rect x="260" y="122" width="210" height="46" rx="6"></rect><text x="365.0" y="150.0">Fewest other things needed</text></g>
+          <g class="box"><rect x="520" y="10" width="200" height="46" rx="6"></rect><text x="620.0" y="38.0">Opened often: small boost</text></g>
+          <g class="box"><rect x="520" y="66" width="200" height="46" rx="6"></rect><text x="620.0" y="94.0">Creators take turns</text></g>
+          <g class="box accent"><rect x="770" y="40" width="170" height="60" rx="6"></rect><text x="855.0" y="75.0">Results</text></g>
+          <path d="M210 60 L258 33" class="link" marker-end="url(#arrow)"></path>
+          <path d="M210 60 L258 89" class="link" marker-end="url(#arrow)"></path>
+          <path d="M210 60 L258 145" class="link" marker-end="url(#arrow)"></path>
+          <path d="M470 33 L518 33" class="link" marker-end="url(#arrow)"></path>
+          <path d="M470 89 L518 89" class="link" marker-end="url(#arrow)"></path>
+          <path d="M470 145 C500 145 500 95 518 92" class="link" marker-end="url(#arrow)"></path>
+          <path d="M720 33 C745 33 745 60 768 66" class="link" marker-end="url(#arrow)"></path>
+          <path d="M720 89 C745 89 745 80 768 76" class="link" marker-end="url(#arrow)"></path>
+        </svg>
+      </figure>
+      <p>
+        The ranking rules live in two places that must agree: <code>src/scripts/search.ts</code> for the page and <code>src/mcp/search.mjs</code> for the server, which shares the rules minus typo fixing. The popularity boost comes from a
+        daily count of how often each recipe was opened in the last 90 days: counts only, nothing about who.
+      </p>
+    </section>
+
+    <section aria-labelledby="choices-heading">
+      <h2 id="choices-heading">Choices worth knowing</h2>
+      <ul class="notes-list">
+        <li><strong>Small on purpose.</strong> A hand-picked list of cooks instead of the web means the whole index fits in a browser, so there's nothing to run, pay for or log.</li>
+        <li><strong>Photos from the source.</strong> Recipe photos load straight from each creator's site, with no referrer. A photo shared by five or more recipes is a site's stand-in, so it's dropped.</li>
+        <li><strong>Pantry data never comes here.</strong> The Grocery Deals lookup sends a few catalog ids, never typed text, and nothing is logged or cached.</li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="stack-heading">
+      <h2 id="stack-heading">The stack</h2>
+      <ul class="notes-list">
+        <li><strong>Site:</strong> Astro on its own Cloudflare Worker; the pages and index are static files.</li>
+        <li><strong>Crawler:</strong> Node on GitHub Actions, weekly, committing results that redeploy the site.</li>
+        <li><strong>MCP:</strong> Cloudflare's Agents SDK with the MCP SDK, stateless, two read-only tools.</li>
+        <li><strong>How I work:</strong> the principles every project follows are in <a href="https://kylepace.dev/how-i-build/">how I build</a>.</li>
+      </ul>
+    </section>
+  </article>
+</LabLayout>
+
+<style>
+  .page {
+    padding: var(--space-4) var(--gutter) var(--space-12);
+    max-width: 64rem;
+  }
+
+  .page h1 {
+    margin: 0 0 var(--space-4);
+    font-size: var(--step-3, var(--step-2));
+    line-height: 1.1;
+  }
+
+  .lede {
+    max-width: 40rem;
+    font-size: var(--step-0);
+  }
+
+  .page section {
+    margin-top: var(--space-12);
+  }
+
+  .page h2 {
+    margin: 0 0 var(--space-4);
+    padding-bottom: var(--space-2);
+    font-size: var(--step-1);
+    font-weight: 700;
+    border-bottom: 3px solid var(--ink);
+  }
+
+  .page a {
+    color: var(--accent-ink);
+    text-underline-offset: 0.15em;
+  }
+
+  .page p,
+  .page li {
+    max-width: 40rem;
+  }
+
+  .page p {
+    margin: 0 0 var(--space-3);
+  }
+
+  .page code {
+    font-family: var(--font-mono, ui-monospace, monospace);
+    font-size: 0.92em;
+  }
+
+  .numbers {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+    gap: var(--space-4);
+    margin: 0;
+  }
+
+  .numbers div {
+    border-top: 3px solid var(--accent);
+    padding-top: var(--space-2);
+  }
+
+  .numbers dt {
+    color: var(--ink-muted);
+    font-size: var(--step--1);
+  }
+
+  .numbers dd {
+    margin: 0;
+    font-size: var(--step-2);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Diagrams keep their size, so their labels stay readable; on a phone they scroll
+     sideways, and can be reached and scrolled with the keyboard. */
+  figure {
+    margin: 0 0 var(--space-6);
+    overflow-x: auto;
+  }
+
+  figure:focus-visible {
+    outline: 3px solid var(--accent-ink);
+    outline-offset: 2px;
+  }
+
+  /* Diagrams in the lab's own colors, so they follow light and dark. */
+  .diagram {
+    display: block;
+    width: 100%;
+    min-width: 40rem;
+    height: auto;
+    font-family: inherit;
+  }
+
+  .diagram text {
+    fill: var(--ink);
+    font-size: 15px;
+    font-weight: 600;
+    text-anchor: middle;
+  }
+
+  .diagram text.small {
+    font-size: 12px;
+    font-weight: 400;
+    fill: var(--ink-muted);
+  }
+
+  .diagram text.left {
+    text-anchor: start;
+  }
+
+  .diagram .box rect {
+    fill: var(--bg-raised, var(--bg));
+    stroke: var(--ink);
+    stroke-width: 1.5;
+  }
+
+  .diagram .box.accent rect {
+    stroke: var(--accent);
+    stroke-width: 3;
+  }
+
+  .diagram .box.muted rect {
+    stroke-dasharray: 5 4;
+    stroke: var(--ink-muted);
+  }
+
+  .diagram .link {
+    fill: none;
+    stroke: var(--ink);
+    stroke-width: 1.5;
+  }
+
+  .diagram .ink-fill {
+    fill: var(--ink);
+  }
+
+  .diagram .axis {
+    stroke: var(--ink-muted);
+    stroke-width: 1.5;
+  }
+
+  .diagram .accent-fill {
+    fill: var(--accent);
+  }
+
+  .diagram .soft-fill {
+    fill: color-mix(in oklab, var(--accent), var(--bg) 70%);
+  }
+
+  .steps,
+  .notes-list {
+    padding-left: 1.25rem;
+  }
+
+  .steps li,
+  .notes-list li {
+    margin-bottom: var(--space-3);
+  }
+</style>

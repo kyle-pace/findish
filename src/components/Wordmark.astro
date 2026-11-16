@@ -1,6 +1,6 @@
 ---
 // The Findish wordmark: the name in Atkinson bold, with "dish" sitting in a shallow nori
-// bowl, so it reads as find + dish (a solid half-round with a flat rim, not a curved line, so it reads as a bowl and not a smile). Pure text and CSS: it scales with the font size it's
+// bowl, so it reads as find + dish (a curved stroke that grows out of the d, Kyle's pick, 2026-11-16). Pure text and CSS: it scales with the font size it's
 // given, follows light and dark mode, and screen readers hear one word, "Findish".
 ---
 
@@ -20,22 +20,23 @@
     padding-inline: 0.02em 0.04em;
   }
 
-  /* The bowl: a solid half-round with a flat rim, under "dish", in the one accent color.
-     Decoration only; the letters sit just above its rim. */
+  /* The bowl: a curved stroke under "dish" that starts out of the d's round, so the d
+     reads as the connector between "find" and "dish". Decoration only. */
   .wordmark-dish::after {
     content: '';
     position: absolute;
-    inset-inline: -0.04em 0;
-    bottom: -0.2em;
-    height: 0.2em;
-    background: var(--accent-ink);
-    border-radius: 0.02em 0.02em 50% 50% / 0.02em 0.02em 100% 100%;
+    inset-inline: -0.06em -0.02em;
+    bottom: -0.1em;
+    height: 0.26em;
+    border: 0.085em solid var(--accent-ink);
+    border-top: 0;
+    border-radius: 0 0 50% 50% / 0 0 100% 100%;
     pointer-events: none;
   }
 
   @media (forced-colors: active) {
     .wordmark-dish::after {
-      background: CanvasText;
+      border-color: CanvasText;
     }
   }
 </style>

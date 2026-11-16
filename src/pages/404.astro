@@ -1,0 +1,27 @@
+---
+// Not found, for any address findish.now doesn't have.
+import LabLayout from 'kp-design/layouts/LabLayout.astro';
+import { SITE, BACK } from '../lib/site';
+import '../styles/theme.css';
+import '../styles/prose.css';
+---
+
+<LabLayout
+  site={SITE}
+  backHref={BACK.href}
+  backLabel={BACK.label}
+  backShort={BACK.short}
+  lab={{ name: 'the search', href: '/' }}
+  about="/about/"
+  title="Page not found"
+  description="This page isn't on Findish."
+  image="/og.png"
+  imageAlt="Findish: a search box holding ginger and tofu."
+  themeColor={{ light: '#f7f8f6', dark: '#151918' }}
+  noindex
+>
+  <article class="prose">
+    <h1>Page not found</h1>
+    <p>There’s nothing at this address. <a href="/">Search for a recipe</a> instead.</p>
+  </article>
+</LabLayout>

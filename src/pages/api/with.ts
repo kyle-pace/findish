@@ -1,4 +1,4 @@
-// Recipes that use several of a few ingredients, at kylepace.dev/recipe-search/api/with: the
+// Recipes that use several of a few ingredients, at findish.now/api/with: the
 // Seattle Grocery Deals app's "Recipes with your list". The app sends catalog ids for the
 // list items that match this week's deals (never what the person typed), and gets back names,
 // links and photos, the same as the page shows. Nothing about the request is kept or logged.
@@ -9,7 +9,7 @@
 
 import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
-import { prepare, recipesWith } from '../../../mcp/search.mjs';
+import { prepare, recipesWith } from '../../mcp/search.mjs';
 
 export const prerender = false;
 
@@ -23,7 +23,7 @@ function loadIndex(origin: string) {
   ready ??= (async () => {
     const assets = (env as { ASSETS?: { fetch: typeof fetch } }).ASSETS;
     if (!assets) throw new Error('The index is not available here');
-    const res = await assets.fetch(new URL('/recipe-search/index.json', origin));
+    const res = await assets.fetch(new URL('/index.json', origin));
     if (!res.ok) throw new Error(`The index answered ${res.status}`);
     return prepare(await res.json());
   })().catch((e) => {
@@ -57,7 +57,7 @@ export const POST: APIRoute = async ({ request }) => {
 
 // Anything else (a browser opening the address) gets a short note instead of an error page.
 export const ALL: APIRoute = () =>
-  new Response(JSON.stringify({ about: 'POST {"with": ["catalog-id", ...]} for recipes that use several of them. See https://kylepace.dev/recipe-search/about/' }), {
+  new Response(JSON.stringify({ about: 'POST {"with": ["catalog-id", ...]} for recipes that use several of them. See https://findish.now/about/' }), {
     status: 405,
     headers: { ...HEADERS, allow: 'POST' },
   });

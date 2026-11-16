@@ -1,6 +1,6 @@
 ---
-// Recipe search: one search across the recipe sites Kyle trusts, from our own index
-// (public/recipe-search/index.json, built from data/ by scripts/build-index.mjs).
+// Findish: one search across the recipe sites Kyle trusts, from our own index
+// (public/index.json, built from data/ by scripts/build-index.mjs).
 // src/scripts/search.ts loads the index and searches it in the browser.
 //
 // One search box, centered like a search engine's home page; after a search it moves up
@@ -9,33 +9,38 @@
 // It's a standalone lab: LabLayout gives it only a back link, a footer line, display
 // settings and analytics; its look is src/styles/theme.css.
 import LabLayout from 'kp-design/layouts/LabLayout.astro';
-import '../../styles/theme.css';
+import { SITE, BACK } from '../lib/site';
+import '../styles/theme.css';
 ---
 
 <LabLayout
-  lab={{ name: 'the search', href: '/recipe-search/' }}
-  about="/recipe-search/about/"
-  welcome={{ name: "Recipe search", text: "One search box across The Woks of Life, Hot Thai Kitchen, Smitten Kitchen and the YouTube channels of the cooks I learn from, from a small index of my own. Search by dish, by what you have or by creator; every result opens on the creator’s site." }}
-  title="Recipe search"
+  site={SITE}
+  backHref={BACK.href}
+  backLabel={BACK.label}
+  backShort={BACK.short}
+  lab={{ name: 'the search', href: '/' }}
+  about="/about/"
+  welcome={{ name: "Findish", text: "One search box across The Woks of Life, Hot Thai Kitchen, Smitten Kitchen and the YouTube channels of the cooks I learn from, from a small index of my own. Search by dish, by what you have or by creator; every result opens on the creator’s site." }}
+  title="Findish"
   description="Search The Woks of Life, Hot Thai Kitchen, Smitten Kitchen and more at once, by dish, by what you have or by creator. Every recipe opens on its own site."
-  image="/recipe-search/og.png"
-  imageAlt="Recipe search: a search box holding ginger and tofu. Recipes from The Woks of Life, Hot Thai Kitchen, Smitten Kitchen and more."
+  image="/og.png"
+  imageAlt="Findish: a search box holding ginger and tofu. Recipes from The Woks of Life, Hot Thai Kitchen, Smitten Kitchen and more."
   themeColor={{ light: '#f7f8f6', dark: '#151918' }}
 >
-  <link slot="head" rel="preload" href="/recipe-search/index.json" as="fetch" crossorigin="anonymous" />
+  <link slot="head" rel="preload" href="/index.json" as="fetch" crossorigin="anonymous" />
   <script slot="head" is:inline>
     // The About section used to live at #about; it's its own page now.
-    if (location.hash === '#about') location.replace('/recipe-search/about/');
+    if (location.hash === '#about') location.replace('/about/');
   </script>
 
   <div class="page" id="page" data-mode="home">
     <div class="app" id="app" data-state="loading">
       <header class="top">
-        <h1><a href="/recipe-search/" id="home-link">Recipe search</a></h1>
+        <h1><a href="/" id="home-link">Findish</a></h1>
         <p class="from" id="from">Recipes and videos from the cooks I trust. Every one opens on its creator’s own site.</p>
       </header>
 
-      <form class="search" id="search-form" role="search" action="/recipe-search/" method="get" aria-label="Recipes">
+      <form class="search" id="search-form" role="search" action="/" method="get" aria-label="Recipes">
         <label class="visually-hidden" for="q">Search recipes by dish, ingredient or creator</label>
         <div class="box" id="box">
           <ul class="tags" id="with-chips" aria-label="Added to your search"></ul>
@@ -130,7 +135,7 @@ import '../../styles/theme.css';
   </div>
 
   <script>
-    import '../../scripts/search.ts';
+    import '../scripts/search.ts';
   </script>
 </LabLayout>
 

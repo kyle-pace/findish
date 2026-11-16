@@ -1,15 +1,16 @@
 ---
-// About Recipe search. Title, headings and step format follow the about-page skill
+// About Findish. Title, headings and step format follow the about-page skill
 // (.agents/skills/about-page/SKILL.md). Site owners reach this page from the crawler's
 // user agent, so keep "For site owners" accurate. Built at build time from the same index the search uses
-// (public/recipe-search/index.json, written by scripts/build-index.mjs before astro build).
+// (public/index.json, written by scripts/build-index.mjs before astro build).
 import LabLayout from 'kp-design/layouts/LabLayout.astro';
-import '../../styles/theme.css';
-import '../../styles/prose.css';
+import { SITE, BACK } from '../lib/site';
+import '../styles/theme.css';
+import '../styles/prose.css';
 
 type Link = { label: string; url: string; book?: boolean };
 // Imported, not read from disk: the Cloudflare adapter prerenders inside its own runtime.
-import indexJson from '../../../public/recipe-search/index.json';
+import indexJson from '../../public/index.json';
 const index: any = indexJson;
 const support: Record<string, Link[]> = index.support;
 const channels: { id: string; name: string; channel: string; site: string; count: number }[] = index.videos.sources;
@@ -34,27 +35,31 @@ const crawled = index.crawled
   : '';
 const total = { recipes: index.recipes.length, videos: index.videos.rows.length };
 
-import { ADD_TO_CLAUDE, ASSISTANTS_PAGE, PRIVACY_PAGE } from '../../lib/assistants';
+import { ADD_TO_CLAUDE, ASSISTANTS_PAGE, PRIVACY_PAGE } from '../lib/assistants';
 ---
 
 <LabLayout
-  lab={{ name: 'the search', href: '/recipe-search/' }}
-  about="/recipe-search/about/"
-  title="About Recipe search"
-  description="What Recipe search is, how it works, where its recipes and videos come from, how to support the people who make them, and what it collects."
-  image="/recipe-search/og-about.png"
-  imageAlt="About Recipe search: what it is, how it works, where its recipes come from and how to back the people who make them."
+  site={SITE}
+  backHref={BACK.href}
+  backLabel={BACK.label}
+  backShort={BACK.short}
+  lab={{ name: 'the search', href: '/' }}
+  about="/about/"
+  title="About Findish"
+  description="What Findish is, how it works, where its recipes and videos come from, how to support the people who make them, and what it collects."
+  image="/og-about.png"
+  imageAlt="About Findish: what it is, how it works, where its recipes come from and how to back the people who make them."
   themeColor={{ light: '#f7f8f6', dark: '#151918' }}
 >
 
   <article class="prose" data-page="about">
-    <h1>About Recipe search</h1>
-    <p class="deep-dive">Curious how it’s made? Read <a href="/recipe-search/how-its-built/">how Recipe search is built</a>, the technical version with diagrams.</p>
+    <h1>About Findish</h1>
+    <p class="deep-dive">Curious how it’s made? Read <a href="/how-its-built/">how Findish is built</a>, the technical version with diagrams.</p>
     <section aria-labelledby="what">
       <h2 id="what">What it is</h2>
       <p>
         I cook from a handful of sites I trust, and searching them one at a time got old.{' '}
-        <a href="/recipe-search/">Recipe search</a> looks through all of them at once, by dish, by what’s in the fridge or by who made it, and sends you to the
+        <a href="/">Findish</a> looks through all of them at once, by dish, by what’s in the fridge or by who made it, and sends you to the
         creator’s own page for the recipe.
       </p>
 
@@ -193,7 +198,7 @@ import { ADD_TO_CLAUDE, ASSISTANTS_PAGE, PRIVACY_PAGE } from '../../lib/assistan
       <p class="add"><a class="add-button" href={ADD_TO_CLAUDE} data-add-to-claude>Add to Claude</a></p>
       <p class="fine">Opens Claude with the name and address filled in. Nothing is added until you say so there.</p>
       <p>
-        For other assistants, things to ask and what it can look up, see <a href={ASSISTANTS_PAGE}>Recipe search for AI assistants</a>.
+        For other assistants, things to ask and what it can look up, see <a href={ASSISTANTS_PAGE}>Findish for AI assistants</a>.
       </p>
     </section>
 
@@ -238,7 +243,7 @@ import { ADD_TO_CLAUDE, ASSISTANTS_PAGE, PRIVACY_PAGE } from '../../lib/assistan
   </article>
 
   <script>
-    import '../../scripts/assistants';
+    import '../scripts/assistants';
     import { track } from 'kp-design/analytics';
     document.querySelector('.prose')!.addEventListener('click', (e) => {
       const a = (e.target as HTMLElement).closest<HTMLAnchorElement>('a[data-support]');

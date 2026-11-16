@@ -1,4 +1,4 @@
-// Recipe search as an MCP server, at kylepace.dev/recipe-search/mcp: lets an AI assistant
+// Findish as an MCP server, at findish.now/mcp: lets an AI assistant
 // (Claude, ChatGPT, anything that speaks MCP over Streamable HTTP) search the same index the
 // page uses. Read-only, no sign-in, and nothing about the person asking is kept or logged.
 //
@@ -10,12 +10,12 @@ import { env } from 'cloudflare:workers';
 import { McpServer } from '@modelcontextprotocol/server';
 import { createMcpHandler } from 'agents/mcp/server';
 import { z } from 'zod';
-import { listSources, prepare, searchRecipes } from '../../mcp/search.mjs';
+import { listSources, prepare, searchRecipes } from '../mcp/search.mjs';
 
 export const prerender = false;
 
 const VERSION = '0.1.0';
-const ROUTE = '/recipe-search/mcp';
+const ROUTE = '/mcp';
 
 // The index is the static file the page loads. It's read once per isolate (a running copy
 // of the Worker) and kept ready in memory; each deploy starts fresh isolates, so a new
@@ -26,7 +26,7 @@ function loadIndex(origin: string) {
   ready ??= (async () => {
     const assets = (env as { ASSETS?: { fetch: typeof fetch } }).ASSETS;
     if (!assets) throw new Error('The index is not available here');
-    const res = await assets.fetch(new URL('/recipe-search/index.json', origin));
+    const res = await assets.fetch(new URL('/index.json', origin));
     if (!res.ok) throw new Error(`The index answered ${res.status}`);
     return prepare(await res.json());
   })().catch((e) => {
@@ -40,14 +40,14 @@ const READ_ONLY = { readOnlyHint: true, destructiveHint: false, idempotentHint: 
 const json = (value: unknown) => ({ content: [{ type: 'text' as const, text: JSON.stringify(value) }] });
 const failed = (e: unknown) => ({
   isError: true,
-  content: [{ type: 'text' as const, text: `Could not search right now: ${e instanceof Error ? e.message : 'unknown error'}. Try again in a minute, or use https://kylepace.dev/recipe-search/` }],
+  content: [{ type: 'text' as const, text: `Could not search right now: ${e instanceof Error ? e.message : 'unknown error'}. Try again in a minute, or use https://findish.now/` }],
 });
 
 const strings = z.array(z.string()).max(25);
 
 function createServer(origin: string) {
   const server = new McpServer(
-    { name: 'recipe-search', title: 'Recipe search', version: VERSION, websiteUrl: 'https://kylepace.dev/recipe-search/' },
+    { name: 'findish', title: 'Findish', version: VERSION, websiteUrl: 'https://findish.now/' },
     {
       instructions:
         'Searches a small index of recipes and cooking videos from a hand-picked set of trusted recipe sites. ' +
@@ -110,7 +110,7 @@ function createServer(origin: string) {
 
 // Where a person who opens the address in a browser is sent: the For AI assistants page
 // (assistants.astro), which has the Add to Claude button and the address to copy.
-const PAGE = 'https://kylepace.dev/recipe-search/assistants/';
+const PAGE = 'https://findish.now/assistants/';
 
 export const ALL: APIRoute = async ({ request, locals }) => {
   // A person opening the address in a browser is sent to the page about it, not shown an error.
@@ -128,7 +128,7 @@ export const ALL: APIRoute = async ({ request, locals }) => {
   const handler = createMcpHandler(() => createServer(origin), {
     route: ROUTE,
     // The handler only answers hosts it knows: the live domain, and localhost for `npm run preview`.
-    allowedHostnames: ['kylepace.dev', 'localhost', '127.0.0.1'],
+    allowedHostnames: ['findish.now', 'www.findish.now', 'localhost', '127.0.0.1'],
   });
   return handler(request, env as never, ctx as ExecutionContext);
 };

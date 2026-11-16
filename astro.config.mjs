@@ -2,16 +2,12 @@
 import { defineConfig } from 'astro/config';
 import cloudflare from '@astrojs/cloudflare';
 
-// Recipe search lives at kylepace.dev/recipe-search/. It's its own Worker, mounted on
-// that path by the routes in wrangler.jsonc; the hub (kyle-pace/kylepace.dev) serves
-// everything else on the domain, including the favicon and robots.txt.
-// Everything this site serves sits under /recipe-search/: the page is
-// src/pages/recipe-search/, public files go in public/recipe-search/, and built assets go
-// to /recipe-search/_astro/. (Astro's `base` option isn't used: with the Cloudflare
-// adapter it serves the files from the wrong folder.)
+// Findish lives at findish.now (moved from kylepace.dev/recipe-search/ on 2026-11-16). It's
+// its own Worker on its own domain (the Custom Domain in wrangler.jsonc), so it serves
+// everything at the root: pages in src/pages/, public files in public/, the favicon,
+// robots.txt, sitemap.xml and the 404 page.
 export default defineConfig({
-  site: 'https://kylepace.dev',
-  build: { assets: 'recipe-search/_astro' },
+  site: 'https://findish.now',
   session: false,
   adapter: cloudflare({ imageService: 'compile' }),
 });

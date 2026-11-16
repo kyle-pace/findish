@@ -2,7 +2,7 @@
   "name": "recipe-search",
   "private": true,
   "type": "module",
-  "description": "One search box across the recipe sites Kyle trusts, from our own small index. Live at kylepace.dev/recipe-search/.",
+  "description": "One search box across the recipe sites Kyle trusts, from our own small index. Live at findish.now.",
   "scripts": {
     "dev": "node scripts/build-index.mjs && astro dev",
     "index": "node scripts/build-index.mjs",
@@ -22,7 +22,7 @@
     "@modelcontextprotocol/server": "^2.4.0",
     "agents": "^0.33.0",
     "astro": "^7.4.7",
-    "kp-design": "github:kyle-pace/kp-design#9eb530de9e16e690258e1d57425c9475f41e3f94",
+    "kp-design": "github:kyle-pace/kp-design#0556d0ebe130287a3870fbc05461937b5a252b32",
     "zod": "^4.6.7"
   },
   "devDependencies": {

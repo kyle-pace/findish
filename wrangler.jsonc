@@ -7,10 +7,10 @@
   // Node built-ins for the MCP endpoint (src/pages/recipe-search/mcp.ts); its SDK uses them.
   "compatibility_flags": ["nodejs_compat"],
   "observability": { "enabled": true },
-  // Claims kylepace.dev/recipe-search on the hub's domain. Routes win over the hub's
-  // Custom Domain, so only these paths reach this Worker.
+  // findish.now is this Worker's Custom Domain (the zone is in Kyle's Cloudflare account,
+  // moved from Porkbun on 2026-11-16). The old kylepace.dev/recipe-search/ addresses are
+  // forwarded here by the hub (kyle-pace/kylepace.dev, public/_redirects).
   "routes": [
-    { "pattern": "kylepace.dev/recipe-search", "zone_name": "kylepace.dev" },
-    { "pattern": "kylepace.dev/recipe-search/*", "zone_name": "kylepace.dev" }
+    { "pattern": "findish.now", "custom_domain": true }
   ]
 }

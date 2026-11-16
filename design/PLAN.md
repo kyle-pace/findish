@@ -1,4 +1,4 @@
-# Recipe search: design plan (November 8, 2026, third pass)
+# Findish: design plan (November 8, 2026, third pass)
 
 **First pass** read as generated: a hero headline over a pill search bar, pills for every control, a grid of identical rounded cards, an eyebrow label, colored squares and middle-dot meta lines.
 
@@ -29,7 +29,7 @@ People look for a recipe three ways: by dish ("mapo tofu"), by what they have ("
 ```
 Home                                       Results
 
-          Recipe search                    Recipe search
+          Findish                    Findish
    2,226 recipes from …, and 3,761 videos  [ from The Woks of Life × | tofu × | and…   (⌕) ]
  [ A dish, ingredient or creator     (⌕) ] Cuisine: any  Creator: The Woks of Life  Time: any  Pick one at random  Start over
           Pick one at random               102 recipes and 4 videos on YouTube.
@@ -45,7 +45,7 @@ Home                                       Results
 
 ## About
 
-Its own page (`/recipe-search/about/`), built at build time from the index: why it exists, every creator with counts and ways to support them, how it works, and a note for site owners (the crawler's user agent links here). Top bar: Search and About.
+Its own page (`/about/`), built at build time from the index: why it exists, every creator with counts and ways to support them, how it works, and a note for site owners (the crawler's user agent links here). Top bar: Search and About.
 
 ## Color
 

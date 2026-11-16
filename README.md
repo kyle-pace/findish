@@ -1,8 +1,8 @@
-# Recipe search
+# Findish
 
 One search box across the recipe sites I trust: The Woks of Life, Just One Cookbook, Hot Thai Kitchen, Smitten Kitchen, Maangchi, and J. Kenji López-Alt's YouTube videos. It runs on our own small index, not Google, and every result opens on the original site.
 
-**Status:** live at **[kylepace.dev/recipe-search](https://kylepace.dev/recipe-search/)**, one of the experiments on [kylepace.dev](https://kylepace.dev) (November 8, 2026). Working name; the real name and domain are still open.
+**Status:** live at **[findish.now](https://findish.now/)** (November 16, 2026). It started as Recipe search, an experiment at kylepace.dev/recipe-search/ (November 8, 2026); those old addresses forward here.
 
 ## How it will work
 
@@ -28,27 +28,27 @@ GitHub Actions runs the full crawl every Monday and commits `data/` and `state/`
 
 ```sh
 npm install
-npm run dev       # http://localhost:4321/recipe-search/
+npm run dev       # http://localhost:4321/
 npm run build     # builds the index, then the site, to dist/
 npm run preview   # builds, then runs it the way Cloudflare will
 ```
 
 | What | Where |
 | --- | --- |
-| The page | `src/pages/recipe-search/index.astro` |
+| The page | `src/pages/index.astro` |
 | Searching, typeahead, filters, URL state | `src/scripts/search.ts` |
-| The index (generated, not committed) | `public/recipe-search/index.json`, from `scripts/build-index.mjs` |
+| The index (generated, not committed) | `public/index.json`, from `scripts/build-index.mjs` |
 | Ingredient matching and the source list | `vendor/kitchen-catalog/` (refresh with `npm run sync-catalog`), read through `crawler/lib/sources.mjs` |
-| Page shell (back link, footer line, analytics) | `LabLayout` from [kp-design](https://github.com/kyle-pace/kp-design) |
+| Page shell (back link, footer line, analytics) | `LabLayout` from [kp-design](https://github.com/kyle-pace/kp-design), with Findish's own settings in `src/lib/site.ts` |
 | Its own look (colors) | `src/styles/theme.css` |
-| Share card | `design/og.html`, rendered to `public/recipe-search/og.png` |
+| Share card | `design/og.html`, rendered to `public/og.png` |
 | Outside hosts (recipe photos) | `.agents/allowed-hosts.txt` |
 
-It's its own Cloudflare Worker, `recipe-search`, mounted on the hub's domain by two routes in `wrangler.jsonc`. Cloudflare Workers Builds deploys `main` (build `npm run build`, deploy `npx wrangler deploy`), so each Monday's crawl ships a fresh index on its own.
+It's its own Cloudflare Worker, `recipe-search`, with findish.now as its Custom Domain in `wrangler.jsonc`. Cloudflare Workers Builds deploys `main` (build `npm run build`, deploy `npx wrangler deploy`), so each Monday's crawl ships a fresh index on its own.
 
 ## For AI assistants (MCP)
 
-The same index is searchable by AI assistants over MCP (Model Context Protocol, the standard way to give an assistant tools) at `https://kylepace.dev/recipe-search/mcp`. Read-only, no sign-in, nothing about the person asking is kept.
+The same index is searchable by AI assistants over MCP (Model Context Protocol, the standard way to give an assistant tools) at `https://findish.now/mcp`. Read-only, no sign-in, nothing about the person asking is kept.
 
 | Tool | What it answers |
 | --- | --- |
@@ -57,12 +57,12 @@ The same index is searchable by AI assistants over MCP (Model Context Protocol, 
 
 | What | Where |
 | --- | --- |
-| The endpoint (the only server-run part of the site) | `src/pages/recipe-search/mcp.ts` |
+| The endpoint (the only server-run part of the site) | `src/pages/mcp.ts` |
 | The search rules, as plain functions | `src/mcp/search.mjs`, tests in `src/mcp/search.test.mjs` (`npm test`) |
 | The server's address, the Claude link and the page paths | `src/lib/assistants.ts` |
 | Try every tool with the official MCP client | `npm run preview`, then `npm run try-mcp` (add the live address to check a deploy) |
 
-To connect: the For AI assistants page has an Add to Claude button and the address (kylepace.dev/recipe-search/assistants/, `src/pages/recipe-search/assistants.astro`). The privacy page, which is also the privacy policy for a Connectors Directory listing, is kylepace.dev/recipe-search/privacy/. By hand in Claude: Customize > Connectors > Add custom connector, and paste the address. In Claude Code, `claude mcp add --transport http recipe-search https://kylepace.dev/recipe-search/mcp`.
+To connect: the For AI assistants page has an Add to Claude button and the address (findish.now/assistants/, `src/pages/assistants.astro`). The privacy page, which is also the privacy policy for a Connectors Directory listing, is findish.now/privacy/. By hand in Claude: Customize > Connectors > Add custom connector, and paste the address. In Claude Code, `claude mcp add --transport http findish https://findish.now/mcp`.
 
 ## The prototype
 

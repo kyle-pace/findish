@@ -1,5 +1,5 @@
-// The answers behind the MCP tools (src/pages/recipe-search/mcp.ts): plain functions over the
-// same index the search page loads (public/recipe-search/index.json, from
+// The answers behind the MCP tools (src/pages/mcp.ts): plain functions over the
+// same index the search page loads (public/index.json, from
 // scripts/build-index.mjs). No network and no MCP here, so `npm test` can run them.
 //
 // The rules follow the page's own search (src/scripts/search.ts): words must be in a recipe's
@@ -7,7 +7,7 @@
 // that use more of your ingredients and need fewer others come first, and creators take turns.
 // It leaves out the page's typo fixing; assistants spell well enough.
 
-export const SITE = 'https://kylepace.dev/recipe-search/';
+export const SITE = 'https://findish.now/';
 
 /** "Scallions, chopped!" -> ["scallion", "chopped"]: lowercase, no accents, singular words. */
 export function words(text) {
@@ -340,7 +340,7 @@ const ID = /^[a-z0-9][a-z0-9-]{0,59}$/;
 
 /**
  * Recipes that use several of a few ingredients, by catalog id: the Grocery Deals app's
- * "Recipes with your list" (src/pages/recipe-search/api/with.ts). Ids come from its
+ * "Recipes with your list" (src/pages/api/with.ts). Ids come from its
  * recipes.json, which takes them from this index, so they match exactly; unknown ones are
  * left out. With two or more known, recipes that use only one of them are left out too.
  * Same ranking as an ingredient search: more of them first, then fewer other things to buy.

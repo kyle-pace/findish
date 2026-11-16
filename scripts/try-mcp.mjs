@@ -2,13 +2,13 @@
 // connect, list the tools, run a few searches, and print short results.
 //
 //   npm run preview                  (in another terminal)
-//   npm run try-mcp                  (uses http://localhost:8787/recipe-search/mcp)
-//   npm run try-mcp -- https://kylepace.dev/recipe-search/mcp
+//   npm run try-mcp                  (uses http://localhost:8787/mcp)
+//   npm run try-mcp -- https://findish.now/mcp
 //
 // Exits non-zero if anything fails, so it works as a check after a deploy.
 import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/client';
 
-const url = process.argv[2] ?? 'http://localhost:8787/recipe-search/mcp';
+const url = process.argv[2] ?? 'http://localhost:8787/mcp';
 const client = new Client({ name: 'try-script', version: '0.1.0' });
 await client.connect(new StreamableHTTPClientTransport(new URL(url)));
 const info = client.getServerVersion();

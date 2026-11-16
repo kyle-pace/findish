@@ -1,11 +1,12 @@
 ---
-// How Recipe search is built: the technical version of the About page, for the curious.
+// How Findish is built: the technical version of the About page, for the curious.
 // Diagrams are inline SVG in the lab's own colors, each with a title, a description and
 // the same facts in the text. Counts come from the index.
 import LabLayout from 'kp-design/layouts/LabLayout.astro';
-import '../../styles/theme.css';
+import { SITE, BACK } from '../lib/site';
+import '../styles/theme.css';
 // Imported, not read from disk: the Cloudflare adapter prerenders inside its own runtime.
-import indexJson from '../../../public/recipe-search/index.json';
+import indexJson from '../../public/index.json';
 const index: any = indexJson;
 const n = (x: number) => x.toLocaleString('en-US');
 const recipes: number = index.recipes.length;
@@ -14,18 +15,22 @@ const creators: number = index.sources.length;
 ---
 
 <LabLayout
-  lab={{ name: 'the search', href: '/recipe-search/' }}
-  about="/recipe-search/about/"
-  title="How Recipe search is built"
+  site={SITE}
+  backHref={BACK.href}
+  backLabel={BACK.label}
+  backShort={BACK.short}
+  lab={{ name: 'the search', href: '/' }}
+  about="/about/"
+  title="How Findish is built"
   description="The technical version: a polite weekly crawler, one small index, and a search that runs in your browser, plus the MCP server and the Grocery Deals lookup that read the same index."
-  image="/recipe-search/og-about.png"
-  imageAlt="About Recipe search: the title beside the three parts of a search engine."
+  image="/og-about.png"
+  imageAlt="About Findish: the title beside the three parts of a search engine."
   themeColor={{ light: '#f7f8f6', dark: '#151918' }}
 >
   <article class="page">
-    <h1>How Recipe search is built</h1>
+    <h1>How Findish is built</h1>
     <p class="lede">
-      The <a href="/recipe-search/about/">About page</a> explains it as a small search engine: collect, index, search. This is the
+      The <a href="/about/">About page</a> explains it as a small search engine: collect, index, search. This is the
       technical version, with links into <a href="https://github.com/kyle-pace/recipe-search">the code</a>.
     </p>
 
@@ -85,7 +90,7 @@ const creators: number = index.sources.length;
         </li>
         <li>
           <strong>No search server.</strong> The index is a few hundred kilobytes, so the browser downloads it once and searches it
-          locally. The same file feeds the MCP server (<code>src/pages/recipe-search/mcp.ts</code>) and the Grocery Deals lookup
+          locally. The same file feeds the MCP server (<code>src/pages/mcp.ts</code>) and the Grocery Deals lookup
           (<code>api/with.ts</code>), the only parts that run on the server.
         </li>
       </ol>

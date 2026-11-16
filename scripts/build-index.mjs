@@ -1,4 +1,4 @@
-// Builds the search index the page loads: public/recipe-search/index.json.
+// Builds the search index the page loads: public/index.json.
 // Reads what the crawler kept (data/<id>.json) and matches every ingredient line to a
 // KitchenCatalog id (vendor/kitchen-catalog), so "scallions" and "green onion" find the
 // same recipes. Runs before every build (npm run build), so each weekly crawl that
@@ -13,7 +13,7 @@ import { load, match } from '../vendor/kitchen-catalog/catalog.mjs';
 import { readSources } from '../crawler/lib/sources.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const out = join(root, 'public/recipe-search/index.json');
+const out = join(root, 'public/index.json');
 const report = process.argv.includes('--report');
 
 // The recipe sources come from KitchenCatalog (vendor/kitchen-catalog/sources.json).

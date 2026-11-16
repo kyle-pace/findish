@@ -1,5 +1,5 @@
 # Outside hosts this project talks to, beyond its own domain (see the principles).
-# A copy is published at kylepace.dev/recipe-search/allowed-hosts.txt (the repo is
+# A copy is published at findish.now/allowed-hosts.txt (the repo is
 # private) for the Connections page. Drop a photo host if its site blocks us or asks.
 
 # Recipe photos from The Woks of Life, on its own results, lazily and with no referrer. Approved by Kyle, 2026-11-08.

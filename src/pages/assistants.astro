@@ -1,14 +1,15 @@
 ---
-// Recipe search for AI assistants, at /recipe-search/assistants/: what the MCP server is
-// (src/pages/recipe-search/mcp.ts), a button that opens Claude's "add connector" dialog,
+// Findish for AI assistants, at /assistants/: what the MCP server is
+// (src/pages/mcp.ts), a button that opens Claude's "add connector" dialog,
 // the address to copy for any other assistant, things to ask and what it can look up.
 // Modeled on Seattle Grocery Deals' /mcp/ page. A browser that opens the server's own
 // address is sent here (mcp.ts). Counts come from the index at build time.
 import LabLayout from 'kp-design/layouts/LabLayout.astro';
-import '../../styles/theme.css';
-import '../../styles/prose.css';
-import { ADD_TO_CLAUDE, MCP_ADDRESS, PRIVACY_PAGE } from '../../lib/assistants';
-import indexJson from '../../../public/recipe-search/index.json';
+import { SITE, BACK } from '../lib/site';
+import '../styles/theme.css';
+import '../styles/prose.css';
+import { ADD_TO_CLAUDE, MCP_ADDRESS, PRIVACY_PAGE } from '../lib/assistants';
+import indexJson from '../../public/index.json';
 const index: any = indexJson;
 
 const recipes = index.recipes.length.toLocaleString('en-US');
@@ -25,18 +26,22 @@ const asks = [
 ---
 
 <LabLayout
-  lab={{ name: 'the search', href: '/recipe-search/' }}
-  about="/recipe-search/about/"
-  title="Recipe search for AI assistants"
-  description="Connect Claude or another AI assistant to Recipe search and ask it for recipes from a hand-picked set of independent creators, by dish or by what you have."
-  image="/recipe-search/og-assistants.png"
-  imageAlt="Recipe search for AI assistants: the question “I have chicken thighs and bok choy. What can I make?” answered with links to the creators’ own sites."
+  site={SITE}
+  backHref={BACK.href}
+  backLabel={BACK.label}
+  backShort={BACK.short}
+  lab={{ name: 'the search', href: '/' }}
+  about="/about/"
+  title="Findish for AI assistants"
+  description="Connect Claude or another AI assistant to Findish and ask it for recipes from a hand-picked set of independent creators, by dish or by what you have."
+  image="/og-assistants.png"
+  imageAlt="Findish for AI assistants: the question “I have chicken thighs and bok choy. What can I make?” answered with links to the creators’ own sites."
   themeColor={{ light: '#f7f8f6', dark: '#151918' }}
 >
   <article class="prose" data-page="assistants">
     <h1>Ask your AI assistant for recipes</h1>
     <p class="lede">
-      Connect Claude or another AI assistant to Recipe search and it can look through {recipes} recipes from {creators} creators I trust: by dish,
+      Connect Claude or another AI assistant to Findish and it can look through {recipes} recipes from {creators} creators I trust: by dish,
       by what’s in your fridge, or by who made it. It answers with names and links, so you read each recipe on the creator’s own site.
     </p>
 
@@ -80,7 +85,7 @@ const asks = [
         </li>
       </ul>
       <p>
-        It’s the same index as <a href="/recipe-search/">the search page</a>, updated every week. It can only look things up; it can’t change
+        It’s the same index as <a href="/">the search page</a>, updated every week. It can only look things up; it can’t change
         anything.
       </p>
     </section>
@@ -97,13 +102,13 @@ const asks = [
           It keeps nothing about you or what you ask, and it isn’t counted in analytics. Your assistant has its own privacy rules for your
           conversations. More on the <a href={PRIVACY_PAGE}>privacy page</a>.
         </li>
-        <li>It covers only the creators on the <a href="/recipe-search/about/#who">About page</a>. For anything else, your assistant will look elsewhere.</li>
+        <li>It covers only the creators on the <a href="/about/#who">About page</a>. For anything else, your assistant will look elsewhere.</li>
       </ul>
     </section>
   </article>
 
   <script>
-    import '../../scripts/assistants';
+    import '../scripts/assistants';
   </script>
 </LabLayout>
 

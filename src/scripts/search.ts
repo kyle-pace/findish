@@ -1,4 +1,4 @@
-// Recipe search, in the browser. Loads the index once (about 290 KB over the wire), then
+// Findish, in the browser. Loads the index once (about 290 KB over the wire), then
 // every keystroke searches it locally: no server, no search service, nothing typed ever
 // leaves the page.
 //
@@ -137,7 +137,7 @@ const creatorOfChannel = (k: number) => data.videos.sources[k].site || data.vide
 
 async function load() {
   try {
-    const res = await fetch('/recipe-search/index.json');
+    const res = await fetch('/index.json');
     if (!res.ok) throw new Error(String(res.status));
     data = await res.json();
   } catch {
@@ -960,7 +960,7 @@ function buildStart() {
   // Two creators, not all of them: the full list (with ways to support each) is on About.
   const who = creators.slice(0, 2).map((c) => `<button type="button" data-creator="${esc(c.id)}">${esc(c.name)}</button>`);
   $('creators').innerHTML = keepPunct(
-    `Or start with a creator, like ${orList(who)}. <a href="/recipe-search/about/#who">See all ${creators.length}</a>.`,
+    `Or start with a creator, like ${orList(who)}. <a href="/about/#who">See all ${creators.length}</a>.`,
   );
 }
 

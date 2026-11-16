@@ -7,6 +7,7 @@
 // change this page and its date in the same piece of work.
 import LabLayout from 'kp-design/layouts/LabLayout.astro';
 import { SITE } from '../lib/site';
+import SiteHead from '../components/SiteHead.astro';
 import '../styles/theme.css';
 import '../styles/prose.css';
 import { ASSISTANTS_PAGE } from '../lib/assistants';
@@ -25,6 +26,7 @@ const updated = 'November 16, 2026';
   imageAlt="Findish privacy: no accounts, no ads, nothing sold."
   themeColor={{ light: '#f7f8f6', dark: '#151918' }}
 >
+  <SiteHead />
   <article class="prose" data-page="privacy">
     <h1>Findish privacy</h1>
     <p class="updated">For the search page, its server for AI assistants and the weekly program that collects recipes. Updated {updated}.</p>

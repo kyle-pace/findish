@@ -4,6 +4,7 @@
 // the same facts in the text. Counts come from the index.
 import LabLayout from 'kp-design/layouts/LabLayout.astro';
 import { SITE } from '../lib/site';
+import SiteHead from '../components/SiteHead.astro';
 import '../styles/theme.css';
 // Imported, not read from disk: the Cloudflare adapter prerenders inside its own runtime.
 import indexJson from '../../public/index.json';
@@ -25,6 +26,7 @@ const creators: number = index.sources.length;
   imageAlt="About Findish: the title beside the three parts of a search engine."
   themeColor={{ light: '#f7f8f6', dark: '#151918' }}
 >
+  <SiteHead />
   <article class="page">
     <h1>How Findish is built</h1>
     <p class="lede">

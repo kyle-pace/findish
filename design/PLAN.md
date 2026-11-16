@@ -17,6 +17,10 @@
 
 The other two directions considered: a cookbook-index list (one column, time on a dotted leader) and a contact sheet of square photos. Their stylesheets are on the `design-options` branch.
 
+## The wordmark (November 16, 2026)
+
+Findish is set in Atkinson bold with "dish" sitting in a small nori bowl: a solid half-round with a flat rim, so it reads as find + dish. A filled bowl, not a curved line, so it doesn't read as a smile. It's text plus one CSS shape (`src/components/Wordmark.astro`), so it scales, follows light and dark, and screen readers hear "Findish". It's the big name on the home page, the small link home in results, and a link home at the top of every other page (`src/components/SiteHead.astro`, since there's no top bar). The bowl is the one extra place nori appears. The home share card (`design/og.html`) uses it too.
+
 ## The subject
 
 People look for a recipe three ways: by dish ("mapo tofu"), by what they have ("ginger, tofu") and by who they trust ("something from Maangchi"). One box takes all three. Words are words; an ingredient or a creator picked from the suggestions becomes a tag in the box, marked like a highlighter on a shopping list.

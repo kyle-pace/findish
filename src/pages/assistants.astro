@@ -6,6 +6,7 @@
 // address is sent here (mcp.ts). Counts come from the index at build time.
 import LabLayout from 'kp-design/layouts/LabLayout.astro';
 import { SITE } from '../lib/site';
+import SiteHead from '../components/SiteHead.astro';
 import '../styles/theme.css';
 import '../styles/prose.css';
 import { ADD_TO_CLAUDE, MCP_ADDRESS, PRIVACY_PAGE } from '../lib/assistants';
@@ -36,6 +37,7 @@ const asks = [
   imageAlt="Findish for AI assistants: the question “I have chicken thighs and bok choy. What can I make?” answered with links to the creators’ own sites."
   themeColor={{ light: '#f7f8f6', dark: '#151918' }}
 >
+  <SiteHead />
   <article class="prose" data-page="assistants">
     <h1>Ask your AI assistant for recipes</h1>
     <p class="lede">

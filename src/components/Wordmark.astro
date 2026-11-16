@@ -1,0 +1,41 @@
+---
+// The Findish wordmark: the name in Atkinson bold, with "dish" sitting in a shallow nori
+// bowl, so it reads as find + dish (a solid half-round with a flat rim, not a curved line, so it reads as a bowl and not a smile). Pure text and CSS: it scales with the font size it's
+// given, follows light and dark mode, and screen readers hear one word, "Findish".
+---
+
+<span class="wordmark">Fin<span class="wordmark-dish">dish</span></span>
+
+<style>
+  .wordmark {
+    display: inline-block;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    white-space: nowrap;
+  }
+
+  .wordmark-dish {
+    position: relative;
+    display: inline-block;
+    padding-inline: 0.02em 0.04em;
+  }
+
+  /* The bowl: a solid half-round with a flat rim, under "dish", in the one accent color.
+     Decoration only; the letters sit just above its rim. */
+  .wordmark-dish::after {
+    content: '';
+    position: absolute;
+    inset-inline: -0.04em 0;
+    bottom: -0.2em;
+    height: 0.2em;
+    background: var(--accent-ink);
+    border-radius: 0.02em 0.02em 50% 50% / 0.02em 0.02em 100% 100%;
+    pointer-events: none;
+  }
+
+  @media (forced-colors: active) {
+    .wordmark-dish::after {
+      background: CanvasText;
+    }
+  }
+</style>

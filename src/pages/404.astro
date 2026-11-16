@@ -2,6 +2,7 @@
 // Not found, for any address findish.now doesn't have.
 import LabLayout from 'kp-design/layouts/LabLayout.astro';
 import { SITE } from '../lib/site';
+import SiteHead from '../components/SiteHead.astro';
 import '../styles/theme.css';
 import '../styles/prose.css';
 ---
@@ -18,6 +19,7 @@ import '../styles/prose.css';
   themeColor={{ light: '#f7f8f6', dark: '#151918' }}
   noindex
 >
+  <SiteHead />
   <article class="prose">
     <h1>Page not found</h1>
     <p>There’s nothing at this address. <a href="/">Search for a recipe</a> instead.</p>

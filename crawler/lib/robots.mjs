@@ -82,3 +82,18 @@ export function robotsFor(text, token) {
     },
   };
 }
+
+/**
+ * Rules for a crawler that has gone by more than one name. A path is allowed only if
+ * every name may fetch it, and the longest Crawl-delay wins, so a site that blocked or
+ * slowed an old name (RecipeSearchBot, before the crawler became FindishBot on
+ * 2026-11-16) stays blocked or slowed under the new one.
+ */
+export function robotsForNames(text, tokens) {
+  const each = tokens.map((t) => robotsFor(text, t));
+  const delays = each.map((r) => r.crawlDelay).filter((d) => d != null);
+  return {
+    crawlDelay: delays.length ? Math.max(...delays) : null,
+    allowed: (urlOrPath) => each.every((r) => r.allowed(urlOrPath)),
+  };
+}

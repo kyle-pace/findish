@@ -14,7 +14,7 @@ import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { robotsFor } from './lib/robots.mjs';
+import { robotsForNames } from './lib/robots.mjs';
 import { readSitemaps } from './lib/sitemap.mjs';
 import { extractRecipe } from './lib/extract.mjs';
 import { parseFeed } from './lib/feed.mjs';
@@ -23,7 +23,10 @@ import { fetchChannelVideos } from './lib/youtube.mjs';
 import { readSources } from './lib/sources.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const BOT = 'RecipeSearchBot';
+// FindishBot since 2026-11-16 (it was RecipeSearchBot). Rules written for the old name
+// still apply: a path has to be allowed for both names.
+const BOT = 'FindishBot';
+const OLD_NAMES = ['RecipeSearchBot'];
 const UA = `Mozilla/5.0 (compatible; ${BOT}/0.1; +https://findish.now/about/)`;
 const MIN_DELAY_MS = 3000;
 const REFETCH_WITHOUT_LASTMOD_DAYS = 90;
@@ -82,7 +85,7 @@ async function crawlSite(src) {
   const robotsRes = await get(`${src.site}/robots.txt`).catch((err) => ({ status: 0, error: err.message }));
   if ([401, 403, 429].includes(robotsRes.status)) return { ...out, result: 'blocked', error: `HTTP ${robotsRes.status} on robots.txt` };
   if (robotsRes.status === 0 || robotsRes.status >= 500) return { ...out, result: 'error', error: `robots.txt unreachable (${robotsRes.error || 'HTTP ' + robotsRes.status})` };
-  const robots = robotsFor(robotsRes.status === 200 ? robotsRes.text : '', BOT);
+  const robots = robotsForNames(robotsRes.status === 200 ? robotsRes.text : '', [BOT, ...OLD_NAMES]);
   const sitemapUrl = new URL(src.sitemap, src.site).href;
   if (!robots.allowed('/') && !robots.allowed(sitemapUrl)) return { ...out, result: 'blocked', error: 'robots.txt disallows us' };
   // A site can ask for more time between requests (robots.txt Crawl-delay), and so can
@@ -201,7 +204,7 @@ async function crawlFeed(src) {
   const robotsRes = await get(`${src.site}/robots.txt`).catch((err) => ({ status: 0, error: err.message }));
   if ([401, 403, 429].includes(robotsRes.status)) return { ...out, result: 'blocked', error: `HTTP ${robotsRes.status} on robots.txt` };
   if (robotsRes.status === 0 || robotsRes.status >= 500) return { ...out, result: 'error', error: `robots.txt unreachable (${robotsRes.error || 'HTTP ' + robotsRes.status})` };
-  const robots = robotsFor(robotsRes.status === 200 ? robotsRes.text : '', BOT);
+  const robots = robotsForNames(robotsRes.status === 200 ? robotsRes.text : '', [BOT, ...OLD_NAMES]);
   if (!robots.allowed(feedUrl)) return { ...out, result: 'blocked', error: 'robots.txt disallows the feed' };
 
   await sleep(Math.max(delayMs, (robots.crawlDelay || 0) * 1000));

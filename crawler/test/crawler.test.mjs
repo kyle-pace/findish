@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { robotsFor } from '../lib/robots.mjs';
+import { robotsFor, robotsForNames } from '../lib/robots.mjs';
 import { parseSitemap, readSitemaps } from '../lib/sitemap.mjs';
 import { extractRecipe } from '../lib/extract.mjs';
 import { ingredientName } from '../lib/ingredients.mjs';
@@ -310,4 +310,17 @@ test('sources: a source with a feed is read from its feed', () => {
   const collect = { status: 'crawl', reason: 'r', checked: '2026-11-11' };
   const out = adapt([{ id: 'lina', name: "Lina's table", url: 'https://lina.substack.com/about', kind: 'site', collect, feed: { url: '/feed', default_cuisine: 'Romanian' } }]);
   assert.deepEqual(out.recipes, [{ id: 'lina', name: "Lina's table", site: 'https://lina.substack.com', feed: '/feed', default_cuisine: 'Romanian' }]);
+});
+
+test('rules for the old name still apply after the rename to FindishBot', () => {
+  const names = ['FindishBot', 'RecipeSearchBot'];
+  const blocked = robotsForNames('User-agent: RecipeSearchBot\nDisallow: /\n', names);
+  assert.equal(blocked.allowed('/recipes/mapo-tofu/'), false);
+  const slowed = robotsForNames('User-agent: *\nCrawl-delay: 2\n\nUser-agent: RecipeSearchBot\nCrawl-delay: 12\n', names);
+  assert.equal(slowed.crawlDelay, 12);
+  const newOnly = robotsForNames('User-agent: FindishBot\nDisallow: /private/\n', names);
+  assert.equal(newOnly.allowed('/private/x'), false);
+  assert.equal(newOnly.allowed('/recipes/x'), true);
+  assert.equal(robotsForNames('', names).allowed('/x'), true);
+  assert.equal(robotsForNames('', names).crawlDelay, null);
 });

@@ -3,11 +3,10 @@
 // whether people find the server and try to connect it; `added_from` names the page.
 import { track } from 'kp-design/analytics';
 
-const EXPERIMENT = 'recipe-search';
 const from = document.body.querySelector<HTMLElement>('[data-page]')?.dataset.page || 'unknown';
 
 document.querySelectorAll<HTMLAnchorElement>('a[data-add-to-claude]').forEach((a) =>
-  a.addEventListener('click', () => track('Opened Add to Claude', { experiment: EXPERIMENT, added_from: from })),
+  a.addEventListener('click', () => track('Opened Add to Claude', { added_from: from })),
 );
 
 // Copies the address and says so in the status beside the button, which screen readers announce.
@@ -17,7 +16,7 @@ document.querySelectorAll<HTMLButtonElement>('button[data-copy]').forEach((butto
     try {
       await navigator.clipboard.writeText(button.dataset.copy!);
       status.textContent = 'Copied';
-      track('Copied MCP Address', { experiment: EXPERIMENT, added_from: from });
+      track('Copied MCP Address', { added_from: from });
     } catch {
       status.textContent = 'Couldn’t copy here. Select the address and copy it yourself.';
     }

@@ -248,7 +248,7 @@ import { ADD_TO_CLAUDE, ASSISTANTS_PAGE, PRIVACY_PAGE } from '../lib/assistants'
     import { track } from 'kp-design/analytics';
     document.querySelector('.prose')!.addEventListener('click', (e) => {
       const a = (e.target as HTMLElement).closest<HTMLAnchorElement>('a[data-support]');
-      if (a) track('Opened Support Link', { experiment: 'recipe-search', source: a.dataset.support!, link_kind: a.dataset.kind || 'link', opened_from: 'about' });
+      if (a) track('Opened Support Link', { source: a.dataset.support!, link_kind: a.dataset.kind || 'link', opened_from: 'about' });
     });
   </script>
 </LabLayout>

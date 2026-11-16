@@ -1,5 +1,5 @@
 {
- "run": "2026-11-09T21:26:48.058Z",
+ "run": "2026-11-16T21:02:16.469Z",
  "options": {
   "limit": null,
   "delayMs": 4000
@@ -9,15 +9,15 @@
    "id": "woks",
    "name": "The Woks of Life",
    "result": "ok",
-   "fetched": 4,
+   "fetched": 6,
    "added": 2,
-   "updated": 1,
+   "updated": 2,
    "removed": 0,
-   "noRecipe": 1,
+   "noRecipe": 2,
    "httpErrors": {},
-   "sitemapPages": 1590,
+   "sitemapPages": 1592,
    "waiting": 0,
-   "count": 1370
+   "count": 1372
   },
   "joc": {
    "id": "joc",
@@ -29,22 +29,22 @@
    "id": "htk",
    "name": "Hot Thai Kitchen",
    "result": "ok",
-   "fetched": 3,
-   "added": 0,
-   "updated": 2,
+   "fetched": 4,
+   "added": 1,
+   "updated": 1,
    "removed": 0,
-   "noRecipe": 1,
+   "noRecipe": 2,
    "httpErrors": {},
-   "sitemapPages": 474,
+   "sitemapPages": 475,
    "waiting": 0,
-   "count": 414
+   "count": 415
   },
   "sk": {
    "id": "sk",
    "name": "Smitten Kitchen",
    "result": "ok",
-   "fetched": 3,
-   "added": 1,
+   "fetched": 2,
+   "added": 0,
    "updated": 2,
    "removed": 0,
    "noRecipe": 0,
@@ -77,15 +77,15 @@
    "id": "rte",
    "name": "RecipeTin Eats",
    "result": "ok",
-   "fetched": 2,
-   "added": 0,
-   "updated": 1,
+   "fetched": 27,
+   "added": 3,
+   "updated": 23,
    "removed": 0,
    "noRecipe": 1,
    "httpErrors": {},
-   "sitemapPages": 1748,
+   "sitemapPages": 1751,
    "waiting": 0,
-   "count": 1538
+   "count": 1541
   },
   "rtj": {
    "id": "rtj",
@@ -105,19 +105,33 @@
    "id": "sudachi",
    "name": "Sudachi",
    "result": "ok",
-   "fetched": 108,
-   "added": 96,
-   "updated": 2,
+   "fetched": 25,
+   "added": 2,
+   "updated": 16,
    "removed": 0,
-   "noRecipe": 10,
+   "noRecipe": 7,
    "httpErrors": {},
-   "sitemapPages": 606,
+   "sitemapPages": 609,
    "waiting": 0,
-   "count": 491
+   "count": 493
   },
   "mwl": {
    "id": "mwl",
    "name": "Made With Lau",
+   "result": "ok",
+   "fetched": 198,
+   "added": 1,
+   "updated": 197,
+   "removed": 0,
+   "noRecipe": 0,
+   "httpErrors": {},
+   "sitemapPages": 198,
+   "waiting": 0,
+   "count": 198
+  },
+  "ab": {
+   "id": "ab",
+   "name": "Alton Brown",
    "result": "ok",
    "fetched": 0,
    "added": 0,
@@ -125,53 +139,33 @@
    "removed": 0,
    "noRecipe": 0,
    "httpErrors": {},
-   "sitemapPages": 197,
-   "waiting": 0,
-   "count": 197
-  },
-  "ab": {
-   "id": "ab",
-   "name": "Alton Brown",
-   "result": "ok",
-   "fetched": 947,
-   "added": 946,
-   "updated": 0,
-   "removed": 0,
-   "noRecipe": 1,
-   "httpErrors": {},
    "sitemapPages": 947,
    "waiting": 0,
    "count": 946
-  },
-  "kenji": {
-   "id": "kenji",
-   "name": "J. Kenji López-Alt",
-   "result": "ok",
-   "count": 876
   },
   "woks-yt": {
    "id": "woks-yt",
    "name": "The Woks of Life",
    "result": "ok",
-   "count": 403
-  },
-  "htk-yt": {
-   "id": "htk-yt",
-   "name": "Hot Thai Kitchen",
-   "result": "ok",
-   "count": 831
-  },
-  "sk-yt": {
-   "id": "sk-yt",
-   "name": "Smitten Kitchen",
-   "result": "ok",
-   "count": 90
+   "count": 406
   },
   "joc-yt": {
    "id": "joc-yt",
    "name": "Just One Cookbook",
    "result": "ok",
-   "count": 588
+   "count": 591
+  },
+  "htk-yt": {
+   "id": "htk-yt",
+   "name": "Hot Thai Kitchen",
+   "result": "ok",
+   "count": 834
+  },
+  "sk-yt": {
+   "id": "sk-yt",
+   "name": "Smitten Kitchen",
+   "result": "ok",
+   "count": 91
   },
   "maangchi-yt": {
    "id": "maangchi-yt",
@@ -179,17 +173,11 @@
    "result": "ok",
    "count": 611
   },
-  "ccd": {
-   "id": "ccd",
-   "name": "Chinese Cooking Demystified",
-   "result": "ok",
-   "count": 362
-  },
   "rte-yt": {
    "id": "rte-yt",
    "name": "RecipeTin Eats",
    "result": "ok",
-   "count": 1433
+   "count": 1436
   },
   "rtj-yt": {
    "id": "rtj-yt",
@@ -201,13 +189,31 @@
    "id": "sudachi-yt",
    "name": "Sudachi",
    "result": "ok",
-   "count": 572
+   "count": 574
   },
   "mwl-yt": {
    "id": "mwl-yt",
    "name": "Made With Lau",
    "result": "ok",
    "count": 605
+  },
+  "ab-yt": {
+   "id": "ab-yt",
+   "name": "Alton Brown",
+   "result": "ok",
+   "count": 265
+  },
+  "kenji": {
+   "id": "kenji",
+   "name": "J. Kenji López-Alt",
+   "result": "ok",
+   "count": 878
+  },
+  "ccd": {
+   "id": "ccd",
+   "name": "Chinese Cooking Demystified",
+   "result": "ok",
+   "count": 362
   },
   "rhs-yt": {
    "id": "rhs-yt",
@@ -219,13 +225,7 @@
    "id": "fca",
    "name": "French Cooking Academy",
    "result": "ok",
-   "count": 544
-  },
-  "ab-yt": {
-   "id": "ab-yt",
-   "name": "Alton Brown",
-   "result": "ok",
-   "count": 264
+   "count": 546
   }
  },
  "alerts": []

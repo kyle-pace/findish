@@ -51,13 +51,18 @@ const CUISINE = {
   'southeast asian': 'Asian',
   'western': 'Western', // what the sites wrote; RecipeTin Eats is Australian, so not "American"
   'north american': 'American',
+  'american chinese': 'Chinese American',
+  'american-italian': 'Italian American',
+  'australia': 'Australian',
+  'asian american fusion': 'Fusion',
 };
 const cuisineOf = (c, fallback) => {
   const raw = decode(c || fallback || '').split(/[,;|]/)[0].trim();
   if (!raw) return '';
-  const key = raw.toLowerCase();
+  // "Italian-esque" is a site's way of saying "loosely Italian": file it under Italian.
+  const key = raw.toLowerCase().replace(/[-\s]?esque$/, '');
   if (CUISINE[key]) return CUISINE[key];
-  return raw
+  return key
     .split('/')[0]
     .trim()
     .replace(/\b\w/g, (ch) => ch.toUpperCase())

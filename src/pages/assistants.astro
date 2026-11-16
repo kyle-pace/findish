@@ -5,7 +5,7 @@
 // Modeled on Seattle Grocery Deals' /mcp/ page. A browser that opens the server's own
 // address is sent here (mcp.ts). Counts come from the index at build time.
 import LabLayout from 'kp-design/layouts/LabLayout.astro';
-import { SITE, BACK } from '../lib/site';
+import { SITE } from '../lib/site';
 import '../styles/theme.css';
 import '../styles/prose.css';
 import { ADD_TO_CLAUDE, MCP_ADDRESS, PRIVACY_PAGE } from '../lib/assistants';
@@ -27,9 +27,7 @@ const asks = [
 
 <LabLayout
   site={SITE}
-  backHref={BACK.href}
-  backLabel={BACK.label}
-  backShort={BACK.short}
+  bar={false}
   lab={{ name: 'the search', href: '/' }}
   about="/about/"
   title="Findish for AI assistants"

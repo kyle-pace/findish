@@ -1,16 +1,14 @@
 ---
 // Not found, for any address findish.now doesn't have.
 import LabLayout from 'kp-design/layouts/LabLayout.astro';
-import { SITE, BACK } from '../lib/site';
+import { SITE } from '../lib/site';
 import '../styles/theme.css';
 import '../styles/prose.css';
 ---
 
 <LabLayout
   site={SITE}
-  backHref={BACK.href}
-  backLabel={BACK.label}
-  backShort={BACK.short}
+  bar={false}
   lab={{ name: 'the search', href: '/' }}
   about="/about/"
   title="Page not found"

@@ -6,7 +6,7 @@
 // If anything here changes (a new service, a new kind of data, Session Replay's rate),
 // change this page and its date in the same piece of work.
 import LabLayout from 'kp-design/layouts/LabLayout.astro';
-import { SITE, BACK } from '../lib/site';
+import { SITE } from '../lib/site';
 import '../styles/theme.css';
 import '../styles/prose.css';
 import { ASSISTANTS_PAGE } from '../lib/assistants';
@@ -16,9 +16,7 @@ const updated = 'November 16, 2026';
 
 <LabLayout
   site={SITE}
-  backHref={BACK.href}
-  backLabel={BACK.label}
-  backShort={BACK.short}
+  bar={false}
   lab={{ name: 'the search', href: '/' }}
   about="/about/"
   title="Findish privacy"

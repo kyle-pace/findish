@@ -4,7 +4,7 @@
 // user agent, so keep "For site owners" accurate. Built at build time from the same index the search uses
 // (public/index.json, written by scripts/build-index.mjs before astro build).
 import LabLayout from 'kp-design/layouts/LabLayout.astro';
-import { SITE, BACK } from '../lib/site';
+import { SITE } from '../lib/site';
 import '../styles/theme.css';
 import '../styles/prose.css';
 
@@ -40,9 +40,7 @@ import { ADD_TO_CLAUDE, ASSISTANTS_PAGE, PRIVACY_PAGE } from '../lib/assistants'
 
 <LabLayout
   site={SITE}
-  backHref={BACK.href}
-  backLabel={BACK.label}
-  backShort={BACK.short}
+  bar={false}
   lab={{ name: 'the search', href: '/' }}
   about="/about/"
   title="About Findish"

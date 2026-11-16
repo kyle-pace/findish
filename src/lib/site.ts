@@ -9,14 +9,16 @@
 export const SITE = {
   name: 'Findish',
   analytics: { apiKey: '15494c5b9d8a36939245949ac59554ee', liveHosts: ['findish.now'] },
+  // Findish has no top bar (Kyle, 2026-11-16): it's a standalone product, so the way
+  // around, and back to Kyle's other work, is this footer.
   footer: [
+    { href: '/', label: 'Search' },
     { href: '/about/', label: 'About' },
-    { href: '/privacy/', label: 'Privacy' },
     { href: '/assistants/', label: 'For AI assistants' },
+    { href: '/privacy/', label: 'Privacy' },
     { href: 'https://kylepace.dev/accessibility/', label: 'Accessibility' },
+    { href: 'https://kylepace.dev/', label: 'More by Kyle' },
   ],
   accessibilityHref: 'https://kylepace.dev/accessibility/',
 };
 
-/** The bar's link out, now that Findish isn't a lab page. */
-export const BACK = { href: 'https://kylepace.dev/labs/', label: 'More by Kyle', short: 'More by Kyle' };

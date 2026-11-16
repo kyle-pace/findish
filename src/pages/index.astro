@@ -9,19 +9,17 @@
 // It's a standalone lab: LabLayout gives it only a back link, a footer line, display
 // settings and analytics; its look is src/styles/theme.css.
 import LabLayout from 'kp-design/layouts/LabLayout.astro';
-import { SITE, BACK } from '../lib/site';
+import { SITE } from '../lib/site';
 import '../styles/theme.css';
 ---
 
 <LabLayout
   site={SITE}
-  backHref={BACK.href}
-  backLabel={BACK.label}
-  backShort={BACK.short}
+  bar={false}
   lab={{ name: 'the search', href: '/' }}
   about="/about/"
   welcome={{ name: "Findish", text: "One search box across The Woks of Life, Hot Thai Kitchen, Smitten Kitchen and the YouTube channels of the cooks I learn from, from a small index of my own. Search by dish, by what you have or by creator; every result opens on the creator’s site." }}
-  title="Findish"
+  title="Findish: one search for recipes from independent cooks"
   description="Search The Woks of Life, Hot Thai Kitchen, Smitten Kitchen and more at once, by dish, by what you have or by creator. Every recipe opens on its own site."
   image="/og.png"
   imageAlt="Findish: a search box holding ginger and tofu. Recipes from The Woks of Life, Hot Thai Kitchen, Smitten Kitchen and more."
@@ -29,6 +27,15 @@ import '../styles/theme.css';
 >
   <!-- Verifies findish.now in Google Search Console (2026-11-16). Keep it. -->
   <meta slot="head" name="google-site-verification" content="_hVdo4bdUjJmjTStuwg87sYAeLc9GErXZCn0_c9hj9I" />
+  <script slot="head" type="application/ld+json" set:html={JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'Findish',
+    url: 'https://findish.now/',
+    description: 'One search box across recipe sites from independent cooks. Every result opens on the creator’s own site.',
+    potentialAction: { '@type': 'SearchAction', target: 'https://findish.now/?q={search_term_string}', 'query-input': 'required name=search_term_string' },
+    publisher: { '@type': 'Person', '@id': 'https://kylepace.net/#kyle', name: 'Kyle Pace', url: 'https://kylepace.net/' },
+  })} />
   <link slot="head" rel="preload" href="/index.json" as="fetch" crossorigin="anonymous" />
   <script slot="head" is:inline>
     // The About section used to live at #about; it's its own page now.

@@ -60,7 +60,6 @@ type Recipe = {
 
 type Hit = { r: Recipe; score: number; used: number[]; missing: number };
 
-const EXPERIMENT = 'recipe-search';
 const PAGE = 24;
 const TIMES = [15, 30, 45, 60];
 const TRY = ['mapo tofu', 'pad thai', 'dumplings', 'green curry', 'fried rice', 'scones'];
@@ -807,7 +806,6 @@ function pickRandom() {
   box.focus({ preventScroll: true });
   box.scrollIntoView({ block: 'nearest', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
   track('Picked Random Recipe', {
-    experiment: EXPERIMENT,
     source: recipes[next].src.id,
     pool_size: pool.length,
     ingredient_count: state.with.length,
@@ -1121,13 +1119,13 @@ function afterTag() {
 function addIngredient(p: number, from: string) {
   if (!state.with.includes(p)) state.with.push(p);
   afterTag();
-  track('Added Ingredient', { experiment: EXPERIMENT, ingredient_id: data.ing[p][0], added_from: from });
+  track('Added Ingredient', { ingredient_id: data.ing[p][0], added_from: from });
 }
 
 function addCreator(id: string, from: string) {
   state.sites.add(id);
   afterTag();
-  track('Added Creator', { experiment: EXPERIMENT, creator_id: id, added_from: from });
+  track('Added Creator', { creator_id: id, added_from: from });
 }
 
 function submit() {
@@ -1154,7 +1152,6 @@ function submit() {
 function searched() {
   if (isBlank()) return;
   track('Searched Recipes', {
-    experiment: EXPERIMENT,
     search_type: state.q && state.with.length ? 'both' : state.q ? 'words' : state.with.length ? 'ingredients' : state.sites.size ? 'creator' : 'filters',
     ingredient_count: state.with.length,
     creator_count: state.sites.size,
@@ -1166,7 +1163,6 @@ function searched() {
 function openedRecipe(source: string, position: number, from: string, key = '') {
   // recipe_key ("woks:/mapo-tofu/") is what the daily popularity count adds up.
   track('Opened Recipe', {
-    experiment: EXPERIMENT,
     source,
     position,
     opened_from: from,
@@ -1314,9 +1310,9 @@ app.addEventListener('click', (e) => {
   } else if (el.dataset.srcId) {
     openedRecipe(el.dataset.srcId, Number(el.dataset.pos || 0), el.dataset.from || 'results', el.dataset.key);
   } else if (el.dataset.support) {
-    track('Opened Support Link', { experiment: EXPERIMENT, source: el.dataset.support, link_kind: el.dataset.kind || 'link', opened_from: el.dataset.from || 'results' });
+    track('Opened Support Link', { source: el.dataset.support, link_kind: el.dataset.kind || 'link', opened_from: el.dataset.from || 'results' });
   } else if (el.dataset.other) {
-    track('Opened Other Search', { experiment: EXPERIMENT, site: el.dataset.other });
+    track('Opened Other Search', { site: el.dataset.other });
   }
 });
 

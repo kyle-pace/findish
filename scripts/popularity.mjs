@@ -5,7 +5,7 @@
 //
 //   AMPLITUDE_API_KEY=… AMPLITUDE_SECRET_KEY=… node scripts/popularity.mjs
 //
-// The keys are the kylepace.dev project's (902556), kept in the GitHub Actions secrets
+// The keys are the Findish Amplitude project's, kept in the GitHub Actions secrets
 // AMPLITUDE_API_KEY and AMPLITUDE_SECRET_KEY. Never in code or a chat. Without them this
 // does nothing, so the build still works.
 import { writeFileSync, readFileSync, existsSync } from 'node:fs';
@@ -29,7 +29,6 @@ const end = new Date();
 const start = new Date(end.getTime() - DAYS * 86400000);
 const e = {
   event_type: 'Opened Recipe',
-  filters: [{ subprop_type: 'event', subprop_key: 'experiment', subprop_op: 'is', subprop_value: ['recipe-search'] }],
   group_by: [{ type: 'event', value: 'recipe_key' }],
 };
 const url =

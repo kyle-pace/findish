@@ -24,7 +24,7 @@
     "@modelcontextprotocol/server": "^2.4.0",
     "agents": "^0.33.0",
     "astro": "^7.4.7",
-    "kp-design": "github:kyle-pace/kp-design#0602e7df5a52e99ded37b9e18dc65bf8a2c5006b",
+    "kp-design": "github:kyle-pace/kp-design#2b16a746e30554a31e4457ed0ef2b295a087d6e9",
     "zod": "^4.6.7"
   },
   "devDependencies": {

@@ -219,6 +219,24 @@ test('a video whose name says vegan is not flagged for the item its name matched
   assert.equal(nameFlags('Salted Duck Eggs', EGG), EGG);
 });
 
+test('birds, cuts and fish the lists once missed are flagged; goat cheese is cheese', () => {
+  for (const line of ['cornish game hen', 'chuck roast', 'top sirloin', 'goat shoulder']) assert.ok(has(wordFlags(line, { line: true }), MEAT), line);
+  for (const line of ['whiting', 'semi dried whiting fillets', 'flounder fillets', 'kamaboko', 'yellowtail collars']) assert.ok(has(wordFlags(line, { line: true }), FISH), line);
+  assert.ok(has(wordFlags('shumai', { line: true }), PORK));
+  assert.ok(has(titleFlags('Bento Box – Shumai Bento'), MEAT));
+  assert.ok(has(titleFlags('Cornish Game Hen: Spatchcock Hen'), MEAT));
+  assert.equal(titleFlags('Hen of the Woods Stir-Fry') & VEGETARIAN, 0);
+  assert.equal(wordFlags('goat cheese', { line: true }), DAIRY);
+  assert.equal(wordFlags('goat’s milk yogurt', { line: true }) & VEGETARIAN, 0);
+});
+
+test('white chocolate has milk in it; plain and dark chocolate are left to the list', () => {
+  assert.ok(has(wordFlags('white chocolate chips', { line: true }), DAIRY));
+  assert.ok(has(wordFlags('milk chocolate block', { line: true }), DAIRY));
+  assert.equal(wordFlags('dark chocolate', { line: true }) & VEGAN, 0);
+  assert.equal(wordFlags('chocolate chips', { line: true }) & VEGAN, 0);
+});
+
 test('the groups a search can leave out each have an id, a name and one flag', () => {
   assert.deepEqual(GROUPS.map((g) => g[0]), ['any-dairy', 'any-egg', 'any-nuts', 'any-shellfish', 'any-pork', 'any-meat', 'any-seafood']);
   for (const [, name, flag] of GROUPS) assert.ok(name && flag > 0 && flag < ALL && (flag & (flag - 1)) === 0);

@@ -471,3 +471,26 @@ test('the quickest and the newest keep recipes named for the search above ones t
   const quick = sortHits(find({ q: 'dumplings' }), 'quickest').filter((h) => h.named);
   for (let i = 1; i < quick.length; i++) assert.ok((quick[i - 1].r.min ?? 1e9) <= (quick[i].r.min ?? 1e9));
 });
+
+test('a number of minutes in a dish’s name is set aside when nothing is called that', () => {
+  const q = queryWords(ready, '7 minute eggs');
+  assert.deepEqual(q.words, ['egg']);
+  assert.deepEqual(q.ignored, ['7 minute']);
+  const hits = find({ q: '7 minute eggs' });
+  assert.ok(hits.length >= find({ q: 'eggs' }).length, 'no worse than plain "eggs"');
+  assert.ok(hits.length > 50);
+  // A name that has the number keeps it.
+  const real = ready.recipes.find((r) => /^\d+[- ]minute /i.test(r.name));
+  if (real) assert.equal(queryWords(ready, real.name).ignored.length, 0, real.name);
+  assert.deepEqual(queryWords(ready, '7 minute eggs', { exact: true }).ignored, []);
+});
+
+test('a question’s own words are not searched for: steps, instructions, "goes with", "my mom’s"', () => {
+  assert.deepEqual(queryWords(ready, 'how do I make mapo tofu step by step instructions').words, ['mapo', 'tofu']);
+  assert.ok(find({ q: 'how do I make mapo tofu step by step instructions' }).length >= 5);
+  assert.deepEqual(queryWords(ready, 'what goes with bulgogi').words, ['bulgogi']);
+  assert.ok(!/pop goes/i.test(names(find({ q: 'what goes with bulgogi' }), 1)[0]));
+  const mom = queryWords(ready, 'my mom’s chicken soup');
+  assert.deepEqual(mom.words, ['chicken', 'soup']);
+  assert.deepEqual(mom.fixes, []);
+});

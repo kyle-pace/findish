@@ -53,10 +53,10 @@ export const GROUPS = [
 
 const set = (s) => new Set(s.split(/\s+/).filter(Boolean).flatMap((w) => words(w)));
 
-const PORK_W = set('pork bacon ham sausage chorizo prosciutto pancetta guanciale salami pepperoni spam lard tonkatsu carnitas hotdog mortadella kielbasa bratwurst andouille siu');
+const PORK_W = set('pork bacon ham sausage chorizo prosciutto pancetta guanciale salami pepperoni spam lard tonkatsu carnitas hotdog mortadella kielbasa bratwurst andouille siu shumai siomai');
 const MEAT_W = set(
   'chicken beef lamb mutton veal duck goose turkey steak brisket meatball meatloaf meat wagyu bulgogi pastrami venison rabbit quail liver tripe oxtail tallow suet gelatin gelatine giblet drumstick rib ribeye bone yakitori ' +
-    'schmaltz snail escargot',
+    'schmaltz snail escargot hen poultry capon pheasant squab pigeon partridge boar bison goat elk sirloin chuck lardon nduja chicharron wiener frankfurter foie',
 );
 // Dishes that are meat unless they say otherwise, read in names only (a video has nothing
 // but its name): "Katsudon", "Easy Pho", "The Best Burger". Not read in ingredient lines,
@@ -71,7 +71,8 @@ const MEAT_DISH = set(
 const STOCK_W = set('broth stock bouillon');
 const SHELL_W = set('shrimp prawn crab lobster scallop clam mussel oyster squid calamari octopus crawfish crayfish langoustine abalone cockle shellfish belacan xo');
 const FISH_W = set(
-  'fish salmon tuna cod tilapia halibut trout mackerel sardine anchovy bass snapper barramundi kingfish swordfish catfish eel unagi seafood bonito katsuobushi dashi hondashi roe caviar tobiko ikura mentaiko sashimi surimi worcestershire fishcake',
+  'fish salmon tuna cod tilapia halibut trout mackerel sardine anchovy bass snapper barramundi kingfish swordfish catfish eel unagi seafood bonito katsuobushi dashi hondashi roe caviar tobiko ikura mentaiko sashimi surimi worcestershire fishcake ' +
+    'whiting haddock pollock flounder herring perch carp mahi yellowtail hamachi saba sanma pike monkfish grouper pompano sablefish branzino dace smelt whitebait shirasu niboshi iriko kamaboko chikuwa narutomaki',
 );
 const DAIRY_W = set(
   'butter buttermilk ghee cream milk cheese yogurt parmesan mozzarella cheddar feta ricotta mascarpone paneer gruyere brie camembert gorgonzola halloumi burrata provolone pecorino creme custard gelato whey casein kefir leche queso cheesecake buttercream tzatziki',
@@ -101,6 +102,7 @@ const AFTER = {
   oyster: set('mushroom'),
   seafood: set('mushroom'),
   duck: set('sauce'),
+  goat: set('cheese milk yogurt butter'),
   tonkatsu: set('sauce'),
   butter: set('bean lettuce'),
   fish: set('fragrant mint shaped'),
@@ -148,6 +150,8 @@ function read(text, { line = false, either = false } = {}) {
     if (SHELL_W.has(w)) b |= FISH | SHELLFISH;
     if (FISH_W.has(w)) b |= FISH;
     if (DAIRY_W.has(w)) b |= DAIRY;
+    // White chocolate is made with milk ("milk chocolate" says so itself). Plain or dark may not be.
+    if (w === 'chocolate' && t[i - 1] === 'white') b |= DAIRY;
     if (EGG_W.has(w)) b |= EGG;
     if (OTHER_W.has(w)) b |= OTHER;
     if (NUT_W.has(w)) b |= NUTS;

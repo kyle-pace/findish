@@ -92,12 +92,16 @@ const STOP = new Set(
     'has have had got get give show find looking look like some any all anything everything something ' +
     'recipe recipes easy easiest simple best good great tasty yummy delicious perfect ultimate authentic classic traditional ' +
     'homemade home style version idea ideas dish dishes food meal meals tonight today please really very ' +
-    'quick quickly fast speedy weeknight dinner dinners lunch supper with using without no not from by'
+    'quick quickly fast speedy weeknight dinner dinners lunch supper with using without no not from by ' +
+    // Words of a question, not of a dish: "how do I make mapo tofu step by step instructions",
+    // "what goes with bulgogi", "my mom's chicken soup".
+    'step steps instruction instructions tutorial go goes tell teach learn explain help beginner beginners kid kids mom moms mum mums mother mothers'
   )
     .split(' ')
     .map(norm),
 );
 export const isFiller = (w) => STOP.has(w);
+const TIME_UNIT = new Set(['minute', 'min', 'hour', 'hr'].map(norm));
 // The state an ingredient is in, in its name: "fresh coriander", "coriander leaves", "sesame seeds".
 const FORM = new Set('fresh dried ground whole raw frozen baby leaf seed'.split(' ').map(norm));
 
@@ -554,6 +558,19 @@ export function queryWords(ready, text, { exact = false, typing = false, lenient
         fixes.push(...made);
       } else ws = typed;
     } else fixes.push(...made);
+
+    // 3b. A number and its unit in a dish's name ("7 minute eggs") when nothing is called
+    // that: the dish is what's wanted, so the search goes on without them and says so.
+    if (!typing && ws.length > 2) {
+      const at = ws.findIndex((w, n) => /^\d+$/.test(w) && TIME_UNIT.has(ws[n + 1]));
+      if (at >= 0) {
+        const rest = ws.filter((_, n) => n !== at && n !== at + 1);
+        if (rest.length && countAll(ready, ws, true) === 0 && countAll(ready, rest) > 0) {
+          ignored.push(`${ws[at]} ${ws[at + 1]}`);
+          ws = rest;
+        }
+      }
+    }
 
     // 4. Real words, one letter off, when the search finds almost nothing: "pad tai".
     if (!typing && ws.length > 1) {

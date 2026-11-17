@@ -32,6 +32,7 @@ import type { Creator, Hit, Ready, Recipe, Understood } from '../lib/search-core
 import { looksLikeAsk, words } from '../lib/search-core.mjs';
 import { cleanQ, completions, coverLabel, dishName, goesToAsk, ignoredSentence, linkOnlyTyped, narrowFacets, soleQuery, sortHits, tagOrder, titleFor } from '../lib/page-state.mjs';
 import { KEEP, dropFrom, keysFromHash, listHash, putFirst, readList, recentKey, rememberSearch, searchLabel } from '../lib/kept.mjs';
+import { relatedDishes } from '../lib/related.mjs';
 import { loadIndex } from './index-load.ts';
 
 type Source = { id: string; name: string; site: string; host: string; count: number };
@@ -849,89 +850,9 @@ function renderNarrow(hits: Hit[], loose: boolean) {
     .join(', ')}.`;
 }
 
-/**
- * The index's dish phrases that are some recipe's whole name ("kung pao chicken", not "spicy
- * stir"), by the words a search matches on, each with how many recipes are named for it.
- * Worked out the first time a "Related" line is wanted.
- */
-let dishes: Map<string, { say: string; n: number }> | null = null;
-type Named = Recipe & { phrase: string; core: string[] };
-
-/** The dishes a recipe's name holds: runs of two or three of its words that are in `dishes`. */
-function dishesIn(r: Recipe): string[] {
-  const ws = (r as Named).phrase.trim().split(' ');
-  const out: string[] = [];
-  for (const size of [3, 2])
-    for (let i = 0; i + size <= ws.length; i++) {
-      const key = ws.slice(i, i + size).join(' ');
-      if (dishes!.has(key) && !out.includes(key)) out.push(key);
-    }
-  return out;
-}
-
-/**
- * "Related: twice cooked pork, kung pao chicken." after the results of a dish search: other
- * dishes whose recipes use what sets these results apart (for mapo tofu, doubanjiang and
- * salted black beans rather than garlic), in the same cuisine when the results mostly share
- * one. A dish is offered when a good part of all its recipes are among those. Worked out
- * here from the index; nothing is looked up anywhere. Often there's nothing worth offering,
- * and then there's no line.
- */
-function relatedDishes(hits: Hit[], q: string[]): string[] {
-  if (!data.phrases?.length || hits.length < 3) return [];
-  if (!dishes) {
-    const whole = new Set(recipes.map((r) => (r as Named).core.join(' ')));
-    dishes = new Map();
-    for (const p of data.phrases) {
-      const key = words(p).filter((w) => !core.isFiller(w)).join(' ');
-      // Not an ingredient's name ("soy sauce"), and a dish in its own right.
-      if (whole.has(key) && core.ingredientFor(ready!, p) == null) dishes.set(key, { say: p, n: 0 });
-    }
-    for (const r of recipes) for (const key of dishesIn(r)) dishes.get(key)!.n++;
-  }
-  const top = hits.slice(0, 20);
-  const tally = <T,>(xs: T[]) => {
-    const m = new Map<T, number>();
-    for (const x of xs) m.set(x, (m.get(x) || 0) + 1);
-    return [...m].sort((a, b) => b[1] - a[1]);
-  };
-  // The cuisine most of the top results share, and up to three ingredients that set them
-  // apart: used by a good part of them, and at least three times as often as recipes in general.
-  const [cuisine, n] = tally(top.map((h) => h.r.cuisine).filter(Boolean))[0] || ['', 0];
-  const main = n * 2 >= top.length ? cuisine : '';
-  const apart = tally(top.flatMap((h) => h.r.own))
-    .filter(([, k]) => k >= Math.max(2, top.length / 4))
-    .map(([p, k]) => [p, k / top.length / (ingRecipes[p] / recipes.length)] as const)
-    .filter(([, lift]) => lift >= 3)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 3)
-    .map(([p]) => p);
-  if (!apart.length) return [];
-  const found = new Set(hits.map((h) => h.r.i));
-  const near = new Map<string, number>();
-  for (const r of recipes) {
-    if (found.has(r.i) || (main && r.cuisine !== main)) continue;
-    // Without a shared cuisine to go by, one ingredient in common isn't enough.
-    if (apart.filter((p) => r.pos.has(p)).length < (main ? 1 : Math.min(2, apart.length))) continue;
-    for (const key of dishesIn(r)) if (!q.some((w) => key.split(' ').includes(w))) near.set(key, (near.get(key) || 0) + 1);
-  }
-  const ranked = [...near]
-    .filter(([key, k]) => k >= 2 && k / dishes!.get(key)!.n >= 0.25)
-    .map(([key, k]) => [key, (k / dishes!.get(key)!.n) * Math.log2(1 + k)] as const)
-    .sort((a, b) => b[1] - a[1]);
-  const out: string[] = [];
-  for (const [key] of ranked) {
-    if (out.length === 4) break;
-    // "fried rice" and "egg fried rice" are one idea: the first one stands.
-    const ws = key.split(' ');
-    if (!out.some((k) => k.split(' ').some((w) => ws.includes(w)))) out.push(key);
-  }
-  return out.length > 1 ? out.map((k) => dishes!.get(k)!.say) : [];
-}
-
 function renderRelated(hits: Hit[], q: string[]) {
   const el = $('related');
-  const dishes = q.length && !state.keep && state.picked < 0 ? relatedDishes(hits, q) : [];
+  const dishes = q.length && !state.keep && state.picked < 0 ? relatedDishes(ready!, data.phrases, hits, q) : [];
   el.hidden = !dishes.length;
   if (!dishes.length) return;
   el.innerHTML = keepPunct(`Related: ${dishes.map((d, n) => `<button type="button" data-related="${esc(d)}" data-pos="${n + 1}">${esc(d)}</button>`).join(', ')}.`);

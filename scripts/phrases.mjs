@@ -8,16 +8,33 @@ const EDGE = new Set('with and or of the a an in on for to from by my our your h
 /** Words that say how it's made or served, not what it is: too vague to lead a search. */
 const VAGUE = new Set('one pot pan sheet instant slow cooker air fryer minute minutes ingredient ingredients step way ways made make new favorite favourite ft feat 0'.split(' '));
 
+/** Words that join two halves of one name: "sweet and sour", "salt & pepper". */
+const JOINS = new Set(['and', 'n']);
+/** What can follow a dish's name in a recipe's name: "Mapo Tofu with Pork", "Pad Thai Recipe". */
+const AFTER = new Set('with and in on for or from recipe recipes 0'.split(' '));
+
 /**
- * `names`: every recipe's name. Gives back up to `max` phrases, lowercase, most common
- * first. A phrase must be in at least `min` names; plural and singular count as one phrase
- * (shown the way most names write it); a phrase that is mostly a piece of a longer one is
- * left out. Latin letters only.
+ * `names`: every recipe's name, or `[name, creator]` pairs (the creator is any id). Gives
+ * back up to `max` phrases, lowercase, most common first. Latin letters only. A phrase
+ * must be:
+ * - in at least `min` names, from two creators or more, or in `minOne` names when they're
+ *   all one creator's (a series one site runs, "Pocket Pie Reloaded", isn't a dish). With
+ *   plain names and no creators this rule is skipped;
+ * - where a name ends, or just before "with…", twice or more and in at least `ends` of the
+ *   names it's in:
+ *   "beef chow" (always "beef chow fun"), "Chinese restaurant" (always "…style fried rice")
+ *   and "stir fried" never are, "fried rice" often is;
+ * - not the back half of something: the same word comes before it in most of its names
+ *   ("sauce chicken", always after "soy"), or "and" does ("sour pork", after "sweet and");
+ * - not mostly a piece of one longer phrase ("chicken stir" of "chicken stir fry").
+ * Plural and singular count as one phrase, shown the way most names write it.
  */
-export function dishPhrases(names, { max = 1500, min = 3 } = {}) {
-  /** stemmed key -> { n, forms: Map(surface -> n) } */
+export function dishPhrases(names, { max = 1500, min = 3, minOne = 6, ends = 0.2 } = {}) {
+  /** stemmed key -> { n, size, ended, creators, forms: Map(surface -> n) } */
   const seen = new Map();
-  for (const name of names) {
+  const paired = names.some((x) => Array.isArray(x));
+  for (const item of names) {
+    const [name, creator] = Array.isArray(item) ? item : [item, ''];
     // A possessive ("Dad's Steamed…", "Chef's Secrets") marks a series or a person, not a dish:
     // it becomes a break no phrase runs across.
     const plain = String(name)
@@ -43,8 +60,13 @@ export function dishPhrases(names, { max = 1500, min = 3 } = {}) {
         const key = stems.join(' ');
         if (mine.has(key)) continue;
         mine.add(key);
-        const entry = seen.get(key) || seen.set(key, { n: 0, size, forms: new Map() }).get(key);
+        const entry = seen.get(key) || seen.set(key, { n: 0, size, ended: 0, creators: new Set(), before: new Map(), forms: new Map() }).get(key);
         entry.n++;
+        entry.creators.add(creator);
+        const next = plain[i + size];
+        if (next === undefined || AFTER.has(next)) entry.ended++;
+        const prev = i ? plain[i - 1] : '';
+        entry.before.set(prev, (entry.before.get(prev) || 0) + 1);
         const form = run.join(' ');
         entry.forms.set(form, (entry.forms.get(form) || 0) + 1);
       }
@@ -59,7 +81,17 @@ export function dishPhrases(names, { max = 1500, min = 3 } = {}) {
     const ws = key.split(' ');
     for (const part of [ws.slice(0, -1).join(' '), ws.slice(1).join(' ')]) longer.set(part, Math.max(longer.get(part) || 0, e.n));
   }
-  const kept = all.filter(([key, e]) => e.size < 4 && (longer.get(key) || 0) < 0.6 * e.n);
+  const kept = all.filter(([key, e]) => {
+    if (e.size > 3 || (longer.get(key) || 0) >= 0.6 * e.n) return false;
+    if (paired && e.creators.size < 2 && e.n < minOne) return false;
+    if (e.ended < ends * e.n) return false;
+    if (e.ended < 2) return false;
+    for (const [prev, k] of e.before) if (prev && k >= (JOINS.has(prev) ? 0.5 : 0.6) * e.n) return false;
+    // Never first in a name, and nearly always after one of the same two words: "pepper
+    // chicken" (after "black" or "and"), "sauce chicken" (after "soy" or "oyster").
+    const two = [...e.before.values()].sort((a, b) => b - a).slice(0, 2).reduce((a, b) => a + b, 0);
+    return !(e.n >= 4 && !e.before.has('') && two >= 0.75 * e.n);
+  });
   return kept
     .sort((x, y) => y[1].n - x[1].n || (x[0] < y[0] ? -1 : 1))
     .slice(0, max)

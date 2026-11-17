@@ -304,7 +304,7 @@ const index = {
   groups: GROUPS,
   // Common dish phrases from recipe names, most common first, for the search box's
   // completions and the "Related:" line (scripts/phrases.mjs).
-  phrases: dishPhrases(recipes.map((r) => r[1])),
+  phrases: dishPhrases(recipes.map((r) => [r[1], r[0]])),
   ing,
   recipes,
 };

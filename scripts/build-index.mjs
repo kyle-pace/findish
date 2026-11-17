@@ -318,6 +318,8 @@ const index = {
     // Every site that's crawled, with 0 for one whose data file is missing or empty.
     recipes: Object.fromEntries(sources.recipes.filter((s) => !s.paused).map((s) => [s.id, srcList.find((x) => x.id === s.id)?.count || 0])),
     videos: videoRows,
+    // Switched off on purpose in the list of sources: not a source that went missing.
+    paused: [...sources.recipes, ...(sources.videos || [])].filter((s) => s.paused).map((s) => s.id),
   });
   if (problems.length) {
     console.error(`index: not built. Compared with the last crawl (data/status.json):\n  ${problems.join('\n  ')}`);

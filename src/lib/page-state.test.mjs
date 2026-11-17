@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { cleanQ, tagOrder, titleFor, dishName, ignoredSentence, linkOnlyTyped, goesToAsk, askKey, askMessages, soleQuery, sortHits, coverLabel, narrowFacets, completions } from './page-state.mjs';
+import { readFileSync } from 'node:fs';
+import { underBox, snapTime, timeWords, setFilters, filtersLabel, cleanQ, tagOrder, titleFor, dishName, ignoredSentence, linkOnlyTyped, goesToAsk, askKey, askMessages, soleQuery, sortHits, coverLabel, narrowFacets, completions } from './page-state.mjs';
 
 test('punctuation on the end of a search is not kept in the address', () => {
   assert.equal(cleanQ('mapo tofu.'), 'mapo tofu');
@@ -103,7 +104,7 @@ test('a link with only ?q= is read as a typed sentence; one with tags or filters
   assert.equal(soleQuery('?q=quick+vegetarian+dinner+without+mushrooms'), 'quick vegetarian dinner without mushrooms');
   assert.equal(soleQuery('?q=mapo+tofu.&chat=1&utm_source=newsletter'), 'mapo tofu');
   assert.equal(soleQuery('?q=dinner&diet=vegetarian'), '', 'the page wrote this one: q is just the words');
-  assert.equal(soleQuery('?q=tofu&site=woks'), '');
+  assert.equal(soleQuery('?q=tofu&site=woks'), 'tofu', 'a creator page’s search box sends this');
   assert.equal(soleQuery('?q=tofu&pick=woks%3A%2Fx%2F'), '');
   assert.equal(soleQuery('?with=tofu'), '');
   assert.equal(soleQuery(''), '');
@@ -189,4 +190,61 @@ test('the sheet’s button says what closing it will show', async () => {
   assert.equal(showLabel(0, 1), 'Show 1 video');
   assert.equal(showLabel(0, 0), 'Nothing matches');
   assert.equal(showLabel(0, 0, true), 'Done');
+});
+
+test('a creator page’s search (/?site=woks&q=…) is read as a sentence too', () => {
+  assert.equal(soleQuery('?site=woks&q=quick+vegetarian+dinner'), 'quick vegetarian dinner');
+  assert.equal(soleQuery('?q=mapo+tofu&site=woks&utm_source=x'), 'mapo tofu');
+  // Anything else in the address means the page wrote it, and q is plain words.
+  assert.equal(soleQuery('?site=woks&q=dinner&time=30'), '');
+  assert.equal(soleQuery('?site=woks&q=dinner&diet=vegetarian'), '');
+});
+
+test('a phone lists under "Filters" only what the box does not already show, and counts the same', () => {
+  const say = { creator: (id) => ({ woks: 'The Woks of Life' })[id], course: () => 'mains', time: (m) => `${m} minutes`, order: () => 'quickest first' };
+  const all = setFilters({ show: 'recipes', course: 'main', cuisine: 'Chinese', sites: ['woks'], time: 30, diet: 'vegetarian', sort: 'quickest' }, say);
+  assert.deepEqual(underBox(all).map((f) => f.name), ['show', 'course', 'time', 'order']);
+  assert.equal(filtersLabel(underBox(all)), 'Filters, 4 set');
+  // A cuisine, a creator and a diet are tags in the box: nothing is listed twice.
+  const tagged = setFilters({ cuisine: 'Chinese', sites: ['woks'], diet: 'vegan' }, say);
+  assert.deepEqual(underBox(tagged), []);
+  assert.equal(filtersLabel(underBox(tagged)), 'Filters');
+});
+
+test('a time in an address is one the page offers', () => {
+  assert.equal(snapTime(7), 15);
+  assert.equal(snapTime('7'), 15);
+  assert.equal(snapTime(22), 15);
+  assert.equal(snapTime(23), 30);
+  assert.equal(snapTime(58), 60);
+  assert.equal(snapTime(20), 20, 'a round number typed as "under 20 minutes" stays');
+  assert.equal(snapTime(90), 90);
+  for (const t of [15, 30, 45, 60]) assert.equal(snapTime(t), t);
+  for (const t of [0, -5, 601, 'soon', null, NaN]) assert.equal(snapTime(t), 0);
+});
+
+test('long times are said in days past two days', () => {
+  assert.equal(timeWords(25), '25 minutes');
+  assert.equal(timeWords(1), '1 minute');
+  assert.equal(timeWords(90), '1 hour 30 minutes');
+  assert.equal(timeWords(48 * 60), '48 hours');
+  assert.equal(timeWords(120 * 60), '5 days');
+  assert.equal(timeWords(72 * 60 + 6 * 60), '3 days 6 hours');
+  assert.equal(timeWords(7 * 1440 - 10), '7 days');
+});
+
+test('what was typed is never written into an attribute analytics copies', () => {
+  const src = readFileSync(new URL('../scripts/search.ts', import.meta.url), 'utf8');
+  // A tag is named by its place and a recent search by the link beside it; neither carries a label.
+  assert.doesNotMatch(src, /data-remove-tag="\$\{esc\(/);
+  assert.doesNotMatch(src, /aria-label="Remove \$\{/);
+  assert.match(src, /data-remove-tag="\$\{n\}"/);
+  assert.match(src, /aria-labelledby="forget-word recent-\$\{n\}"/);
+  // No template writes the search, a left-out word or a recent label into aria-label, title or data-*.
+  const risky = [...src.matchAll(/(?:aria-label|title|data-[a-z-]+)="[^"]*\$\{[^}]*(?:state\.q|notWords|\.label|term|typed|o\.text|named\.rest)[^}]*\}/g)].map((m) => m[0]);
+  assert.deepEqual(risky.filter((x) => !/data-unset|data-value/.test(x)), []);
+  // The blocks whose text names what was typed are masked.
+  const page = readFileSync(new URL('../pages/index.astro', import.meta.url), 'utf8');
+  for (const id of ['with-chips', 'q-panel', 'status', 'empty', 'fixes', 'also']) assert.match(page, new RegExp(`id="${id}"[^>]*data-amp-mask[ >]`), id);
+  assert.match(readFileSync(new URL('../scripts/chat.ts', import.meta.url), 'utf8'), /line\.setAttribute\('data-amp-mask', ''\)/);
 });

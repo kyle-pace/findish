@@ -89,7 +89,7 @@ const FILTERS = [
         <label class="visually-hidden" for="q">Search recipes by dish, ingredient, cuisine or creator</label>
         <div class="box" id="box">
           <div class="fields">
-          <ul class="tags" id="with-chips" aria-label="Added to your search" data-amp-mask data-creators={creatorNames}></ul>
+          <ul class="tags" id="with-chips" aria-label="Added to your search" data-amp-mask data-amp-mask-attributes="aria-label,title,href" data-creators={creatorNames}></ul>
           <script is:inline>
             // A link to a search with tags (?with=tofu&cuisine=Thai) shows them from the first
             // paint, as plain labels, so the box is already its full height when the recipes
@@ -163,7 +163,7 @@ const FILTERS = [
             <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2.4"></circle><path d="m15.5 15.5 5 5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"></path></svg>
             <span class="visually-hidden">Find recipes</span>
           </button>
-          <div class="panel" id="q-panel" hidden data-amp-mask>
+          <div class="panel" id="q-panel" hidden data-amp-mask data-amp-mask-attributes="aria-label,title,href">
             <div class="list" id="q-list" role="listbox" aria-label="Suggestions"></div>
             <!-- Under the empty box: recent searches, recipes opened lately and saved recipes,
                  all kept on this device only (search.ts, src/lib/kept.mjs). -->
@@ -259,8 +259,9 @@ const FILTERS = [
         <button class="more" type="button" id="more-videos" hidden>Show more</button>
       </section>
 
-      <section class="empty" id="empty" aria-label="Nothing found" hidden>
-        <p id="fixes"></p>
+      <!-- What to try instead names the words that were typed, so analytics never reads its text (data-amp-mask) or its links' addresses. -->
+      <section class="empty" id="empty" aria-label="Nothing found" hidden data-amp-mask data-amp-mask-attributes="aria-label,title,href">
+        <p id="fixes" data-amp-mask></p>
       </section>
 
       <!-- The home page's ideas. They also sit under "nothing found", after what to try instead. -->
@@ -282,7 +283,7 @@ const FILTERS = [
         </script>
       </section>
 
-      <p class="also" id="also" hidden></p>
+      <p class="also" id="also" hidden data-amp-mask data-amp-mask-attributes="aria-label,title,href"></p>
 
       <noscript>
         <p class="status">
@@ -719,6 +720,9 @@ const FILTERS = [
     display: flex;
     flex-direction: column;
     min-width: 0;
+    /* A long word at very large text ("Restaurant" beside a photo on a small phone) breaks
+       instead of pushing the page sideways. */
+    overflow-wrap: anywhere;
   }
 
   .panel :global(.opt-meta) {
@@ -1343,11 +1347,12 @@ const FILTERS = [
       text-align: left;
     }
 
-    .sheet-foot {
+    /* (.sheet in front, so these win over the footer's usual rules further down.) */
+    .sheet .sheet-foot {
       display: contents;
     }
 
-    .sheet-foot .clear-all {
+    .sheet .sheet-foot .clear-all {
       display: block;
       margin: 0 var(--space-2);
     }
@@ -1766,6 +1771,8 @@ const FILTERS = [
     color: var(--accent-ink);
     font: inherit;
     font-weight: 700;
+    /* A button centres its words; these start at the left like the lines around them when they wrap. */
+    text-align: left;
     text-decoration: underline;
     text-decoration-thickness: 0.08em;
     text-underline-offset: 0.2em;

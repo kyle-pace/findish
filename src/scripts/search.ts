@@ -30,7 +30,7 @@ import { track } from 'kp-design/analytics';
 import * as core from '../lib/search-core.mjs';
 import type { Creator, Hit, Ready, Recipe, Understood } from '../lib/search-core.mjs';
 import { looksLikeAsk, words } from '../lib/search-core.mjs';
-import { cleanQ, completions, coverLabel, dishName, filtersLabel, goesToAsk, ignoredSentence, linkOnlyTyped, narrowFacets, setFilters, showLabel, soleQuery, sortHits, tagOrder, titleFor } from '../lib/page-state.mjs';
+import { snapTime, timeWords, underBox, cleanQ, completions, coverLabel, dishName, filtersLabel, goesToAsk, ignoredSentence, linkOnlyTyped, narrowFacets, setFilters, showLabel, soleQuery, sortHits, tagOrder, titleFor } from '../lib/page-state.mjs';
 import { KEEP, dropFrom, keysFromHash, listHash, putFirst, readList, recentKey, rememberOpened, rememberSearch, searchLabel } from '../lib/kept.mjs';
 import { relatedDishes } from '../lib/related.mjs';
 import { loadIndex } from './index-load.ts';
@@ -117,8 +117,7 @@ const moreBtn = $<HTMLButtonElement>('more');
 const esc = (s: unknown) =>
   String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
 const plural = (n: number, one: string, many = one + 's') => `${n.toLocaleString()} ${n === 1 ? one : many}`;
-const fmtTime = (m: number) =>
-  m < 60 ? plural(m, 'minute') : `${plural(Math.floor(m / 60), 'hour')}${m % 60 ? ` ${plural(m % 60, 'minute')}` : ''}`;
+const fmtTime = (m: number) => timeWords(m);
 /** "a, b and c" */
 const andList = (xs: string[]) => (xs.length < 2 ? xs.join('') : `${xs.slice(0, -1).join(', ')} and ${xs.at(-1)}`);
 /** "2026-11-16" -> "November 16" */
@@ -354,13 +353,17 @@ const stored = {
       return [];
     }
   },
-  write(which: Kept, list: string[]) {
-    this.cache[which] = list;
+  /** Whether the list was kept. False where the browser refuses (private mode, full or blocked storage). */
+  write(which: Kept, list: string[]): boolean {
     try {
       if (list.length) localStorage.setItem(KEEP[which].key, JSON.stringify(list));
       else localStorage.removeItem(KEEP[which].key);
+      this.cache[which] = list;
+      return true;
     } catch {
-      // Private mode or full storage: nothing is kept past this visit, and the page works the same.
+      // Nothing is kept, and nothing pretends to be: the next read asks storage again.
+      delete this.cache[which];
+      return false;
     }
   },
 };
@@ -648,6 +651,8 @@ function removeTag(key: string) {
   else if (kind === 'word') state.notWords = state.notWords.filter((w) => w !== value);
 }
 
+/** When a tag was last taken off with its ×, for ignoring a double tap. */
+let tagRemoved = -1e9;
 /** What to read out with the next count: "Added tofu." / "Removed tofu." */
 let spoken = '';
 /** A sentence to show before the next count (Ask couldn't answer, so this is a plain search). */
@@ -662,8 +667,11 @@ function renderTags() {
   const tags = tagList();
   $('with-chips').innerHTML = tags
     .map(
-      (t) =>
-        `<li><button type="button" class="tag tag-${t.kind}" data-remove-tag="${esc(t.key)}" aria-label="Remove ${esc(t.label)}">${esc(t.label)}<span class="x" aria-hidden="true">×</span></button></li>`,
+      (t, n) =>
+        // What was typed ("no cilantro") is only ever in the button's text, which analytics
+        // masks (data-amp-mask on the list): never in an attribute, which it copies. So the
+        // tag is named by its place in the list, and "Remove" is words inside the button.
+        `<li><button type="button" class="tag tag-${t.kind}" data-remove-tag="${n}"><span class="visually-hidden">Remove </span>${esc(t.label)}<span class="x" aria-hidden="true">×</span></button></li>`,
     )
     .join('');
   $('box').toggleAttribute('data-tags', tags.length > 0);
@@ -712,7 +720,8 @@ function renderEmpty() {
     fixes.push({ label: `any dish, not just “${esc(state.q)}”`, n: search({ q: '' }).length, apply: () => (state.q = '') });
   if (state.without.length || state.notWords.length || state.diet)
     fixes.push({
-      label: 'leaving nothing out',
+      // "Vegetarian" alone is a diet, not something left out.
+      label: state.without.length || state.notWords.length ? 'leaving nothing out' : 'any diet',
       n: countFor({ without: [], notWords: [], diet: '' }),
       apply: () => ([state.without, state.notWords, state.diet] = [[], [], '']),
     });
@@ -731,7 +740,9 @@ function renderEmpty() {
   for (const w of typed) {
     const n = typed.length > 1 ? countFor({ q: w, exact: true }) : 0;
     if (n > 0) fixes.push({ label: `“${esc(w)}”`, n, apply: () => ((state.q = w), (state.exact = false)) });
-    else lonely.push(w);
+    // Only a word the index has never seen gets a closer spelling: "mapo" under a filter
+    // that leaves no mapo tofu is not a misspelt "mayo".
+    else if (!ready!.vocab.has(words(w)[0])) lonely.push(w);
   }
   // A word nothing has: the closest spelling that finds something, with how many.
   const spelled: { label: string; n: number; apply: () => void }[] = [];
@@ -744,6 +755,12 @@ function renderEmpty() {
       spelled.push({ label: esc(one), n, apply: () => ((state.q = one), (state.exact = false)) });
       break;
     }
+  }
+  // No one change finds anything (two filters each rule it out): offer all of them off at once.
+  const filtered = !!(state.time || state.cuisine || state.course || state.sites.size || state.diet || state.show || state.fresh || state.without.length || state.notWords.length);
+  if (!fixes.some((f) => f.n > 0) && filtered && (state.q || state.with.length)) {
+    const bare = { time: 0, cuisine: '', course: '', sites: new Set<string>(), diet: '' as const, show: '' as const, fresh: false, without: [], notWords: [] };
+    fixes.push({ label: 'without the filters', n: countFor(bare), apply: () => void Object.assign(state, bare) });
   }
   const useful = fixes.filter((f) => f.n > 0).sort((a, b) => b.n - a.n).slice(0, 6);
   emptyFixes = [...useful, ...spelled].map((f) => f.apply);
@@ -1023,6 +1040,9 @@ function buildFilters() {
       pop.style.inset = 'auto';
       pop.style.top = `${r.bottom + 6}px`;
       pop.style.left = `${Math.max(16, Math.min(r.left, innerWidth - pop.offsetWidth - 16))}px`;
+      // Into the menu, on what's chosen, so arrow keys work at once; closing it puts focus
+      // back on its word.
+      (pop.querySelector<HTMLElement>('input:checked') || pop.querySelector<HTMLElement>('input'))?.focus({ preventScroll: true });
     });
   }
   addEventListener(
@@ -1243,7 +1263,8 @@ function renderFilterButtons() {
   set('f-diet', state.diet);
   set('f-order', state.sort ? ORDERS.find(([v]) => v === state.sort)![1] : '');
   $('f-order-value').textContent = state.sort ? $('f-order-value').textContent : 'best match';
-  for (const el of document.querySelectorAll<HTMLInputElement>('.pop input')) {
+  // By the options' own ids, not through the menus: on a narrow screen they sit in the sheet.
+  for (const el of FILTER_IDS.flatMap((id) => [...$(`${id}-options`).querySelectorAll<HTMLInputElement>('input')])) {
     if (el.name === 'site') el.checked = state.sites.has(el.value);
     if (el.name === 'time') el.checked = Number(el.value) === state.time;
     if (el.name === 'cuisine') el.checked = el.value === state.cuisine;
@@ -1254,7 +1275,9 @@ function renderFilterButtons() {
   }
   $('clear-all').hidden = isBlank();
   // Narrow screens: the one word says how many are set, and the line under it says which.
-  const on = filtersSet();
+  // Only what the box doesn't already show as a tag (a cuisine, a creator and a diet are
+  // tags there), so nothing is listed twice and "Filters, 2 set" counts the words under it.
+  const on = underBox(filtersSet());
   $('filters-label').textContent = filtersLabel(on);
   $('filters-open').toggleAttribute('data-active', on.length > 0);
   const line = $('set-line');
@@ -1264,7 +1287,7 @@ function renderFilterButtons() {
         .map(
           (f, n) =>
             // Each word stays on a line with its × and the comma after it.
-            `<span class="keep"><button type="button" data-unset="${f.name}" data-value="${esc(f.value)}" aria-label="Remove ${esc(f.label)}">${esc(f.label)}<span class="x" aria-hidden="true">×</span></button>${n < on.length - 1 ? ',' : '.'}</span>`,
+            `<span class="keep"><button type="button" data-unset="${f.name}" data-value="${esc(f.value)}"><span class="visually-hidden">Remove </span>${esc(f.label)}<span class="x" aria-hidden="true">×</span></button>${n < on.length - 1 ? ',' : '.'}</span>`,
         )
         .join(' ')}`
     : '';
@@ -1571,9 +1594,11 @@ function keptHtml(): string {
       'Recent searches',
       recent.map(
         (r, n) =>
-          `<a href="/?${esc(r.key)}" data-recent="${n}">${esc(r.label)}</a><button type="button" class="forget" data-forget="${n}" aria-label="Remove ${esc(r.label)} from recent searches"><span aria-hidden="true">×</span></button>`,
+          // The × is named by the search beside it (aria-labelledby), so what was typed
+          // stays in text analytics masks and never sits in an attribute it copies.
+          `<a href="/?${esc(r.key)}" data-recent="${n}" id="recent-${n}">${esc(r.label)}</a><button type="button" class="forget" data-forget="${n}" aria-labelledby="forget-word recent-${n}"><span aria-hidden="true">×</span></button>`,
       ),
-      `<p><button type="button" data-forget="all">Clear recent searches</button></p>`,
+      `<p><span id="forget-word" hidden>Remove from recent searches:</span><button type="button" data-forget="all">Clear recent searches</button></p>`,
     ) +
     part(
       'kept-opened',
@@ -1593,6 +1618,8 @@ let recentNow = '';
 /** Keeps the search on the page in the recent searches (on this device only). Ask's searches aren't kept. */
 function remember() {
   if (!ready || isBlank() || app.dataset.fromAsk) return;
+  // A search that found nothing isn't one to come back to.
+  if (!lastHits.length && !lastVideos) return;
   const key = recentKey(queryOf(state).toString());
   if (!key) return;
   stored.write('recent', rememberSearch(stored.read('recent'), key, { refines: recentNow }));
@@ -1616,7 +1643,14 @@ function toggleSaved(key: string, from: string, position: number) {
   if (!r) return;
   const list = stored.read('saved');
   const on = !list.includes(key);
-  stored.write('saved', on ? putFirst(list, key, KEEP.saved.max) : dropFrom(list, key));
+  if (!stored.write('saved', on ? putFirst(list, key, KEEP.saved.max) : dropFrom(list, key))) {
+    // The browser wouldn't keep it: the button stays as it was, and says so.
+    const btn = [...document.querySelectorAll<HTMLElement>('button[data-save]')].find((b) => b.dataset.save === key);
+    const word = btn?.querySelector<HTMLElement>('.save-word');
+    if (word) flash(word, on ? 'Couldn’t save' : 'Couldn’t remove');
+    say(on ? 'Couldn’t save it: this browser isn’t letting the page keep anything.' : 'Couldn’t remove it: this browser isn’t letting the page change what it keeps.');
+    return;
+  }
   // Every copy of the button on the page (a result and the random pick can be the same recipe).
   for (const b of document.querySelectorAll<HTMLElement>('button[data-save]')) {
     if (b.dataset.save !== key) continue;
@@ -1624,6 +1658,15 @@ function toggleSaved(key: string, from: string, position: number) {
     b.querySelector('.save-word')!.textContent = on ? 'Saved' : 'Save';
   }
   renderKeptLine();
+  // In the saved view the row stays (Save puts it back), and the count follows.
+  if (state.keep === 'saved' && isBlank2() && !state.q) {
+    const left = stored.read('saved').length;
+    const n = statusEl.querySelector('strong');
+    if (n && n.nextSibling) {
+      n.textContent = left.toLocaleString();
+      n.nextSibling.textContent = ` saved ${left === 1 ? 'recipe' : 'recipes'}, kept on this device. `;
+    }
+  }
   say(on ? `Saved ${r.name}. It’s kept on this device.` : `Removed ${r.name} from your saved recipes.`);
   track(on ? 'Saved Recipe' : 'Removed Saved Recipe', {
     source: r.src.id,
@@ -1683,13 +1726,14 @@ function commitBox() {
 }
 
 /** Adding a tag keeps any words still in the box as words, and searches. */
-function afterTag() {
+function afterTag(done = true) {
   suggest.close();
   commitBox();
   state.exact = false; // "search for exactly this" was about the words before the tag
   state.shown = PAGE;
   state.picked = -1;
   render();
+  if (!done) return;
   writeUrl(true);
   searched();
 }
@@ -1780,7 +1824,7 @@ function takeIn(u: Understood) {
   for (const p of u.without) if (!state.without.includes(p)) state.without.push(p);
   for (const w of u.notWords) if (!state.notWords.includes(w)) state.notWords.push(w);
   for (const id of u.sites) state.sites.add(id);
-  if (u.time) state.time = u.time;
+  if (u.time) state.time = snapTime(u.time, TIMES);
   if (u.diet) state.diet = u.diet;
   if (u.cuisine) state.cuisine = u.cuisine;
   if (u.course) state.course = u.course;
@@ -1882,7 +1926,7 @@ function parse(p: URLSearchParams, hash = ''): Asked {
     q: cleanQ(p.get('q') || ''),
     with: positions('with'),
     sites: new Set((p.get('site') || '').split(',').filter((id) => creatorById.has(id))),
-    time: t > 0 && t <= 600 ? t : 0,
+    time: snapTime(t, TIMES),
     without: positions('without'),
     notWords: (p.get('not') || '').split(',').map((w) => w.trim().toLowerCase()).filter(Boolean),
     diet: diet === 'vegetarian' || diet === 'vegan' ? diet : '',
@@ -1946,7 +1990,9 @@ qInput.addEventListener('input', () => {
     if (added.length) {
       qInput.value = [...kept, typing].filter(Boolean).join(' ');
       spoken = `Added ${andList(names)}.`;
-      afterTag();
+      // Something is still being typed after the comma (a pasted "tofu, ginger"): the
+      // search isn't finished, so it isn't a step for Back or a recent search until Enter.
+      afterTag(!typing);
       state.list = true;
       for (const [event, id] of added) track(event, { [event === 'Added Creator' ? 'creator_id' : 'ingredient_id']: id, added_from: 'typed' });
       return;
@@ -2022,7 +2068,7 @@ app.addEventListener('click', (e) => {
   // A filter taken off from the line under "Filters" on a narrow screen.
   if (el.dataset.unset && ready) {
     const name = el.dataset.unset;
-    const label = el.textContent!.replace(/×$/, '');
+    const label = el.textContent!.replace(/×$/, '').replace(/^Remove /, '');
     if (name === 'site') state.sites.delete(el.dataset.value!);
     if (name === 'time') state.time = 0;
     if (name === 'cuisine') state.cuisine = '';
@@ -2155,8 +2201,13 @@ app.addEventListener('click', (e) => {
     resultsEl.querySelector<HTMLAnchorElement>('.row a')?.focus();
     track('Opened New Recipes', { result_count: (data.fresh || []).length });
   } else if (el.dataset.removeTag) {
-    removeTag(el.dataset.removeTag);
-    spoken = `${(el.getAttribute('aria-label') || 'Removed').replace(/^Remove /, 'Removed ')}.`;
+    // A second tap landing where the next tag slid into place would take that one off too.
+    if (performance.now() - tagRemoved < 400) return;
+    const tag = tagList()[Number(el.dataset.removeTag)];
+    if (!tag) return;
+    tagRemoved = performance.now();
+    removeTag(tag.key);
+    spoken = `Removed ${tag.label}.`;
     commitBox();
     state.shown = PAGE;
     render();
@@ -2250,6 +2301,9 @@ app.addEventListener(
 addEventListener('popstate', () => {
   if (!data) return;
   suggest.close();
+  // Back with the filters open: they belong to the search being left, not this one.
+  if (sheet.open) sheet.close();
+  document.querySelectorAll<HTMLElement>('.pop:popover-open').forEach((pop) => pop.hidePopover());
   delete app.dataset.fromAsk; // Ask's line comes back with its own search (chat.ts), not with this one
   readUrl();
   state.shown = entryShown = shownFrom(history.state);

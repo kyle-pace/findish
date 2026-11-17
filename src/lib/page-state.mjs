@@ -195,3 +195,35 @@ export function completions(phrases, text, max = 3) {
   }
   return [...starts, ...inside].slice(0, max).map((c) => ({ ...c, length: typed.trimEnd().length }));
 }
+
+/**
+ * The filters that are set, in the row's order, each as the page words it: `name` is the
+ * filter ("time"), `value` what to take off (a creator's id for "site"), `label` what's
+ * shown ("30 minutes or less"). `say` turns ids into words: { creator(id), course(id),
+ * time(minutes), order(id) }.
+ */
+export function setFilters(s, say) {
+  const out = [];
+  if (s.show) out.push({ name: 'show', value: s.show, label: `${s.show} only` });
+  if (s.course) out.push({ name: 'course', value: s.course, label: say.course(s.course) || s.course });
+  if (s.cuisine) out.push({ name: 'cuisine', value: s.cuisine, label: s.cuisine });
+  for (const id of s.sites || []) out.push({ name: 'site', value: id, label: `from ${say.creator(id) || id}` });
+  if (s.time) out.push({ name: 'time', value: String(s.time), label: `${say.time(s.time)} or less` });
+  if (s.diet) out.push({ name: 'diet', value: s.diet, label: s.diet });
+  if (s.sort) out.push({ name: 'order', value: s.sort, label: say.order(s.sort) || s.sort });
+  return out;
+}
+
+/** The one filter control on a narrow screen: "Filters", or "Filters, 2 set" (creators count once). */
+export function filtersLabel(set) {
+  const n = new Set(set.map((f) => f.name)).size;
+  return n ? `Filters, ${n} set` : 'Filters';
+}
+
+/** The sheet's button, which closes it: what it will show. "Show 11 recipes", "Show 4 videos", "Nothing matches", or "Done" with no search. */
+export function showLabel(recipes, videos, blank = false) {
+  if (blank) return 'Done';
+  if (recipes) return `Show ${recipes.toLocaleString('en-US')} ${recipes === 1 ? 'recipe' : 'recipes'}`;
+  if (videos) return `Show ${videos.toLocaleString('en-US')} ${videos === 1 ? 'video' : 'videos'}`;
+  return 'Nothing matches';
+}

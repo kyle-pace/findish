@@ -17,3 +17,10 @@ export function narrowFacets(
   opts?: { set?: { cuisine?: unknown; time?: unknown; diet?: unknown }; vegetarian?: number; least?: number },
 ): Facet[];
 export function completions(phrases: string[] | undefined, text: string, max?: number): { phrase: string; at: number; length: number }[];
+export type SetFilter = { name: string; value: string; label: string };
+export function setFilters(
+  s: { show: string; course: string; cuisine: string; sites: Iterable<string>; time: number; diet: string; sort: string },
+  say: { creator(id: string): string | undefined; course(id: string): string | undefined; time(minutes: number): string; order(id: string): string | undefined },
+): SetFilter[];
+export function filtersLabel(set: SetFilter[]): string;
+export function showLabel(recipes: number, videos: number, blank?: boolean): string;

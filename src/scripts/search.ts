@@ -30,7 +30,7 @@ import { track } from 'kp-design/analytics';
 import * as core from '../lib/search-core.mjs';
 import type { Creator, Hit, Ready, Recipe, Understood } from '../lib/search-core.mjs';
 import { looksLikeAsk, words } from '../lib/search-core.mjs';
-import { cleanQ, completions, coverLabel, dishName, goesToAsk, ignoredSentence, linkOnlyTyped, narrowFacets, soleQuery, sortHits, tagOrder, titleFor } from '../lib/page-state.mjs';
+import { cleanQ, completions, coverLabel, dishName, filtersLabel, goesToAsk, ignoredSentence, linkOnlyTyped, narrowFacets, setFilters, showLabel, soleQuery, sortHits, tagOrder, titleFor } from '../lib/page-state.mjs';
 import { KEEP, dropFrom, keysFromHash, listHash, putFirst, readList, recentKey, rememberOpened, rememberSearch, searchLabel } from '../lib/kept.mjs';
 import { relatedDishes } from '../lib/related.mjs';
 import { loadIndex } from './index-load.ts';
@@ -363,6 +363,8 @@ addEventListener('storage', () => (stored.cache = {}));
 
 /** The results of the search on the page, from the last render(), so nothing has to search again just to count. */
 let lastHits: Hit[] = [];
+/** How many videos the last draw found, for the filter sheet's button. */
+let lastVideos = 0;
 
 const isBlank = () =>
   !state.q && !state.with.length && !state.without.length && !state.notWords.length && !state.diet && !state.sites.size && !state.time && !state.cuisine && !state.course && !state.fresh && !state.keep;
@@ -475,6 +477,7 @@ function render() {
     $('note').hidden = true;
     statusEl.innerHTML = '';
     lastHits = [];
+    lastVideos = 0;
     say(spoken || notice);
     spoken = notice = '';
     return;
@@ -497,6 +500,7 @@ function render() {
   if (grouped && state.sort) hits = [...hits].sort((a, b) => b.used.length - a.used.length);
   lastHits = hits;
   const videos = state.show === 'recipes' ? [] : searchVideos();
+  lastVideos = videos.length;
   // Only videos could match, and they're still on their way: say so instead of "nothing matches".
   if (videosPending && !hits.length && state.show !== 'recipes') {
     resultsEl.innerHTML = '';
@@ -983,25 +987,7 @@ function buildFilters() {
     pop.addEventListener('pointerup', () => (pointed = performance.now()));
     pop.addEventListener('change', (e) => {
       const el = e.target as HTMLInputElement;
-      if (el.name === 'site') el.checked ? state.sites.add(el.value) : state.sites.delete(el.value);
-      if (el.name === 'time') state.time = Number(el.value);
-      if (el.name === 'cuisine') state.cuisine = el.value;
-      if (el.name === 'course') state.course = el.value;
-      if (el.name === 'show') state.show = el.value as typeof state.show;
-      if (el.name === 'diet') state.diet = el.value as typeof state.diet;
-      if (el.name === 'order') state.sort = el.value as typeof state.sort;
-      state.shown = PAGE;
-      // Words typed but not yet searched are searched too, so the box and the results agree.
-      commitBox();
-      // On a phone a filter that's set moves to the front of the row: show the front.
-      document.querySelector('.filters')!.scrollLeft = 0;
-      // One search: the menu's own counts don't change with its own choice, and the event
-      // takes its count from what was just drawn.
-      render();
-      writeUrl(false);
-      // Which filters people reach for, and what they pick (ids and labels, never typed text).
-      track('Changed Filter', { filter_name: el.name, filter_value: el.name === 'site' ? (el.checked ? el.value : '') : el.value, result_count: lastHits.length });
-      remember();
+      filterChanged(el);
       // A menu with one choice has done its job once it's picked. Arrowing through it with
       // the keyboard keeps it open (each arrow is a change); Escape or Done closes it then.
       if (el.type === 'radio' && performance.now() - pointed < 700) pop.hidePopover();
@@ -1023,7 +1009,7 @@ function buildFilters() {
     // Open under its word on wider screens; on phones CSS makes it a sheet at the bottom.
     pop.addEventListener('toggle', (e) => {
       if ((e as ToggleEvent).newState !== 'open') return;
-      updateCounts(pop);
+      updateCounts(pop.id);
       if (phone()) return;
       const btn = document.querySelector<HTMLElement>(`[popovertarget="${pop.id}"]`)!;
       const r = btn.getBoundingClientRect();
@@ -1042,6 +1028,135 @@ function buildFilters() {
   );
 }
 
+/** A filter was picked, in its menu or in the sheet: search again, once, and say so. */
+function filterChanged(el: HTMLInputElement) {
+  if (el.name === 'site') el.checked ? state.sites.add(el.value) : state.sites.delete(el.value);
+  if (el.name === 'time') state.time = Number(el.value);
+  if (el.name === 'cuisine') state.cuisine = el.value;
+  if (el.name === 'course') state.course = el.value;
+  if (el.name === 'show') state.show = el.value as typeof state.show;
+  if (el.name === 'diet') state.diet = el.value as typeof state.diet;
+  if (el.name === 'order') state.sort = el.value as typeof state.sort;
+  filtersMoved(el.name, el.name === 'site' ? (el.checked ? el.value : '') : el.value);
+}
+
+/** After any change to the filters: the words in the box are searched too, the page is drawn once, the address follows. */
+function filtersMoved(name: string, value: string) {
+  state.shown = PAGE;
+  // Words typed but not yet searched are searched too, so the box and the results agree.
+  commitBox();
+  // One search: the menu's own counts don't change with its own choice, and the event
+  // takes its count from what was just drawn.
+  render();
+  writeUrl(false);
+  // Which filters people reach for, and what they pick (ids and labels, never typed text).
+  track('Changed Filter', { filter_name: name, filter_value: value, result_count: lastHits.length });
+  remember();
+}
+
+// ---------------------------------------------------------------------------------------
+// Narrow screens: one "Filters" control and one sheet holding every filter. Whether the
+// page is that narrow is CSS's call (a container query in index.astro, so large text counts
+// as narrow too); the script asks whether the Filters button is showing.
+
+const FILTER_IDS = ['f-show', 'f-course', 'f-cuisine', 'f-site', 'f-time', 'f-diet', 'f-order'];
+const sheet = $<HTMLDialogElement>('filter-sheet');
+/** Lists longer than this show their first six in the sheet, and a button for the rest. */
+const FOLD_OVER = 12;
+
+/** The filters that are set, as the page words them. */
+const filtersSet = () =>
+  setFilters(state, {
+    creator: (id) => creatorById.get(id)?.name,
+    course: courseLabel,
+    time: fmtTime,
+    order: (id) => ORDERS.find(([v]) => v === id)?.[1],
+  });
+
+/** The sheet's button and the counts beside its options, after the search behind it changed. */
+function renderSheet() {
+  if (!sheet.open) return;
+  const text = showLabel(lastHits.length, lastVideos, isBlank());
+  $('sheet-show').textContent = text;
+  // The count line is behind the sheet, where a screen reader can't hear it: say it here.
+  $('sheet-said').textContent = isBlank() ? '' : text.replace(/^Show /, '');
+  $<HTMLButtonElement>('sheet-clear').disabled = !filtersSet().length;
+  for (const id of FILTER_IDS) updateCounts(id);
+}
+
+function openSheet() {
+  if (!ready || sheet.open) return;
+  const body = $('sheet-body');
+  for (const id of FILTER_IDS) {
+    const options = $(`${id}-options`);
+    body.append(options.closest('fieldset')!);
+    options.toggleAttribute('data-folded', false);
+  }
+  sheet.showModal();
+  renderSheet();
+  // Cuisines and creators run long: the first few (the most common for this search), whatever
+  // is chosen, and a button for the rest.
+  for (const id of FILTER_IDS) {
+    const options = $(`${id}-options`);
+    // Not counting "Any cuisine", which isn't one.
+    const n = [...options.querySelectorAll('label')].filter((l) => !l.hidden && l.querySelector('input')!.value).length;
+    if (n <= FOLD_OVER) continue;
+    options.toggleAttribute('data-folded', true);
+    const what = id === 'f-site' ? 'creators' : id === 'f-cuisine' ? 'cuisines' : 'choices';
+    options.insertAdjacentHTML('afterend', `<button type="button" class="unfold" data-unfold="${id}">Show all ${n} ${what}</button>`);
+  }
+  track('Opened Filters', { set_count: new Set(filtersSet().map((f) => f.name)).size });
+}
+
+/** Each group of options goes back to its own menu, where a wider screen expects it. */
+sheet.addEventListener('close', () => {
+  for (const id of FILTER_IDS) {
+    const options = $(`${id}-options`);
+    options.toggleAttribute('data-folded', false);
+    $(id).prepend(options.closest('fieldset')!);
+  }
+  sheet.querySelectorAll('.unfold').forEach((b) => b.remove());
+  for (const b of document.querySelectorAll('.pop .unfold')) b.remove();
+  // Cleared down to nothing, the page is the home page again and "Filters" is gone: focus goes to the box.
+  if (!$('filters-open').offsetParent) qInput.focus();
+});
+sheet.addEventListener('change', (e) => {
+  filterChanged(e.target as HTMLInputElement);
+  renderSheet();
+});
+sheet.addEventListener('click', (e) => {
+  const el = e.target as HTMLElement;
+  // A tap on the dimmed page lands on the dialog itself, outside its box.
+  if (el === sheet) {
+    const r = sheet.getBoundingClientRect();
+    if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) sheet.close();
+    return;
+  }
+  const unfold = el.closest<HTMLElement>('[data-unfold]');
+  if (unfold) {
+    const options = $(`${unfold.dataset.unfold}-options`);
+    const hidden = [...options.querySelectorAll<HTMLElement>('label')].filter((l) => !l.hidden && !l.offsetParent);
+    options.toggleAttribute('data-folded', false);
+    unfold.remove();
+    // Focus goes to the first of the ones that just appeared, so the keyboard carries on from there.
+    (hidden[0]?.querySelector('input') || options.querySelector('input'))?.focus();
+  }
+});
+$('sheet-show').addEventListener('click', () => sheet.close());
+$('sheet-clear').addEventListener('click', () => {
+  state.sites.clear();
+  [state.time, state.cuisine, state.course, state.show, state.diet, state.sort] = [0, '', '', '', '', ''];
+  filtersMoved('all', '');
+  renderSheet();
+  // The button just went quiet (nothing left to clear), so focus moves on.
+  $('sheet-show').focus();
+});
+$('filters-open').addEventListener('click', openSheet);
+// Wide again (a phone turned, text made smaller): the row is back, so the sheet goes.
+addEventListener('resize', () => {
+  if (sheet.open && !$('filters-open').offsetParent) sheet.close();
+});
+
 let sheetClosed = -1e9;
 addEventListener(
   'click',
@@ -1055,8 +1170,10 @@ addEventListener(
 );
 
 /** Each option's count, given everything else you've picked, so "Thai 12" means 12 here. */
-function updateCounts(pop: HTMLElement) {
-  if (pop.id === 'f-show') {
+function updateCounts(id: string) {
+  // The options are found by id, not through the menu: on a narrow screen they sit in the sheet.
+  const pop = $(`${id}-options`);
+  if (id === 'f-show') {
     const was = state.show;
     const n = (show: typeof state.show) => {
       state.show = show;
@@ -1068,13 +1185,13 @@ function updateCounts(pop: HTMLElement) {
     state.show = was;
     return;
   }
-  if (pop.id === 'f-order') return; // an order changes no counts
-  if (pop.id === 'f-diet') {
+  if (id === 'f-order') return; // an order changes no counts
+  if (id === 'f-diet') {
     for (const label of pop.querySelectorAll('label'))
       label.querySelector('.count')!.textContent = countWith({ diet: label.querySelector('input')!.value as typeof state.diet }).toLocaleString();
     return;
   }
-  const kind = pop.id.slice(2) as Skip;
+  const kind = id.slice(2) as Skip;
   const hits = isBlank() ? recipes.map((r) => ({ r })) : search({ skip: kind });
   const vids = kind === 'site' ? (state.q ? searchVideos({ skip: 'site' }) : data.videos.rows) : [];
   for (const label of pop.querySelectorAll('label')) {
@@ -1129,6 +1246,21 @@ function renderFilterButtons() {
     if (el.name === 'order') el.checked = el.value === state.sort;
   }
   $('clear-all').hidden = isBlank();
+  // Narrow screens: the one word says how many are set, and the line under it says which.
+  const on = filtersSet();
+  $('filters-label').textContent = filtersLabel(on);
+  $('filters-open').toggleAttribute('data-active', on.length > 0);
+  const line = $('set-line');
+  line.hidden = !on.length;
+  line.innerHTML = on.length
+    ? `<span class="visually-hidden">Set: </span>${on
+        .map(
+          (f, n) =>
+            // Each word stays on a line with its × and the comma after it.
+            `<span class="keep"><button type="button" data-unset="${f.name}" data-value="${esc(f.value)}" aria-label="Remove ${esc(f.label)}">${esc(f.label)}<span class="x" aria-hidden="true">×</span></button>${n < on.length - 1 ? ',' : '.'}</span>`,
+        )
+        .join(' ')}`
+    : '';
 }
 
 // ---------------------------------------------------------------------------------------
@@ -1869,6 +2001,23 @@ app.addEventListener('click', (e) => {
   if (!el) return;
   // An idea picked under "nothing found" replaces the search that found nothing.
   if ((el.dataset.add || el.dataset.creator || el.dataset.try) && ready && !$('empty').hidden) clearAll();
+  // A filter taken off from the line under "Filters" on a narrow screen.
+  if (el.dataset.unset && ready) {
+    const name = el.dataset.unset;
+    const label = el.textContent!.replace(/×$/, '');
+    if (name === 'site') state.sites.delete(el.dataset.value!);
+    if (name === 'time') state.time = 0;
+    if (name === 'cuisine') state.cuisine = '';
+    if (name === 'course') state.course = '';
+    if (name === 'show') state.show = '';
+    if (name === 'diet') state.diet = '';
+    if (name === 'order') state.sort = '';
+    spoken = `Removed ${label}.`;
+    filtersMoved(name, '');
+    // The word that was pressed is gone: focus goes to the next one, or back to "Filters".
+    ($('set-line').querySelector<HTMLElement>('button') || $('filters-open')).focus();
+    return;
+  }
   if (el.dataset.save) return toggleSaved(el.dataset.save, el.dataset.from || 'results', Number(el.closest('.row')?.querySelector<HTMLElement>('[data-pos]')?.dataset.pos || 0));
   // A link in the kept lists opened in a new tab, or with the keyboard's own shortcut, is left to the browser.
   const plainClick = !(e.metaKey || e.ctrlKey || e.shiftKey || e.altKey);

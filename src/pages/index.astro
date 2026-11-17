@@ -174,20 +174,34 @@ const FILTERS = [
         <p class="home-actions"><button class="lucky" type="button" id="lucky">Pick one at random</button></p>
       </form>
 
-      <div class="filters" role="group" aria-label="Narrow it down">
-        <button class="filter" type="button" popovertarget="f-show" id="f-show-btn">Show: <span id="f-show-value">recipes and videos</span></button>
-        <button class="filter" type="button" popovertarget="f-course" id="f-course-btn">Course: <span id="f-course-value">any</span></button>
-        <button class="filter" type="button" popovertarget="f-cuisine" id="f-cuisine-btn">Cuisine: <span id="f-cuisine-value">any</span></button>
-        <button class="filter" type="button" popovertarget="f-site" id="f-site-btn">Creator: <span id="f-site-value">any</span></button>
-        <button class="filter" type="button" popovertarget="f-time" id="f-time-btn">Time: <span id="f-time-value">any</span></button>
-        <button class="filter" type="button" popovertarget="f-diet" id="f-diet-btn">Diet: <span id="f-diet-value">any</span></button>
-        <button class="filter" type="button" popovertarget="f-order" id="f-order-btn">Order: <span id="f-order-value">best match</span></button>
-        <!-- The three things to do with a search stay together when the row wraps. -->
-        <span class="acts">
-          <button class="lucky" type="button" id="lucky-results">Pick one at random</button>
-          <button class="lucky" type="button" id="share">Share this search</button>
-          <button class="clear-all" type="button" id="clear-all" hidden>Start over</button>
-        </span>
+      <!-- On a narrow screen (a container query, so large text counts too) the seven words
+           give way to one, "Filters", which opens them all in one sheet; what's set is
+           written out under it, each part removable. -->
+      <div class="filter-zone">
+        <div class="filters" role="group" aria-label="Narrow it down">
+          <button class="filter filter-all" type="button" id="filters-open" aria-haspopup="dialog"><span id="filters-label">Filters</span></button>
+          <button class="filter" type="button" popovertarget="f-show" id="f-show-btn">Show: <span id="f-show-value">recipes and videos</span></button>
+          <button class="filter" type="button" popovertarget="f-course" id="f-course-btn">Course: <span id="f-course-value">any</span></button>
+          <button class="filter" type="button" popovertarget="f-cuisine" id="f-cuisine-btn">Cuisine: <span id="f-cuisine-value">any</span></button>
+          <button class="filter" type="button" popovertarget="f-site" id="f-site-btn">Creator: <span id="f-site-value">any</span></button>
+          <button class="filter" type="button" popovertarget="f-time" id="f-time-btn">Time: <span id="f-time-value">any</span></button>
+          <button class="filter" type="button" popovertarget="f-diet" id="f-diet-btn">Diet: <span id="f-diet-value">any</span></button>
+          <button class="filter" type="button" popovertarget="f-order" id="f-order-btn">Order: <span id="f-order-value">best match</span></button>
+        </div>
+        <p class="set-line" id="set-line" hidden></p>
+        <script is:inline>
+          // A link with filters in it: the line that lists them holds its place, and the
+          // word says how many, before the recipes arrive, so nothing under it moves.
+          (function () {
+            var p = new URLSearchParams(location.search);
+            var n = ['show', 'course', 'cuisine', 'site', 'time', 'diet', 'sort'].filter(function (k) { return p.get(k); }).length;
+            if (!n) return;
+            document.getElementById('filters-label').textContent = 'Filters, ' + n + ' set';
+            var line = document.getElementById('set-line');
+            line.hidden = false;
+            line.innerHTML = '<span class="hold">&nbsp;</span>';
+          })();
+        </script>
       </div>
 
       {FILTERS.map(([id, label]) => (
@@ -197,7 +211,28 @@ const FILTERS = [
         </div>
       ))}
 
-      <p class="status" id="status" role="status" aria-live="polite" tabindex="-1" data-amp-mask>Loading the recipes…</p>
+      <!-- Every filter in one sheet, for narrow screens. Its fieldsets are the menus' own,
+           moved in while it's open (search.ts), so there is one set of controls. -->
+      <dialog class="sheet" id="filter-sheet" aria-labelledby="sheet-title">
+        <h2 id="sheet-title">Filters</h2>
+        <div class="sheet-body" id="sheet-body"></div>
+        <p class="visually-hidden" id="sheet-said" role="status" aria-live="polite"></p>
+        <div class="sheet-foot">
+          <button class="clear-all" type="button" id="sheet-clear">Clear filters</button>
+          <button class="sheet-show" type="button" id="sheet-show">Done</button>
+        </div>
+      </dialog>
+
+      <!-- The count, and at its far end the three things to do with a search. They wrap
+           under the count together when there isn't room beside it. -->
+      <div class="count-line">
+        <p class="status" id="status" role="status" aria-live="polite" tabindex="-1" data-amp-mask>Loading the recipes…</p>
+        <p class="acts">
+          <button class="lucky" type="button" id="lucky-results">Pick one at random</button>
+          <button class="lucky" type="button" id="share">Share this search</button>
+          <button class="clear-all" type="button" id="clear-all" hidden>Start over</button>
+        </p>
+      </div>
 
       <!-- "Narrow it: Chinese (8), 30 minutes or less (5)." Words, not chips; only when they'd narrow something. -->
       <p class="narrow" id="narrow" hidden></p>
@@ -269,7 +304,9 @@ const FILTERS = [
   .page {
     width: min(100% - 2 * var(--gutter), 68rem);
     margin-inline: auto;
-    padding-block: var(--space-4) var(--space-12);
+    /* The end of the page clears the phone's home indicator. (kp-design's footer already
+       leaves room under itself for the floating display-settings button.) */
+    padding-block: var(--space-4) calc(var(--space-12) + env(safe-area-inset-bottom, 0px));
   }
 
   h2 {
@@ -462,7 +499,7 @@ const FILTERS = [
     display: none;
   }
 
-  [data-mode='home'] .filters,
+  [data-mode='home'] .filter-zone,
   [data-mode='home'] .note,
   [data-mode='home'] .status:empty,
   [data-mode='results'] .home-actions,
@@ -904,49 +941,120 @@ const FILTERS = [
 
   /* ---------------------------------------------------------------------------------
      Filters: words, not pills. */
+  .filter-zone {
+    container: filters / inline-size;
+    margin-top: var(--space-3);
+  }
+
+  /* They wrap to a second line when the window is too narrow for all seven. */
   .filters {
     display: flex;
     flex-wrap: wrap;
     gap: 0 var(--space-4);
     align-items: center;
-    margin-top: var(--space-3);
     font-size: var(--step--1);
   }
 
-  /* "Pick one at random", "Share this search" and "Start over" sit at the far end, and
-     move to the next line together when the filters need the room. */
-  .filters .acts {
+  .filter-all,
+  .set-line {
+    display: none;
+  }
+
+  /* Narrow (a phone, or any window once the text is large): one word, "Filters", opens
+     every filter in one sheet, and what's set is written out under it. Before this the
+     row was one line about 1,100px long that scrolled sideways. */
+  @container filters (max-width: 40rem) {
+    .filters .filter:not(.filter-all) {
+      display: none;
+    }
+
+    .filter-all {
+      display: block;
+    }
+
+    .set-line {
+      display: block;
+    }
+  }
+
+  /* "Chinese ×, 30 minutes or less ×, vegetarian ×.": a sentence, each part a button that
+     takes it off. Words and a ×, not chips. */
+  .set-line {
+    margin: calc(-1 * var(--space-1)) 0 0;
+    font-size: var(--step--1);
+    line-height: 1.5;
+    color: var(--ink-muted);
+  }
+
+  .set-line :global(button) {
+    min-height: 2.75rem;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--ink);
+    font: inherit;
+    text-align: left;
+    text-decoration: underline;
+    text-decoration-color: var(--field-rule);
+    text-decoration-thickness: 0.08em;
+    text-underline-offset: 0.2em;
+    cursor: pointer;
+  }
+
+  .set-line :global(button:hover) {
+    text-decoration-color: currentColor;
+  }
+
+  /* Holds the line's height until the script writes it (see the inline script). */
+  .set-line :global(.hold) {
+    display: inline-block;
+    min-height: 2.75rem;
+  }
+
+  .set-line :global(.x) {
+    display: inline-block;
+    margin-left: 0.3em;
+    color: var(--chili);
+    font-weight: 700;
+  }
+
+  .set-line :global(.keep) {
+    display: inline-block;
+    max-width: 100%;
+    margin-right: 0.4em;
+  }
+
+  /* The count, with "Pick one at random", "Share this search" and "Start over" at its far
+     end. When there isn't room beside the count they sit under it, together, wrapping
+     among themselves on a very narrow screen: never scrolling sideways. */
+  .count-line {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0 var(--space-6);
+    margin: var(--space-1) 0 var(--space-3);
+  }
+
+  .count-line .status {
+    flex: 1 1 16rem;
+    min-width: 0;
+    margin: var(--space-2) 0 0;
+  }
+
+  .acts {
     display: flex;
     flex-wrap: wrap;
     gap: 0 var(--space-4);
-    margin-left: auto;
+    margin: 0;
+    font-size: var(--step--1);
   }
 
-  /* Phones: one line that scrolls sideways, fading at the edge so it reads as more. A
-     filter that's set moves to the front of the line, so it's never off the screen. */
-  @media (max-width: 40rem) {
-    .filters .filter[data-active] {
-      order: -1;
-    }
+  [data-mode='home'] .acts {
+    display: none;
+  }
 
-    .filters {
-      flex-wrap: nowrap;
-      overflow-x: auto;
-      scrollbar-width: none;
-      margin-inline: calc(-1 * var(--gutter));
-      padding-inline: var(--gutter);
-      mask-image: linear-gradient(to right, #000 calc(100% - 2.5rem), transparent);
-    }
-
-    .filters > *,
-    .filters .acts > * {
-      flex: none;
-    }
-
-    /* On a phone they are three more words in the one scrolling line. */
-    .filters .acts {
-      display: contents;
-    }
+  [data-mode='home'] .count-line {
+    margin: 0;
   }
 
   .filter {
@@ -996,12 +1104,6 @@ const FILTERS = [
     box-shadow: 0 10px 30px rgb(0 0 0 / 0.16);
   }
 
-  .pop fieldset {
-    margin: 0;
-    padding: 0;
-    border: 0;
-  }
-
   .pop legend {
     padding: 0 var(--space-2);
     margin-bottom: var(--space-2);
@@ -1021,12 +1123,20 @@ const FILTERS = [
     cursor: pointer;
   }
 
+  /* A cuisine this search has none of is folded away (search.ts sets `hidden`); the grid
+     above would otherwise show it anyway. */
+  .options :global(label[hidden]) {
+    display: none;
+  }
+
   .options :global(label:hover) {
     background: var(--scallion-fill);
   }
 
-  /* The option the keyboard is on: the same tomato bar as a chosen suggestion. */
-  .options :global(label:has(input:focus-visible)) {
+  /* The option the keyboard is on: the same tomato bar as a chosen suggestion. `:focus`,
+     not `:focus-visible`: Safari drops focus-visible from a radio reached with the arrow
+     keys, which left no sign of where the keyboard was. */
+  .options :global(label:has(input:focus)) {
     background: var(--scallion-fill);
     box-shadow: inset 4px 0 0 var(--accent-ink);
   }
@@ -1124,6 +1234,179 @@ const FILTERS = [
       from {
         opacity: 0;
         transform: translateY(-4px);
+      }
+    }
+  }
+
+  /* ---------------------------------------------------------------------------------
+     Every filter in one sheet (narrow screens). A modal dialog: the page behind dims and
+     can't be reached until it closes (Escape, a tap on the dimmed page, or the button). */
+  .sheet {
+    position: fixed;
+    inset: auto 0 0 0;
+    width: 100%;
+    max-width: 40rem;
+    max-height: min(88dvh, 100dvh - 2.5rem);
+    margin: 0 auto;
+    padding: var(--space-4) var(--space-4) 0;
+    overflow: auto;
+    overscroll-behavior: contain;
+    container: sheet / inline-size;
+    background: var(--bg-raised);
+    color: var(--ink);
+    border: 1px solid var(--line);
+    border-bottom: 0;
+    border-radius: 0.75rem 0.75rem 0 0;
+    box-shadow: 0 -10px 30px rgb(0 0 0 / 0.16);
+  }
+
+  .sheet::backdrop {
+    background: rgb(0 0 0 / 0.45);
+  }
+
+  /* The page behind doesn't scroll under a finger while the sheet is open. */
+  :global(html:has(.sheet[open])) {
+    overflow: hidden;
+  }
+
+  .sheet h2 {
+    margin: 0 0 var(--space-2);
+    padding: 0 var(--space-2);
+  }
+
+  :is(.pop, .sheet) fieldset {
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .sheet fieldset {
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--line);
+  }
+
+  .sheet fieldset:first-child {
+    border-top: 0;
+  }
+
+  .sheet legend {
+    float: left; /* so the rule above the group sits above its name, not through it */
+    width: 100%;
+    padding: 0 var(--space-2);
+    margin-bottom: var(--space-1);
+    font-weight: 700;
+  }
+
+  .sheet .options {
+    clear: both;
+  }
+
+  .sheet .options :global(label) {
+    min-height: 2.75rem;
+  }
+
+  /* A long list (cuisines, creators) shows its first few, whatever is chosen, and a
+     button for the rest. */
+  .sheet .options[data-folded] :global(label:nth-of-type(n + 7):not(:has(input:checked))) {
+    display: none;
+  }
+
+  .sheet :global(.unfold) {
+    min-height: 2.75rem;
+    margin: 0 var(--space-2) var(--space-3);
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--ink);
+    font: inherit;
+    font-size: var(--step--1);
+    text-decoration: underline;
+    text-decoration-color: var(--field-rule);
+    text-underline-offset: 0.2em;
+    cursor: pointer;
+  }
+
+  /* Very large text: an option's count goes under its name instead of squeezing it, and
+     only the button that closes the sheet stays at the bottom ("Clear filters" comes at
+     the end of the list), so the filters keep most of the screen. */
+  @container sheet (max-width: 20rem) {
+    .options :global(label) {
+      grid-template-columns: auto 1fr;
+      padding-block: var(--space-1);
+    }
+
+    .options :global(.count) {
+      grid-column: 2;
+      padding-left: 0;
+      text-align: left;
+    }
+
+    .sheet-foot {
+      display: contents;
+    }
+
+    .sheet-foot .clear-all {
+      display: block;
+      margin: 0 var(--space-2);
+    }
+
+    .sheet-show {
+      position: sticky;
+      bottom: calc(var(--space-2) + env(safe-area-inset-bottom));
+      display: block;
+      width: 100%;
+      margin: var(--space-2) 0;
+      /* A band of the sheet's own colour around it, so what scrolls behind doesn't show through. */
+      box-shadow: 0 0 0 var(--space-3) var(--bg-raised);
+    }
+  }
+
+  /* "Clear filters" and "Show 11 recipes" stay at the bottom while the filters scroll. */
+  .sheet-foot {
+    position: sticky;
+    bottom: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1) var(--space-4);
+    align-items: center;
+    justify-content: space-between;
+    margin: 0 calc(-1 * var(--space-4));
+    padding: var(--space-3) calc(var(--space-4) + var(--space-2)) calc(var(--space-3) + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--line);
+    background: var(--bg-raised);
+  }
+
+  .sheet-foot .clear-all:disabled {
+    color: var(--ink-muted);
+    text-decoration: none;
+    cursor: default;
+  }
+
+  /* The one filled button on the page besides the search button: ink, square-shouldered. */
+  .sheet-show {
+    min-height: 2.75rem;
+    margin-left: auto;
+    padding: var(--space-2) var(--space-4);
+    border: 0;
+    border-radius: 0.5rem;
+    background: var(--ink);
+    color: var(--bg);
+    font: inherit;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    cursor: pointer;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .sheet[open] {
+      animation: sheet-in var(--duration-fast) var(--ease-out);
+    }
+
+    @keyframes sheet-in {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
       }
     }
   }

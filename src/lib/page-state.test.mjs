@@ -151,3 +151,30 @@ test('completions finish what is typed, starts first, and mark where the typed p
   assert.deepEqual(completions(undefined, 'fr'), []);
   assert.deepEqual(completions(phrases, 'ofu'), [], 'only the start of a word matches');
 });
+
+test('the filters that are set read as words, in the row’s order, and count by kind', async () => {
+  const { setFilters, filtersLabel } = await import('./page-state.mjs');
+  const say = { creator: (id) => ({ woks: 'The Woks of Life', htk: 'Hot Thai Kitchen' })[id], course: (id) => ({ side: 'sides' })[id], time: (m) => `${m} minutes`, order: (id) => ({ quickest: 'quickest first' })[id] };
+  const none = { show: '', course: '', cuisine: '', sites: new Set(), time: 0, diet: '', sort: '' };
+  assert.deepEqual(setFilters(none, say), []);
+  assert.equal(filtersLabel([]), 'Filters');
+  const set = setFilters({ show: 'recipes', course: 'side', cuisine: 'Chinese', sites: new Set(['woks', 'htk']), time: 30, diet: 'vegetarian', sort: 'quickest' }, say);
+  assert.deepEqual(set.map((f) => f.label), ['recipes only', 'sides', 'Chinese', 'from The Woks of Life', 'from Hot Thai Kitchen', '30 minutes or less', 'vegetarian', 'quickest first']);
+  assert.deepEqual(set.find((f) => f.name === 'time'), { name: 'time', value: '30', label: '30 minutes or less' });
+  // Two creators are one filter: the word says how many filters, not how many choices.
+  assert.equal(filtersLabel(set), 'Filters, 7 set');
+  assert.equal(filtersLabel(setFilters({ ...none, cuisine: 'Thai', time: 30 }, say)), 'Filters, 2 set');
+  // A creator the index no longer has still shows, by its id, so it can be taken off.
+  assert.equal(setFilters({ ...none, sites: ['gone'] }, say)[0].label, 'from gone');
+});
+
+test('the sheet’s button says what closing it will show', async () => {
+  const { showLabel } = await import('./page-state.mjs');
+  assert.equal(showLabel(11, 17), 'Show 11 recipes');
+  assert.equal(showLabel(1, 0), 'Show 1 recipe');
+  assert.equal(showLabel(1234, 0), 'Show 1,234 recipes');
+  assert.equal(showLabel(0, 4), 'Show 4 videos');
+  assert.equal(showLabel(0, 1), 'Show 1 video');
+  assert.equal(showLabel(0, 0), 'Nothing matches');
+  assert.equal(showLabel(0, 0, true), 'Done');
+});

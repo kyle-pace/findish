@@ -1,9 +1,10 @@
 ---
 // The Findish wordmark (Kyle's pick, 2026-11-16): "fin", a plate-shaped d in tomato red, "ish".
-// The d, a plate seen from above with its stem, is where find and dish meet. Its strokes match
-// the bold letters' weight, and it has no extra room on its right, so the gaps either side of it
-// are even. (Bars over "fin" and under "ish" were tried twice that day; offset like that they
-// read as lopsided, so they're off.)
+// A line runs over "find" and another under "dish", both across the d, so the two words read
+// and the d is where they meet. The d (a plate seen from above, with its stem) has strokes as
+// heavy as the bold letters and no extra room on its right, so the gaps either side are even.
+// Every part gets the same line above and below (clear where none shows), so the letters stay
+// on one baseline.
 // Text and CSS plus one small inline SVG: it scales with the font size it's given and
 // follows light and dark mode. Screen readers hear one word, "Findish".
 const plate = '<svg viewBox="0 0 52 76" class="wordmark-plate" focusable="false"><circle cx="25" cy="50" r="18.5" fill="none" stroke="currentColor" stroke-width="11"/><circle cx="25" cy="50" r="7" fill="currentColor" opacity="0.35"/><rect x="38" y="2" width="11" height="72" rx="5.5" fill="currentColor"/></svg>';
@@ -31,8 +32,28 @@ const plate = '<svg viewBox="0 0 52 76" class="wordmark-plate" focusable="false"
   }
 
   .wordmark-art {
+    --bar: 0.08em;
     display: inline-flex;
     align-items: stretch;
+  }
+
+  .wm-fin,
+  .wm-d,
+  .wm-ish {
+    border-block: var(--bar) solid transparent;
+    padding-block: 0.04em 0.06em;
+  }
+
+  /* Over "find"… */
+  .wm-fin,
+  .wm-d {
+    border-top-color: var(--accent-ink);
+  }
+
+  /* …and under "dish". */
+  .wm-d,
+  .wm-ish {
+    border-bottom-color: var(--accent-ink);
   }
 
   /* The plate d, sitting on the baseline */
@@ -51,6 +72,16 @@ const plate = '<svg viewBox="0 0 52 76" class="wordmark-plate" focusable="false"
   }
 
   @media (forced-colors: active) {
+    .wm-fin,
+    .wm-d {
+      border-top-color: CanvasText;
+    }
+
+    .wm-d,
+    .wm-ish {
+      border-bottom-color: CanvasText;
+    }
+
     .wm-d :global(.wordmark-plate) {
       color: CanvasText;
     }

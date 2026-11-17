@@ -156,3 +156,16 @@ Mains  19 recipes    The Woks of Life  19 recipes
 ```
 
 Checked against the defaults: no cards, pills, eyebrows or dots; headings are real headings; lists are ruled lines.
+
+
+## The UI pass (November 17, 2026)
+
+From a user test, an engineering audit and a second Mobbin pass. Nothing about the look changed direction; these are the rules that were added.
+
+- **Phone filter menus are sheets:** the page behind dims, each sheet has a "Done" text button at the bottom right (bold ink, tomato underline, like a filter that's set), and a sheet with one choice closes when you pick. A filter that's set moves to the front of the row.
+- **What's chosen with the keyboard gets a tomato bar** down its left edge, on top of the basil fill: the selected suggestion and the focused option in a filter menu. The fill alone was too faint to see (1.2:1).
+- **Large text:** the search button sits beside the field as its own item, and takes a full-width row under it when the box gets very narrow; a result's photo goes above its words when the row is too narrow for both.
+- **Nothing moves while loading:** a link to a search opens already laid out as results, with its tags and words in the box; the home page's lines hold their place.
+- **Opened recipes** are muted ink, like the line under them.
+- **Nothing found** lists what would find something (each with its count), then the home page's three idea lines, left-aligned.
+- **Ask:** the choice comes first. A question's suggestions are just two rows, "Ask: …" ("Sent to Claude to turn into a search. Not kept.") and "Search for these words" ("Searched here, on your device."). The answer is one block with a tomato rule on the left: the question (tap to put it back in the box; one line on a phone), the answer in full ink, and one small muted line with who answered and "Search my words instead". Centred, without the rule, on the home page.

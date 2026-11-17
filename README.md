@@ -37,6 +37,7 @@ npm run preview   # builds, then runs it the way Cloudflare will
 | --- | --- |
 | The page | `src/pages/index.astro` |
 | The page's script: the box, tags, suggestions, filters, URL state | `src/scripts/search.ts` |
+| Small pure parts of the page (tag order, cleaning the words, when Enter may go to Ask), with tests | `src/lib/page-state.mjs`, `src/lib/page-state.test.mjs` |
 | The search itself (words, typo fixing, understanding a sentence, ranking, videos), shared by the page, the MCP server and Ask | `src/lib/search-core.mjs`; tests in `src/lib/search-core.test.mjs`, and a ranking fixture of everyday dish searches in `src/lib/ranking.test.mjs` |
 | What a recipe has in it that people leave out (vegetarian, vegan, no dairy, no nuts…) and which cuisine it's filed under, both worked out when the index is built | `scripts/diet.mjs`, `scripts/cuisine.mjs` (tests beside them) |
 | The index (generated, not committed) | `public/index.json`, from `scripts/build-index.mjs` |
@@ -77,7 +78,7 @@ To connect: the For AI assistants page has an Add to Claude button and the addre
 
 ## Ask (an experiment)
 
-At [findish.now/?chat=1](https://findish.now/?chat=1) only: type a question in the search box ("what can I make with fish, kimchi and onions?") and Claude (Haiku 5.5, through Anthropic's API) turns it into a Findish search, which the page shows like any other. Claude never writes recipe names or links; it only picks the search. Nothing typed is kept.
+At [findish.now/?chat=1](https://findish.now/?chat=1) only: type a question in the search box ("what can I make with fish, kimchi and onions?") and Claude (Haiku 5.5, through Anthropic's API) turns it into a Findish search, which the page shows like any other. Nothing is sent until the person picks "Ask: …" from the suggestions, which say it goes to Claude; "Search for these words" searches on the device instead. Claude never writes recipe names or links; it only picks the search. Nothing typed is kept.
 
 | What | Where |
 | --- | --- |

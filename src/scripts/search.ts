@@ -511,9 +511,11 @@ function renderEmpty() {
   if (state.cuisine) fixes.push({ label: 'any cuisine', n: search({ skip: 'cuisine' }).length, apply: () => (state.cuisine = '') });
   if (state.course) fixes.push({ label: 'any course', n: search({ skip: 'course' }).length, apply: () => (state.course = '') });
   // Each word on its own, when there are several: "tacos" (88 recipes).
-  // (As typed, "tacos" not the stem the search matches on.)
+  // (As typed, "tacos" not the stem the search matches on; not the words of a link-only site's name.)
+  const siteWords = (linkOnlyTyped(state.q, data.linkOnly)?.site.name || '').toLowerCase().split(/\s+/);
+
   const typed = [...new Set(state.q.toLowerCase().split(/\s+/).map((t) => t.replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, '')))].filter(
-    (t) => words(t).length === 1 && !core.isFiller(words(t)[0]),
+    (t) => words(t).length === 1 && !core.isFiller(words(t)[0]) && !siteWords.includes(t),
   );
   const lonely: string[] = [];
   for (const w of typed) {

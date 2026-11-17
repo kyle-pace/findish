@@ -37,8 +37,6 @@
 }
 
 .ask-reply {
-  /* Room for a sentence or two from the start, so the results don't jump when it arrives. */
-  min-height: 2lh;
   margin-top: var(--space-1);
   color: var(--ink);
 }
@@ -106,7 +104,9 @@
     white-space: nowrap;
   }
 
+  /* Room for two lines from the start, so the results don't jump when the answer arrives. */
   .ask-reply {
+    min-height: 2lh;
     margin-top: 0;
   }
 }

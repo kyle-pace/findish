@@ -39,6 +39,7 @@ import '../styles/theme.css';
     publisher: { '@type': 'Person', '@id': 'https://kylepace.net/#kyle', name: 'Kyle Pace', url: 'https://kylepace.net/' },
   })} />
   <link slot="head" rel="preload" href="/index.json" as="fetch" crossorigin="anonymous" />
+  <link slot="head" rel="manifest" href="/manifest.webmanifest" />
   <script slot="head" is:inline>
     // The About section used to live at #about; it's its own page now.
     if (location.hash === '#about') location.replace('/about/');

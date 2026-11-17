@@ -47,7 +47,10 @@ npm run preview   # builds, then runs it the way Cloudflare will
 | Creator pages (`/creators/` and `/creators/<id>/`) | `src/pages/creators/`, built from `src/lib/creators.ts`; styles in `src/styles/creators.css` |
 | Sorting support links into join, buy and follow | `scripts/support.mjs` (tests in `scripts/support.test.mjs`) |
 | Cookbook covers | `public/covers/`, fetched from Open Library by `npm run covers` (run it after `npm run sync-catalog` adds books, and commit the covers) |
-| Sitemap | `src/pages/sitemap.xml.ts` (pages in `PAGES`, plus every creator page) |
+| Browse pages (`/browse/`, `/cuisine/<slug>/`, `/course/<id>/`, `/with/<ingredient>/`) | `src/lib/browse.ts` picks them from the index; `src/components/BrowsePage.astro` draws them; pages in `src/pages/cuisine/`, `course/`, `with/` and `browse/` |
+| Sitemap | `src/pages/sitemap.xml.ts` (hand-written pages in `PAGES`; creator and browse pages from the index, dated by the latest crawl) |
+| Security headers | `public/_headers` |
+| Install as an app | `public/manifest.webmanifest`, icons in `public/icons/` (redraw with `node scripts/app-icons.mjs`) |
 | Share cards | `design/og*.html`, rendered to `public/og*.png` |
 | Outside hosts (recipe photos) | `.agents/allowed-hosts.txt` |
 

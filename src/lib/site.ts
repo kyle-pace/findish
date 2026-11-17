@@ -15,6 +15,7 @@ export const SITE = {
     { href: '/', label: 'Search' },
     { href: '/?new=1', label: 'New this week' },
     { href: '/about/', label: 'About' },
+    { href: '/browse/', label: 'Browse' },
     { href: '/creators/', label: 'Creators' },
     { href: '/assistants/', label: 'For AI assistants' },
     { href: '/privacy/', label: 'Privacy' },

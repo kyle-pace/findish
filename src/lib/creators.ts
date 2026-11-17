@@ -37,6 +37,8 @@ export type Creator = {
    * recipes here to go by (a channel alone, or a site on hold), the main one KitchenCatalog lists.
    */
   cuisine: string;
+  /** Every cuisine their recipes here are, with how many, most first. */
+  cuisines: { name: string; count: number }[];
   join: SupportLink[];
   buy: SupportLink[];
   follow: SupportLink[];
@@ -69,7 +71,7 @@ function build(): Creator[] {
   const list: Creator[] = [];
   const byId = new Map<string, Creator>();
   const add = (id: string, name: string, url: string, extra: Partial<Creator> = {}) => {
-    const c: Creator = { id, name, url, host: hostOf(url), recipes: 0, videos: 0, cuisine: '', join: [], buy: [], follow: [], picks: [], videoPicks: [], ...extra };
+    const c: Creator = { id, name, url, host: hostOf(url), recipes: 0, videos: 0, cuisine: '', cuisines: [], join: [], buy: [], follow: [], picks: [], videoPicks: [], ...extra };
     list.push(c);
     byId.set(id, c);
     return c;
@@ -111,6 +113,7 @@ function build(): Creator[] {
     if (m && total) {
       const [top, k] = [...m].sort((a, b) => b[1] - a[1])[0];
       if (k / total >= 0.5) c.cuisine = top;
+      if (c.recipes) c.cuisines = [...m].map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
     }
     if (!c.recipes && !c.cuisine) c.cuisine = listed.get(c.id) || '';
 

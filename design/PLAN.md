@@ -130,3 +130,29 @@ Search all 1,372 of their recipes
 **The list** (`/creators/`): a filter box, then creators grouped under their main cuisine (the one half or more of their recipes are), biggest groups first and "Many cuisines" last. Each is a ruled line, not a card: their name, what Findish has from them, and a short hint like "Patreon and 2 cookbooks". Columns on wide screens.
 
 Checked against the defaults: no cards, pills, eyebrows or dots; group names are real headings; the only color is the tomato shelf and links.
+
+## Browse pages (November 17, 2026)
+
+Pages for someone who arrives from a web search for "Korean recipes" or "recipes with tofu", not from the search box: one per cuisine (`/cuisine/korean/`), per course (`/course/soup/`) and per common ingredient (`/with/tofu/`), and `/browse/` listing them all.
+
+**Who it's for:** someone who wants a few good places to start and doesn't know Findish yet. The page answers in that order: what this is and how many, a few recipes, then the way into the full search.
+
+**Nothing new to look at.** They wear the creator pages' clothes: the same big heading and one muted sentence of counts, the ink "Search all 24 Korean recipes" button, the search's rows (photo, name, a plain sentence: "40 minutes, from The Woks of Life"), then ruled lists of a name and a count. The photos carry the color; the only tomato is links. No intro paragraph of filler about the cuisine: the count and the recipes are the content.
+
+```
+findish
+
+Korean recipes
+24 Korean recipes from 3 independent cooks. Each one opens on the cook's own site…
+[Search all 24 Korean recipes]
+
+A few to start with
+[photo] Bibimbap                          [photo] Japchae
+        1 hour 10 minutes, from RecipeTin Eats    40 minutes, from The Woks of Life
+Search all 24 Korean recipes
+
+By course            Who they're from
+Mains  19 recipes    The Woks of Life  19 recipes
+```
+
+Checked against the defaults: no cards, pills, eyebrows or dots; headings are real headings; lists are ruled lines.

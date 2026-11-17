@@ -2,6 +2,7 @@
 //   Opened Creator Page   source, opened_from: creators (the list)
 //   Opened Support Link   source, link_kind (join, book, shop, follow, site), opened_from: creator
 //   Opened Recipe         source, position, opened_from: creator, recipe_key (counts toward popularity)
+//   Opened Browse Page    browse_kind: cuisine, browse_page (korean), opened_from: creator (a cuisine under "What they cook")
 //   Filtered Creators     result_count (never what was typed), once the filter box loses focus
 import { track } from 'kp-design/analytics';
 
@@ -11,6 +12,7 @@ document.addEventListener('click', (e) => {
   const d = a.dataset;
   if (d.creatorPage) track('Opened Creator Page', { source: d.creatorPage, opened_from: 'creators' });
   else if (d.support) track('Opened Support Link', { source: d.support, link_kind: d.kind || 'link', opened_from: 'creator' });
+  else if (d.browseKind && d.browsePage) track('Opened Browse Page', { browse_kind: d.browseKind, browse_page: d.browsePage, opened_from: 'creator' });
   else if (d.srcId)
     track('Opened Recipe', {
       source: d.srcId,

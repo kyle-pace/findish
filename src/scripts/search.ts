@@ -671,7 +671,8 @@ function render() {
 
   const blank = isBlank();
   page.dataset.mode = blank && state.picked < 0 ? 'home' : 'results';
-  $('start').hidden = !blank;
+  // The home page's ideas belong to the home page: a random pick from there shows only the pick.
+  $('start').hidden = !blank || state.picked >= 0;
   $('empty').hidden = true;
   $('also').hidden = true;
   $('videos').hidden = true;

@@ -12,9 +12,9 @@
     "sync-world-cuisine": "node scripts/sync-world-cuisine.mjs",
     "covers": "node scripts/book-covers.mjs",
     "crawl": "node crawler/crawl.mjs",
-    "test": "node --test crawler/test/*.test.mjs src/mcp/*.test.mjs src/chat/*.test.mjs scripts/*.test.mjs",
+    "test": "node --test crawler/test/*.test.mjs src/lib/*.test.mjs src/mcp/*.test.mjs src/chat/*.test.mjs scripts/*.test.mjs",
     "try-mcp": "node scripts/try-mcp.mjs",
-    "check": "node .agents/skills/page-check/check.mjs"
+    "check": "node .agents/skills/page-check/check.mjs --sample 3"
   },
   "engines": {
     "node": ">=22"
@@ -24,7 +24,7 @@
     "@modelcontextprotocol/server": "^2.4.0",
     "agents": "^0.33.0",
     "astro": "^7.4.7",
-    "kp-design": "github:kyle-pace/kp-design#84b04733779989fb28e9fa3df10ca8a9f7f4703c",
+    "kp-design": "github:kyle-pace/kp-design#2b16a746e30554a31e4457ed0ef2b295a087d6e9",
     "zod": "^4.6.7"
   },
   "devDependencies": {

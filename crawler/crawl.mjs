@@ -61,6 +61,8 @@ for (const [id, s] of Object.entries(status.sources)) {
   const before = previousStatus.sources?.[id]?.count;
   if (s.result === 'blocked') status.alerts.push(`${id}: blocked (${s.error})`);
   else if (s.result === 'error') status.alerts.push(`${id}: failed (${s.error})`);
+  // What it had the run before, so the index build can refuse a sudden drop (scripts/index-floor.mjs).
+  if (before != null) s.previous = before;
   if (before > 20 && s.count != null && s.count < before * DROP_ALERT) {
     status.alerts.push(`${id}: recipe count dropped from ${before} to ${s.count}`);
   }

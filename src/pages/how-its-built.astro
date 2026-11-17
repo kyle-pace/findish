@@ -50,7 +50,7 @@ const creators: number = index.sources.length;
       <figure tabindex="0" role="region" aria-label="Diagram: From recipe sites to search results. On narrow screens it scrolls sideways.">
         <svg class="diagram" viewBox="0 0 950 200" role="img" aria-labelledby="pipe-title pipe-desc">
           <title id="pipe-title">From recipe sites to search results</title>
-          <desc id="pipe-desc">A weekly crawler reads recipe sites, a few newsletters through their RSS feeds, and YouTube through its API. A build step turns what it keeps into one index file. Three things read that index: the search page in your browser, an MCP server for AI assistants, and the Grocery Deals app’s list lookup.</desc>
+          <desc id="pipe-desc">A weekly crawler reads recipe sites, a few newsletters through their RSS feeds, and YouTube through its API. A build step turns what it keeps into one index, written in full and also packed small for the search page. Three things read that index: the search page in your browser, an MCP server for AI assistants, and the Grocery Deals app’s list lookup.</desc>
           <defs>
             <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
               <path d="M0 0 L10 5 L0 10 z" class="ink-fill"></path>
@@ -71,7 +71,7 @@ const creators: number = index.sources.length;
           <path d="M640 90 C665 90 665 43 688 43" class="link" marker-end="url(#arrow)"></path>
           <path d="M640 100 L688 103" class="link" marker-end="url(#arrow)"></path>
           <path d="M640 110 C665 110 665 163 688 163" class="link" marker-end="url(#arrow)"></path>
-          <text x="555" y="160" class="small">index.json, one file</text>
+          <text x="555" y="160" class="small">one index, packed small for the page</text>
         </svg>
       </figure>
       <ol class="steps">
@@ -86,16 +86,20 @@ const creators: number = index.sources.length;
           ingredient lines with amounts and a sign it's a recipe. Videos come from the official YouTube Data API.
         </li>
         <li>
-          <strong>One index file.</strong> <code>scripts/build-index.mjs</code> packs it all into <code>index.json</code>, matching every
+          <strong>One index.</strong> <code>scripts/build-index.mjs</code> packs it all into <code>index.json</code>, matching every
           ingredient line to KitchenCatalog, the grocery list the food projects share, so "scallions" and "green onions" are one thing.
           It also sorts each recipe into a course (<code>scripts/course.mjs</code>): sites label courses about 185 ways, so their
           labels fold into nine plain ones, a clear dish name decides when there's no label, and anything unclear stays unlabeled
           rather than guessed. Each recipe also keeps the day the crawler first found it, which is how "New this week" knows what's new.
+          If the index comes out with far fewer recipes or videos than the last crawl counted, or with one of its sites or channels missing, the build stops and the site keeps the one it has.
         </li>
         <li>
-          <strong>No search server.</strong> The index is a few hundred kilobytes, so the browser downloads it once and searches it
-          locally. The same file feeds the MCP server (<code>src/pages/mcp.ts</code>) and the Grocery Deals lookup
-          (<code>api/with.ts</code>), the only parts that run on the server.
+          <strong>No search server.</strong> The browser downloads the index and searches it locally. Its copy is packed smaller
+          (<code>src/lib/index-format.mjs</code>) and comes in two files: the recipes first, about 290 kilobytes as sent, so
+          search works about two and a half seconds into a slow phone connection, then the videos, about 170 kilobytes. Each
+          file is named after what's in it, so your browser keeps it and downloads it again only after a crawl changes it.
+          Unpacked, it's exactly <code>index.json</code>, which feeds the MCP server (<code>src/pages/mcp.ts</code>) and the
+          Grocery Deals lookup (<code>api/with.ts</code>), the only parts that run on the server.
         </li>
       </ol>
     </section>
@@ -105,7 +109,7 @@ const creators: number = index.sources.length;
       <figure tabindex="0" role="region" aria-label="Diagram: What decides the order of results. On narrow screens it scrolls sideways.">
         <svg class="diagram" viewBox="0 0 950 180" role="img" aria-labelledby="rank-title rank-desc">
           <title id="rank-title">What decides the order of results</title>
-          <desc id="rank-desc">Your words are matched against names, ingredients, cuisines and creators. Matches in the name count most; with ingredients, recipes that use most of them and need the fewest other things come first. Recipes opened often get a small boost, and creators take turns when matches are close.</desc>
+          <desc id="rank-desc">Your words are matched against names, ingredients, cuisines and creators. Matches in the name count most, and a name that is exactly your words comes first; with several ingredients, recipes that use most of them and need the fewest other things come first. Recipes opened often get a small boost, and creators take turns when matches are close.</desc>
           
           <g class="box"><rect x="10" y="30" width="200" height="60" rx="6"></rect><text x="110.0" y="56.0">Your words</text><text x="110.0" y="76.0" class="small">chicken, ginger</text></g>
           <g class="box"><rect x="260" y="10" width="210" height="46" rx="6"></rect><text x="365.0" y="38.0">Name matches count most</text></g>
@@ -125,8 +129,24 @@ const creators: number = index.sources.length;
         </svg>
       </figure>
       <p>
-        The ranking rules live in two places that must agree: <code>src/scripts/search.ts</code> for the page and <code>src/mcp/search.mjs</code> for the server, which shares the rules minus typo fixing. The popularity boost comes from a
-        daily count of how often each recipe was opened in the last 90 days: counts only, nothing about who.
+        A word in a recipe's name counts most, and more when the name is little else: search <q>mapo tofu</q> and the recipes called
+        exactly that come before <q>Spicy Mapo Tofu Noodle Soup</q>. A word found only in a recipe's keywords, cuisine or ingredients
+        counts for much less. Sauces, drinks and how-to pages sit lower unless you ask for one (<q>dumpling sauce</q>), so a search for
+        dumplings starts with dumplings. With two or more ingredient tags and no words, the recipes that use the most of them come
+        first, then the ones that need the fewest other things. Ties go to a recipe with a photo, then the one opened more, then the
+        name. The popularity boost comes from a daily count of how often each recipe was opened in the last 90 days: counts only,
+        nothing about who. It is small, and smaller still for a recipe that only matched by a keyword.
+      </p>
+      <p>
+        Before any of that, the words are tidied. Plurals and spellings that mean the same thing are one word (cookie and cookies,
+        chili and chilli, lasagne and lasagna). A word the index has never seen is swapped for the closest one that finds something,
+        two words are joined or one split when that is how the recipes write it (<q>pot sticker</q>, <q>stirfry</q>), and a fix that
+        would find nothing is not made. Names in Chinese, Japanese, Korean and Thai are matched as written.
+      </p>
+      <p>
+        All of this is one file, <code>src/lib/search-core.mjs</code>, which the page, the server for AI assistants and Ask all run, so
+        the three find and rank the same way. A fixture of everyday dish searches (<code>src/lib/ranking.test.mjs</code>) checks the
+        top of each list on every change.
       </p>
     </section>
 

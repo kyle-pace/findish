@@ -1,0 +1,13 @@
+---
+// /cuisine/<slug>/: one browse page per entry in CUISINES (src/lib/browse.ts). Added 2026-11-17.
+import BrowsePage from '../../components/BrowsePage.astro';
+import { CUISINES, type Browse } from '../../lib/browse';
+
+export function getStaticPaths() {
+  return CUISINES.map((b) => ({ params: { slug: b.slug }, props: { b } }));
+}
+
+const { b } = Astro.props as { b: Browse };
+---
+
+<BrowsePage b={b} />

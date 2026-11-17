@@ -1,4 +1,7 @@
-// Builds the search index the page loads: public/index.json.
+// Builds the search index: public/index.json, and the same index packed smaller for the
+// page (src/lib/index-format.mjs): public/i/recipes.<hash>.json and public/i/videos.<hash>.json,
+// named after what's in them so browsers can keep them for good, with their names in
+// public/index-files.json for the page (src/pages/index.astro) to point at.
 // Reads what the crawler kept (data/<id>.json) and matches every ingredient line to a
 // KitchenCatalog id (vendor/kitchen-catalog), so "scallions" and "green onion" find the
 // same recipes. Runs before every build (npm run build), so each weekly crawl that
@@ -6,14 +9,24 @@
 //
 //   node scripts/build-index.mjs            # writes the index
 //   node scripts/build-index.mjs --report   # also lists the most common unmatched lines
-import { readFileSync, writeFileSync, mkdirSync, existsSync, copyFileSync } from 'node:fs';
+//   node scripts/build-index.mjs --allow-drop   # build even with far fewer recipes than the
+//                                               # last crawl counted (scripts/index-floor.mjs)
+import { createHash } from 'node:crypto';
+import { readFileSync, writeFileSync, mkdirSync, existsSync, copyFileSync, rmSync } from 'node:fs';
+import { brotliCompressSync, constants as zlib } from 'node:zlib';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { load, match } from '../vendor/kitchen-catalog/catalog.mjs';
 import { readSources } from '../crawler/lib/sources.mjs';
+import { SOURCES_FILE } from '../crawler/lib/sources.mjs';
 import { COURSES, courseOf } from './course.mjs';
+import { cuisineOf } from './cuisine.mjs';
+import { ALL, GROUPS, VEGETARIAN, itemFlags, lineFlags, nameFlags, titleFlags } from './diet.mjs';
 import { isNotRecipe } from './not-recipes.mjs';
+import { pack } from '../src/lib/index-format.mjs';
+import { floorProblems } from './index-floor.mjs';
 import { KINDS, supportKind } from './support.mjs';
+import { dishPhrases } from './phrases.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const out = join(root, 'public/index.json');
@@ -43,35 +56,6 @@ const minutes = (t) => {
   return n || null;
 };
 
-// Cuisine labels as the sites write them, folded into the names people would pick.
-const CUISINE = {
-  'american/chinese': 'Chinese American',
-  'chinese american': 'Chinese American',
-  'chinese-american': 'Chinese American',
-  'thai fusion': 'Thai',
-  'thai-inspired': 'Thai',
-  'asian fusion': 'Asian',
-  'southeast asian': 'Asian',
-  'western': 'Western', // what the sites wrote; RecipeTin Eats is Australian, so not "American"
-  'north american': 'American',
-  'american chinese': 'Chinese American',
-  'american-italian': 'Italian American',
-  'australia': 'Australian',
-  'asian american fusion': 'Fusion',
-};
-const cuisineOf = (c, fallback) => {
-  const raw = decode(c || fallback || '').split(/[,;|]/)[0].trim();
-  if (!raw) return '';
-  // "Italian-esque" is a site's way of saying "loosely Italian": file it under Italian.
-  const key = raw.toLowerCase().replace(/[-\s]?esque$/, '');
-  if (CUISINE[key]) return CUISINE[key];
-  return key
-    .split('/')[0]
-    .trim()
-    .replace(/\b\w/g, (ch) => ch.toUpperCase())
-    .replace(/ Cuisine$/, '');
-};
-
 // An item and everything it's a kind of: pork belly is also pork, so "pork" finds it.
 const withParents = (id) => {
   const ids = [id];
@@ -89,6 +73,8 @@ const ing = []; // [id, name, recipeCount, parent positions, ...other names]
 const cuisineCount = new Map();
 const courseCount = new Map();
 const recipes = [];
+const seenName = new Map(); // "<source>|<name>" -> position in recipes, to fold twins
+let folded = 0;
 // How often each recipe was opened lately, by "<source id>:<url as stored>"
 // (data/popularity.json, written daily by scripts/popularity.mjs from Amplitude).
 const popFile = join(root, 'data/popularity.json');
@@ -120,6 +106,11 @@ for (const s of sources.recipes) {
     if (isNotRecipe(s.id, r.u)) continue; // scripts/not-recipes.mjs
     const ids = new Set();
     const direct = new Set();
+    const name = decode(r.n);
+    // What's in it that some people leave out (scripts/diet.mjs): from its name, the lines
+    // the catalog matched and the ones it didn't. No ingredient list at all means nothing
+    // vouches for it, so it gets every flag and is never offered as vegetarian or "no nuts".
+    let flags = (r.i || []).length ? titleFlags(name) : ALL;
     for (const line of r.i || []) {
       lines++;
       const m = match(catalog, line);
@@ -127,9 +118,15 @@ for (const s of sources.recipes) {
         matched++;
         direct.add(m.id);
         for (const id of withParents(m.id)) ids.add(id);
-      } else if (report) {
-        const k = String(line).toLowerCase();
-        unmatched.set(k, (unmatched.get(k) || 0) + 1);
+        // The line's own words are read as well: "olive oil" is what "tuna in olive oil"
+        // matched, and "vegan chicken" matched chicken (lineFlags in scripts/diet.mjs).
+        flags |= lineFlags(line, itemFlags(withParents(m.id), catalog.items[m.id]));
+      } else {
+        flags |= lineFlags(line);
+        if (report) {
+          const k = String(line).toLowerCase();
+          unmatched.set(k, (unmatched.get(k) || 0) + 1);
+        }
       }
     }
     // Older posts with no ingredient list: fall back to what the title and keywords name.
@@ -142,25 +139,41 @@ for (const s of sources.recipes) {
         }
       }
     }
-    const cuisine = cuisineOf(r.c, s.default_cuisine);
-    if (cuisine) cuisineCount.set(cuisine, (cuisineCount.get(cuisine) || 0) + 1);
+    const cuisine = cuisineOf(decode(r.c || ''), s.default_cuisine, name);
     const pos = [...ids].map(ingPos);
     for (const id of direct) if (!BASICS.has(id)) ing[ingPos(id)][2]++;
     // Which of the positions were named by the recipe itself (the rest are parents),
     // and how many non-basic ingredients it has, for "uses 2 of your 3" and "missing 1".
     const own = [...direct].filter((id) => !BASICS.has(id)).map(ingPos);
     const url = r.u.startsWith(site) ? r.u.slice(site.length) : r.u;
-    const name = decode(r.n);
     const kw = (r.kw || []).map(decode).filter((k) => k.toLowerCase() !== name.toLowerCase());
     // Smaller photos where the host can resize (WordPress.com's image CDN takes ?w=).
     let img = s.photos === false ? '' : r.img || '';
     if (img.startsWith('https://i0.wp.com/')) img = img.replace(/\?.*$/, '') + '?w=480&quality=80&ssl=1';
     // Which part of a meal it is (scripts/course.mjs), and the day the crawler first found it.
     const course = courseOf(decode(r.k || ''), name);
-    if (course) courseCount.set(course, (courseCount.get(course) || 0) + 1);
-    recipes.push([srcIdx, name, url, minutes(r.t), cuisine, pos, own, img, kw.join(' · '), popularity[`${s.id}:${url}`] || 0, course, r.a || '']);
+    // Position 12, the flags, is left off when there are none.
+    const row = [srcIdx, name, url, minutes(r.t), cuisine, pos, own, img, kw.join(' · '), popularity[`${s.id}:${url}`] || 0, course, r.a || ''];
+    if (flags) row.push(flags);
+    // A site that posts a dish twice under one name (a "v2" page beside the old one) shows
+    // once: the one opened more, then the one with a photo, then the one found last.
+    const twin = seenName.get(`${srcIdx}|${name.toLowerCase()}`);
+    if (twin != null) {
+      const old = recipes[twin];
+      const better = row[9] - old[9] || Number(!!row[7]) - Number(!!old[7]) || row[11].localeCompare(old[11]) || row[2].length - old[2].length;
+      if (better > 0) recipes[twin] = row;
+      folded++;
+      continue;
+    }
+    seenName.set(`${srcIdx}|${name.toLowerCase()}`, recipes.length);
+    recipes.push(row);
     srcList[srcIdx].count++;
   }
+}
+if (folded) console.log(`Twins: ${folded} recipes a site posted twice under one name, shown once`);
+for (const r of recipes) {
+  if (r[4]) cuisineCount.set(r[4], (cuisineCount.get(r[4]) || 0) + 1);
+  if (r[10]) courseCount.set(r[10], (courseCount.get(r[10]) || 0) + 1);
 }
 
 // A photo that many recipes from one site share is the site's own stand-in ("Photo to come"
@@ -175,20 +188,34 @@ const PLACEHOLDER_SHARED = 5;
 }
 
 // Videos from the YouTube Data API, once the key is in place (crawler/lib/youtube.mjs).
-// Each row: [channel index, title, video id, published date, ingredient positions].
+// Each row: [channel index, title, video id, published date, ingredient positions, course
+// from the title, flags from the title (scripts/diet.mjs; left off when none)].
+// A channel's `cuisine` is the first one KitchenCatalog lists for its creator, when the index
+// has that cuisine: a video has no cuisine of its own, so a cuisine search goes by the channel.
 const videos = [];
 const channels = [];
+const videoRows = {}; // per channel, every row in its data file (Shorts too), for the floor check
+const creatorCuisine = new Map();
+for (const s of JSON.parse(readFileSync(SOURCES_FILE, 'utf8')).sources) {
+  const c = cuisineOf(String(s.cuisines?.[0] || '').replace(/ cuisine$/i, ''), '', '');
+  for (const id of [s.id, s.youtube?.id]) if (id && c) creatorCuisine.set(id, c);
+}
 for (const v of sources.videos || []) {
   const file = join(root, 'data', `${v.id}.json`);
   const rows = existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : [];
   const ci = channels.length;
-  channels.push({ id: v.id, name: v.name, channel: v.channel, site: v.site || '', count: rows.filter((r) => !r.sh).length });
+  videoRows[v.id] = rows.length;
+  const cuisine = creatorCuisine.get(v.id) || '';
+  channels.push({ id: v.id, name: v.name, channel: v.channel, site: v.site || '', count: rows.filter((r) => !r.sh).length, ...(cuisineCount.get(cuisine) >= 5 ? { cuisine } : {}) });
   for (const row of rows) {
     if (row.sh) continue; // Shorts stay out of the search (crawler/lib/youtube.mjs marks them)
     const ids = new Set();
     const m = match(catalog, decode(row.n));
     if (m && !catalog.items[m.id].product) for (const id of withParents(m.id)) ids.add(id);
-    videos.push([ci, decode(row.n), row.id, row.p || '', [...ids].map(ingPos), courseOf('', decode(row.n))]);
+    const video = [ci, decode(row.n), row.id, row.p || '', [...ids].map(ingPos), courseOf('', decode(row.n))];
+    const flags = nameFlags(decode(row.n), m && !catalog.items[m.id].product ? itemFlags(withParents(m.id), catalog.items[m.id]) : 0);
+    if (flags) video.push(flags);
+    videos.push(video);
   }
 }
 
@@ -210,22 +237,13 @@ const popular = ing
   .slice(0, 18)
   .map(({ p }) => p);
 
-// "Vegetarian" and "vegan" in a search leave out recipes that use any of these ingredient
-// positions: the catalog's meat and seafood sections, plus animal-based pantry items it
-// files elsewhere (fish sauce, oyster sauce, gelatin, lard, stocks). Vegan also leaves out
-// dairy, eggs and honey. It's a best guess from ingredient lists; the About page says so.
-const ANIMAL = new Set(['dashi', 'fish', 'oyster', 'oysters', 'anchovy', 'anchovies', 'shrimp', 'bonito', 'hondashi', 'gelatin', 'lard', 'chicken', 'beef', 'pork', 'bacon', 'broth', 'stock', 'bouillon', 'worcestershire']);
-const DAIRY_EGG = new Set(['honey', 'butter', 'buttermilk', 'ghee', 'cream', 'milk', 'cheese', 'yogurt', 'egg', 'eggs', 'mayo', 'mayonnaise']);
-// Plant versions and lookalikes: "vegetarian oyster sauce", "king oyster mushrooms", "coconut milk", "peanut butter".
-const PLANT = new Set(['vegetarian', 'vegan', 'plant', 'mushroom', 'mushrooms', 'kombu', 'coconut', 'peanut', 'almond', 'oat', 'soy', 'cashew', 'vegetable', 'tartar']);
-const tokens = (id) => id.split('-');
-const isPlant = (id) => tokens(id).some((t) => PLANT.has(t));
-const hasWord = (id, set) => tokens(id).some((t) => set.has(t)) && !isPlant(id);
-const dietOf = (test) => ing.map((g, p) => (test(g[0], catalog.items[g[0]]) ? p : -1)).filter((p) => p >= 0);
-const notVegetarian = (id, item) => ['meat', 'seafood'].includes(item.section) || (item.section !== 'produce' && hasWord(id, ANIMAL));
+// "Vegetarian" and "vegan" in a search leave out recipes by the flags above. These lists of
+// ingredient positions say the same thing for the matched ingredients alone, and are kept
+// for what reads the index without the search (Grocery Deals' site build, older apps).
+const flagOf = ing.map((g) => itemFlags(withParents(g[0]), catalog.items[g[0]]));
 const diet = {
-  vegetarian: dietOf(notVegetarian),
-  vegan: dietOf((id, item) => notVegetarian(id, item) || (item.section === 'dairy-eggs' && !isPlant(id)) || hasWord(id, DAIRY_EGG)),
+  vegetarian: ing.map((_, p) => p).filter((p) => flagOf[p] & VEGETARIAN),
+  vegan: ing.map((_, p) => p).filter((p) => flagOf[p] & (VEGETARIAN | 4 | 8 | 16)),
 };
 
 // "New this week": recipes the latest crawl's week found, leaving out a creator's first
@@ -284,12 +302,56 @@ const index = {
   fresh,
   popular,
   diet,
+  // Things to leave out that aren't one ingredient: [id, name, flag, ...other names] (scripts/diet.mjs).
+  groups: GROUPS,
+  // Common dish phrases from recipe names, most common first, for the search box's
+  // completions and the "Related:" line (scripts/phrases.mjs).
+  phrases: dishPhrases(recipes.map((r) => [r[1], r[0]])),
   ing,
   recipes,
 };
 
+// Far fewer recipes or videos than the last crawl counted means something broke (a data
+// file missing or cut short, a site dropped from the list): stop here, so the site keeps
+// the index it has instead of quietly shipping a thin one.
+{
+  const problems = floorProblems({
+    status,
+    // Every site that's crawled, with 0 for one whose data file is missing or empty.
+    recipes: Object.fromEntries(sources.recipes.filter((s) => !s.paused).map((s) => [s.id, srcList.find((x) => x.id === s.id)?.count || 0])),
+    videos: videoRows,
+    // Switched off on purpose in the list of sources: not a source that went missing.
+    paused: [...sources.recipes, ...(sources.videos || [])].filter((s) => s.paused).map((s) => s.id),
+  });
+  if (problems.length) {
+    console.error(`index: not built. Compared with the last crawl (data/status.json):\n  ${problems.join('\n  ')}`);
+    if (!process.argv.includes('--allow-drop') && !process.env.ALLOW_INDEX_DROP) {
+      console.error('If the drop is real, build once with: node scripts/build-index.mjs --allow-drop');
+      process.exit(1);
+    }
+    console.error('--allow-drop: building anyway.');
+  }
+}
+
 mkdirSync(dirname(out), { recursive: true });
 const json = JSON.stringify(index);
+
+// The page's copy: the same index in two smaller files named after their contents, and the
+// few things that change daily (index-files.json), which the home page carries itself.
+const packed = pack(index);
+const pageDir = join(dirname(out), 'i');
+rmSync(pageDir, { recursive: true, force: true });
+mkdirSync(pageDir);
+const files = { ...packed.extra };
+const sizes = [];
+for (const kind of ['recipes', 'videos']) {
+  const text = JSON.stringify(packed[kind]);
+  const name = `${kind}.${createHash('sha256').update(text).digest('hex').slice(0, 12)}.json`;
+  writeFileSync(join(pageDir, name), text);
+  files[kind] = `/i/${name}`;
+  sizes.push(`${kind} ${Math.round(text.length / 1024)} KB (${Math.round(brotliCompressSync(text, { params: { [zlib.BROTLI_PARAM_QUALITY]: 5 } }).length / 1024)} KB compressed)`);
+}
+writeFileSync(join(dirname(out), 'index-files.json'), JSON.stringify(files));
 
 // The "Explore Thai cuisine on World cuisine" line above results when a search is one cuisine
 // (vendor/world-cuisine/notes.json, from World cuisine; refresh with npm run sync-world-cuisine).
@@ -316,6 +378,7 @@ console.log(
   `index: ${recipes.length} recipes from ${srcList.length} sites, ${videos.length} videos, ${ing.length} ingredients, ` +
     `${cuisines.length} cuisines, ${courses.length} courses, ${fresh.length} new this week; ${Math.round((matched / lines) * 100)}% of ingredient lines matched; ${Math.round(json.length / 1024)} KB`,
 );
+console.log(`for the page: ${sizes.join(', ')}`);
 if (report) {
   console.log('Most common unmatched lines:');
   for (const [k, n] of [...unmatched].sort((a, b) => b[1] - a[1]).slice(0, 60)) console.log(String(n).padStart(4), k);

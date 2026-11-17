@@ -6,6 +6,7 @@
 // Imported, not read from disk: the Cloudflare adapter prerenders inside its own runtime.
 import indexJson from '../../public/index.json';
 import sourcesJson from '../../vendor/kitchen-catalog/sources.json';
+import { timeWords } from './page-state.mjs';
 
 const index: any = indexJson;
 // The cuisines KitchenCatalog lists for each source (first is its main one), by creator id.
@@ -37,10 +38,14 @@ export type Creator = {
    * recipes here to go by (a channel alone, or a site on hold), the main one KitchenCatalog lists.
    */
   cuisine: string;
+  /** Every cuisine their recipes here are, with how many, most first. */
+  cuisines: { name: string; count: number }[];
   join: SupportLink[];
   buy: SupportLink[];
   follow: SupportLink[];
   picks: Pick[];
+  /** Their recipes the latest crawl's week found (the index's `fresh`), newest first. Often none. */
+  fresh: Pick[];
   videoPicks: VideoPick[];
 };
 
@@ -55,8 +60,7 @@ export const slugOf = (id: string) => id.replace(/-yt$/, '');
 export const pagePath = (id: string) => `/creators/${slugOf(id)}/`;
 export const n = (x: number, one: string) => `${x.toLocaleString('en-US')} ${x === 1 ? one : one + 's'}`;
 export const andList = (xs: string[]) => (xs.length < 2 ? xs.join('') : `${xs.slice(0, -1).join(', ')} and ${xs.at(-1)}`);
-export const fmtTime = (m: number) =>
-  m < 60 ? n(m, 'minute') : `${n(Math.floor(m / 60), 'hour')}${m % 60 ? ` ${n(m % 60, 'minute')}` : ''}`;
+export const fmtTime = (m: number) => timeWords(m);
 const hostOf = (u: string) => {
   try {
     return new URL(u).hostname.replace(/^www\./, '');
@@ -69,7 +73,7 @@ function build(): Creator[] {
   const list: Creator[] = [];
   const byId = new Map<string, Creator>();
   const add = (id: string, name: string, url: string, extra: Partial<Creator> = {}) => {
-    const c: Creator = { id, name, url, host: hostOf(url), recipes: 0, videos: 0, cuisine: '', join: [], buy: [], follow: [], picks: [], videoPicks: [], ...extra };
+    const c: Creator = { id, name, url, host: hostOf(url), recipes: 0, videos: 0, cuisine: '', cuisines: [], join: [], buy: [], follow: [], picks: [], fresh: [], videoPicks: [], ...extra };
     list.push(c);
     byId.set(id, c);
     return c;
@@ -92,6 +96,7 @@ function build(): Creator[] {
     counts.set(id, m);
   };
   const rows = new Map<string, any[]>();
+  const isFresh = new Set<any>((index.fresh || []).map((i: number) => index.recipes[i]));
   for (const r of index.recipes) {
     const id = index.sources[r[0]].id;
     bump(id, r[4]);
@@ -111,6 +116,7 @@ function build(): Creator[] {
     if (m && total) {
       const [top, k] = [...m].sort((a, b) => b[1] - a[1])[0];
       if (k / total >= 0.5) c.cuisine = top;
+      if (c.recipes) c.cuisines = [...m].map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
     }
     if (!c.recipes && !c.cuisine) c.cuisine = listed.get(c.id) || '';
 
@@ -121,11 +127,17 @@ function build(): Creator[] {
 
     // A few of their recipes: the most opened first, then ones with a photo, then the newest.
     const site = index.sources.find((s: any) => s.id === c.id)?.site || '';
+    const pick = (r: any): Pick => ({ name: r[1], url: r[2].startsWith('http') ? r[2] : site + r[2], key: `${c.id}:${r[2]}`, minutes: r[3], cuisine: r[4], img: r[7] });
     c.picks = (rows.get(c.id) || [])
       .slice()
       .sort((a, b) => (b[9] || 0) - (a[9] || 0) || Number(!!b[7]) - Number(!!a[7]) || String(b[11] || '').localeCompare(String(a[11] || '')))
       .slice(0, 8)
-      .map((r) => ({ name: r[1], url: r[2].startsWith('http') ? r[2] : site + r[2], key: `${c.id}:${r[2]}`, minutes: r[3], cuisine: r[4], img: r[7] }));
+      .map(pick);
+    // What the latest crawl's week found from them, newest first: their page leads with it.
+    c.fresh = (rows.get(c.id) || [])
+      .filter((r) => isFresh.has(r))
+      .sort((a, b) => String(b[11] || '').localeCompare(String(a[11] || '')))
+      .map(pick);
     // With no recipes here (a channel alone, or a site on hold), their newest videos instead.
     if (!c.recipes)
       c.videoPicks = (vids.get(c.id) || [])

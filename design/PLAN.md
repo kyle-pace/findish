@@ -11,7 +11,7 @@
 - **Color does one job.** Nori is only for tags, focus and the underline under a filter that's set. The search button and every action are ink.
 - **No highlights in result names.** Every result matches, so marking the words again is noise. The suggestions still highlight as you type.
 - **Quieter titles:** body size, semi-bold (600).
-- **Filters on one short line,** small, each with a ▾. On phones the line scrolls sideways and fades at the edge.
+- **Filters on one short line,** small, each with a ▾. (On phones the line scrolled sideways until November 17; it is one word, "Filters", now. See "The polish round".)
 - **Softer dark mode:** a lifted charcoal (#151918) and an off-white (#DFE5E2) instead of near-black and near-white.
 - **Home:** the ideas are smaller, in ink, and the creator line names two creators and links to the full list on About.
 
@@ -130,3 +130,103 @@ Search all 1,372 of their recipes
 **The list** (`/creators/`): a filter box, then creators grouped under their main cuisine (the one half or more of their recipes are), biggest groups first and "Many cuisines" last. Each is a ruled line, not a card: their name, what Findish has from them, and a short hint like "Patreon and 2 cookbooks". Columns on wide screens.
 
 Checked against the defaults: no cards, pills, eyebrows or dots; group names are real headings; the only color is the tomato shelf and links.
+
+## Browse pages (November 17, 2026)
+
+Pages for someone who arrives from a web search for "Korean recipes" or "recipes with tofu", not from the search box: one per cuisine (`/cuisine/korean/`), per course (`/course/soup/`) and per common ingredient (`/with/tofu/`), and `/browse/` listing them all.
+
+**Who it's for:** someone who wants a few good places to start and doesn't know Findish yet. The page answers in that order: what this is and how many, a few recipes, then the way into the full search.
+
+**Nothing new to look at.** They wear the creator pages' clothes: the same big heading and one muted sentence of counts, the ink "Search all 24 Korean recipes" button, the search's rows (photo, name, a plain sentence: "40 minutes, from The Woks of Life"), then ruled lists of a name and a count. The photos carry the color; the only tomato is links. No intro paragraph of filler about the cuisine: the count and the recipes are the content.
+
+```
+findish
+
+Korean recipes
+24 Korean recipes from 3 independent cooks. Each one opens on the cook's own site…
+[Search all 24 Korean recipes]
+
+A few to start with
+[photo] Bibimbap                          [photo] Japchae
+        1 hour 10 minutes, from RecipeTin Eats    40 minutes, from The Woks of Life
+Search all 24 Korean recipes
+
+By course            Who they're from
+Mains  19 recipes    The Woks of Life  19 recipes
+```
+
+Checked against the defaults: no cards, pills, eyebrows or dots; headings are real headings; lists are ruled lines.
+
+
+## The UI pass (November 17, 2026)
+
+From a user test, an engineering audit and a second Mobbin pass. Nothing about the look changed direction; these are the rules that were added.
+
+- **Phone filter menus are sheets:** the page behind dims, each sheet has a "Done" text button at the bottom right (bold ink, tomato underline, like a filter that's set), and a sheet with one choice closes when you pick. (Since the polish round a phone opens all the filters in one sheet; the single menus are what a wider screen shows.)
+- **What's chosen with the keyboard gets a tomato bar** down its left edge, on top of the basil fill: the selected suggestion and the focused option in a filter menu. The fill alone was too faint to see (1.2:1).
+- **Large text:** the search button sits beside the field as its own item, and takes a full-width row under it when the box gets very narrow; a result's photo goes above its words when the row is too narrow for both.
+- **Nothing moves while loading:** a link to a search opens already laid out as results, with its tags and words in the box; the home page's lines hold their place.
+- **Opened recipes** are muted ink, like the line under them.
+- **Nothing found** lists what would find something (each with its count), then the home page's three idea lines, left-aligned.
+- **Ask:** the choice comes first. A question's suggestions are just two rows, "Ask: …" ("Sent to Claude to turn into a search. Not kept.") and "Search for these words" ("Searched here, on your device."). The answer is one block with a tomato rule on the left: the question (tap to put it back in the box; one line on a phone), the answer in full ink, and one small muted line with who answered and "Search my words instead". Centred, without the rule, on the home page.
+
+## The features round (November 17, 2026)
+
+From the Mobbin pass's gap list. Each one is drawn with what the page already has: sentence lines of underlined words, the filter row, the suggestions panel. No chips, no cards, no icons beyond the × that tags already use.
+
+- **Under the empty box:** click into the box with nothing in it and the panel that holds suggestions lists what's kept on this device: "Recent searches" (the last 8, each one line like "tofu, ginger, from The Woks of Life", with a × and "Clear recent searches"), "Recently opened" (up to 5 recipes) and "Your 3 saved recipes". They are real links and buttons under small bold headings, not options in a list, so removing one works with a finger, a keyboard or a screen reader. Typing swaps them for suggestions.
+- **Save:** a quiet underlined word at the end of the line under a recipe ("…from The Woks of Life. Save"). Once saved it reads "Saved" in ink with a tomato underline, like a filter that's set. The saved view is a removable "saved" tag, reached from the footer, the panel and one line on the home page ("Or go back to your 3 saved recipes.").
+- **The creator's name** in that line is a link to their page.
+- **Diet and Order** are two more words in the filter row ("Diet: any", "Order: best match"). The three actions (Pick one at random, Share this search, Start over) left the row for the count line in the polish round, below.
+- **"Narrow it"** is one muted sentence under the count: "Narrow it: Chinese (9), Japanese (2), 30 minutes or less (6), vegetarian (2)." Only choices that would narrow this list, and none for a short list.
+- **"Related"** is one sentence after the results of a dish search: "Related: twice cooked pork, kung pao chicken." It shows only when there are two or more worth offering, which is less often than not.
+- **Ingredient results** (two or more ingredient tags, no dish words) sit under headings: "Uses all 3", "Uses 2 of 3", "Uses 1 of 3" ("Uses both" for two), each with its count, a rule over every heading but the first.
+- **Completions:** up to three common dishes that finish what's typed ("map" offers "mapo tofu"), between the tags to add and the recipes, the typed part marked like the words in recipe names.
+- **Creator pages** lead with a search box for just that creator (a square-shouldered field and an ink "Search" button, in place of the "Search their recipes" button) and, when the latest crawl found any, "New from them this week" above "How to back them".
+
+```
+Results                                             Under the empty box
+[ mapo tofu                                  (⌕) ]  [ A dish, ingredient, cuisine or creator (⌕) ]
+Show ▾ Course ▾ Cuisine ▾ Creator ▾ Time ▾          Recent searches
+Diet: any ▾ Order: best match ▾   Pick…  Share…     pad thai, ginger                          ×
+11 recipes and 17 videos on YouTube.                mapo tofu, Chinese cuisine                ×
+Narrow it: Chinese (9), 30 minutes or less (6).     Clear recent searches
+[photo] Mapo Tofu                                   Recently opened
+        35 minutes, Chinese, from The Woks of Life. Save     Mapo Tofu            The Woks of Life
+…                                                   Your 2 saved recipes
+Related: twice cooked pork, kung pao chicken.
+```
+
+Checked against the defaults: the new things are sentences, words in the filter row and headed lists; the only new colour is the tomato underline under "Saved".
+
+## The polish round (November 17, 2026)
+
+The filter row had grown to ten words (seven filters and three actions): about 1,100px in one line on a 390px phone, so the actions were a long swipe away and a filter that was set was easy to miss. From the filter sheets on Airbnb, NYT Cooking and Epicurious (one control, one sheet, a button that says how many it will show), drawn with what the page already has.
+
+- **One word on a narrow screen: "Filters ▾".** It reads "Filters, 2 set" when any are, in ink with the tomato underline of a filter that's set, so the state is in the words and not in a colour. "Narrow" is the row's own width (a container query at 40rem), so a desktop at 200% text gets it too.
+- **What's set is a sentence under it:** "mains ×, 30 minutes or less ×, quickest first ×." Underlined words like every other action, each with a chili × that takes it off. Not chips: no fill, no outline, commas between them. It lists only what the box doesn't already show: a cuisine, a creator and a diet are tags in the box with their own ×, and the first build said each of them twice (once in the box, once in the sentence). So "Filters, 2 set" counts the words in the sentence, and a search with only a cuisine reads plain "Filters". The wide row is unchanged: its words ("Cuisine: Chinese ▾") are the controls themselves.
+- **One sheet holds every filter,** stacked under bold names with a rule between groups: Show, Course, Cuisine, Creators, Ready in, Diet, Order. The page behind dims. Cuisines the search has none of are left out, and a list longer than twelve shows its first six with "Show all 14 creators". At the bottom, staying put while the filters scroll: "Clear filters" (an underlined word; muted when there is nothing to clear) and the page's second filled button, an ink square-shouldered "Show 24 recipes" that counts as you pick and closes the sheet. ("Nothing matches" when it would show none.)
+- **The actions sit with the count:** "24 recipes." on the left and "Pick one at random", "Share this search", "Start over" at the far end of the same line. When there isn't room (a phone) they go under the count together. Nothing on the results page scrolls sideways any more.
+- **Wide screens keep the row** of seven words, which now fits one line at 1280 and wraps to two below that.
+- **Very large text** (the sheet narrower than 20rem): an option's count goes under its name, and only the "Show" button stays at the bottom; "Clear filters" ends the list.
+
+```
+Phone                                   Its sheet
+[ Chinese cuisine × vegetarian ×  (⌕) ] Filters
+[ tofu                                ]
+Filters, 2 set ▾                        Show
+mains ×, 30 minutes or less ×.          (•) Recipes and videos        416
+24 recipes.                             ( ) Recipes                   334
+                                        ────────────────────────────────
+Pick one at random  Share this search   Course
+Start over                              (•) Any course                334
+[photo] Spicy Cold Tofu                 …
+        5 minutes, Chinese, from …      ────────────────────────────────
+                                        Clear filters   [ Show 24 recipes ]
+
+Desktop
+Show: recipes and videos ▾  Course: any ▾  Cuisine: Thai ▾  Creator: any ▾  Time: 30 minutes or less ▾  Diet: any ▾  Order: quickest first ▾
+16 recipes.                                              Pick one at random   Share this search   Start over
+```
+
+Checked against the defaults: no pills or chips (the set filters are a sentence), no card, no eyebrow; the one new filled thing is the sheet's button, in ink like the search button's shape, and the only colour is the tomato underline and the chili ×.

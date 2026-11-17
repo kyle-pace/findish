@@ -8,8 +8,9 @@
 // The answers are worked out in src/mcp/search.mjs (recipesWith).
 
 import type { APIRoute } from 'astro';
-import { env } from 'cloudflare:workers';
-import { prepare, recipesWith } from '../../mcp/search.mjs';
+import { recipesWith } from '../../mcp/search.mjs';
+import { loadIndex } from '../../mcp/load-index';
+import { readJson } from '../../chat/request.mjs';
 
 export const prerender = false;
 
@@ -17,33 +18,11 @@ const MAX_BODY = 4096;
 const HEADERS = { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' };
 const reply = (status: number, value: unknown) => new Response(JSON.stringify(value), { status, headers: HEADERS });
 
-// Read once per isolate, like the MCP endpoint.
-let ready: Promise<ReturnType<typeof prepare>> | null = null;
-function loadIndex(origin: string) {
-  ready ??= (async () => {
-    const assets = (env as { ASSETS?: { fetch: typeof fetch } }).ASSETS;
-    if (!assets) throw new Error('The index is not available here');
-    const res = await assets.fetch(new URL('/index.json', origin));
-    if (!res.ok) throw new Error(`The index answered ${res.status}`);
-    return prepare(await res.json());
-  })().catch((e) => {
-    ready = null;
-    throw e;
-  });
-  return ready;
-}
-
 export const POST: APIRoute = async ({ request }) => {
-  const length = Number(request.headers.get('content-length') || 0);
-  if (length > MAX_BODY) return reply(413, { error: 'Too much in one request.' });
-  let body: unknown;
-  try {
-    const text = await request.text();
-    if (text.length > MAX_BODY) return reply(413, { error: 'Too much in one request.' });
-    body = JSON.parse(text);
-  } catch {
-    return reply(400, { error: 'Send JSON: {"with": ["catalog-id", ...]}' });
-  }
+  // Reading stops the moment the body passes MAX_BODY, whatever its content-length says.
+  const read = await readJson(request, MAX_BODY, { anyType: true });
+  if (read.error) return reply(read.status === 413 ? 413 : 400, { error: read.status === 413 ? read.error : 'Send JSON: {"with": ["catalog-id", ...]}' });
+  const body: unknown = read.value;
   if (!body || typeof body !== 'object' || !Array.isArray((body as { with?: unknown }).with)) {
     return reply(400, { error: 'Send JSON: {"with": ["catalog-id", ...]}' });
   }

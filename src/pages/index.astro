@@ -1,7 +1,8 @@
 ---
 // Findish: one search across the recipe sites Kyle trusts, from our own index
 // (public/index.json, built from data/ by scripts/build-index.mjs).
-// src/scripts/search.ts loads the index and searches it in the browser.
+// src/scripts/search.ts loads the index (packed smaller, in two files under /i/) and
+// searches it in the browser.
 //
 // One search box, centered like a search engine's home page; after a search it moves up
 // and results fill the page. Ingredients and creators picked from the suggestions become
@@ -9,9 +10,31 @@
 // It's a standalone lab: LabLayout gives it only a back link, a footer line, display
 // settings and analytics; its look is src/styles/theme.css.
 import LabLayout from 'kp-design/layouts/LabLayout.astro';
+import { jsonForScript } from '../lib/json-script.mjs';
 import { SITE } from '../lib/site';
 import Wordmark from '../components/Wordmark.astro';
+import indexFiles from '../../public/index-files.json';
 import '../styles/theme.css';
+// The totals under the name are worked out at build time, so the line is there from the
+// first paint and nothing moves when the index arrives (search.ts writes the same words).
+import indexJson from '../../public/index.json';
+import { prepare } from '../lib/search-core.mjs';
+
+const index: any = indexJson;
+const count = (n: number, one: string) => `${n.toLocaleString('en-US')} ${n === 1 ? one : one + 's'}`;
+const creators = prepare(index).creators;
+const fromLine = `${count(index.recipes.length, 'recipe')} and ${count(index.videos.rows.length, 'video')} from ${creators.length} creators. Every one opens on its creator’s own site.`;
+// Creator names by id, for the tags a link to a search shows before the index has loaded.
+const creatorNames = JSON.stringify(Object.fromEntries(creators.map((c: { id: string; name: string }) => [c.id, c.name])));
+const FILTERS = [
+  ['show', 'Show'],
+  ['course', 'Course'],
+  ['cuisine', 'Cuisine'],
+  ['site', 'Creators'],
+  ['time', 'Ready in'],
+  ['diet', 'Diet'],
+  ['order', 'Order'],
+];
 ---
 
 <LabLayout
@@ -29,7 +52,7 @@ import '../styles/theme.css';
 >
   <!-- Verifies findish.now in Google Search Console (2026-11-16). Keep it. -->
   <meta slot="head" name="google-site-verification" content="_hVdo4bdUjJmjTStuwg87sYAeLc9GErXZCn0_c9hj9I" />
-  <script slot="head" type="application/ld+json" set:html={JSON.stringify({
+  <script slot="head" type="application/ld+json" set:html={jsonForScript({
     '@context': 'https://schema.org',
     '@type': 'WebSite',
     name: 'Findish',
@@ -38,23 +61,84 @@ import '../styles/theme.css';
     potentialAction: { '@type': 'SearchAction', target: 'https://findish.now/?q={search_term_string}', 'query-input': 'required name=search_term_string' },
     publisher: { '@type': 'Person', '@id': 'https://kylepace.net/#kyle', name: 'Kyle Pace', url: 'https://kylepace.net/' },
   })} />
-  <link slot="head" rel="preload" href="/index.json" as="fetch" crossorigin="anonymous" />
+  <!-- The index, packed for the page: the recipes file is asked for straight away, and its
+       name (with the videos file's, and the few things that change daily) is here for
+       src/scripts/index-load.ts. scripts/build-index.mjs writes them. -->
+  <link slot="head" rel="preload" href={indexFiles.recipes} as="fetch" crossorigin="anonymous" />
+  <script slot="head" type="application/json" id="index-files" set:html={jsonForScript(indexFiles)} />
+  <link slot="head" rel="manifest" href="/manifest.webmanifest" />
   <script slot="head" is:inline>
     // The About section used to live at #about; it's its own page now.
     if (location.hash === '#about') location.replace('/about/');
   </script>
 
   <div class="page" id="page" data-mode="home">
+    <script is:inline>
+      // A link to a search is laid out as results from the first paint (the box at the top,
+      // the filters under it), so nothing jumps when the recipes arrive. search.ts takes over.
+      if (/[?&](q|with|site|time|cuisine|course|new|show|without|not|diet|pick|saved)=[^&]/.test(location.search) || /^#list=./.test(location.hash))
+        document.getElementById('page').dataset.mode = 'results';
+    </script>
     <div class="app" id="app" data-state="loading">
       <header class="top">
         <h1><a href="/" id="home-link"><Wordmark /></a></h1>
-        <p class="from" id="from">Recipes and videos from the cooks I trust. Every one opens on its creator’s own site.</p>
+        <p class="from" id="from">{fromLine}</p>
       </header>
 
       <form class="search" id="search-form" role="search" action="/" method="get" aria-label="Recipes">
         <label class="visually-hidden" for="q">Search recipes by dish, ingredient, cuisine or creator</label>
         <div class="box" id="box">
-          <ul class="tags" id="with-chips" aria-label="Added to your search"></ul>
+          <div class="fields">
+          <ul class="tags" id="with-chips" aria-label="Added to your search" data-amp-mask data-amp-mask-attributes="aria-label,title,href" data-creators={creatorNames}></ul>
+          <script is:inline>
+            // A link to a search with tags (?with=tofu&cuisine=Thai) shows them from the first
+            // paint, as plain labels, so the box is already its full height when the recipes
+            // arrive and search.ts draws the real ones (with their × buttons).
+            (function () {
+              var p = new URLSearchParams(location.search);
+              var list = document.getElementById('with-chips');
+              var names = {};
+              try {
+                names = JSON.parse(list.dataset.creators || '{}');
+              } catch (e) {}
+              var ids = function (k) {
+                return (p.get(k) || '').split(',').filter(Boolean);
+              };
+              var add = function (kind, label) {
+                var li = document.createElement('li');
+                var tag = document.createElement('span');
+                tag.className = 'tag tag-' + kind;
+                tag.textContent = label;
+                var x = document.createElement('span');
+                x.className = 'x';
+                x.setAttribute('aria-hidden', 'true');
+                x.textContent = '×';
+                tag.appendChild(x);
+                li.appendChild(tag);
+                list.appendChild(li);
+              };
+              var plain = function (id) {
+                return id.replace(/[-_]/g, ' ');
+              };
+              if (/^#list=./.test(location.hash)) add('diet', 'shared list');
+              else if (p.get('saved') === '1') add('diet', 'saved');
+              ids('site').forEach(function (id) {
+                if (names[id]) add('creator', 'from ' + names[id]);
+              });
+              if (p.get('cuisine')) add('cuisine', p.get('cuisine') + ' cuisine');
+              if (p.get('new') === '1') add('diet', 'new this week');
+              if (p.get('diet') === 'vegetarian' || p.get('diet') === 'vegan') add('diet', p.get('diet'));
+              ids('with').forEach(function (id) {
+                add('ing', plain(id));
+              });
+              ids('without').forEach(function (id) {
+                add('not', 'no ' + plain(id));
+              });
+              ids('not').forEach(function (w) {
+                add('not', 'no ' + w);
+              });
+            })();
+          </script>
           <input
             id="q"
             name="q"
@@ -70,53 +154,91 @@ import '../styles/theme.css';
             aria-controls="q-list"
             aria-describedby="q-hint"
           />
+          <script is:inline>
+            // The words a link searches for are in the box from the first paint too.
+            document.getElementById('q').value = (new URLSearchParams(location.search).get('q') || '').trim();
+          </script>
+          </div>
           <button class="go" type="submit">
             <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2.4"></circle><path d="m15.5 15.5 5 5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"></path></svg>
             <span class="visually-hidden">Find recipes</span>
           </button>
-          <div class="panel" id="q-panel" hidden>
+          <div class="panel" id="q-panel" hidden data-amp-mask data-amp-mask-attributes="aria-label,title,href">
             <div class="list" id="q-list" role="listbox" aria-label="Suggestions"></div>
+            <!-- Under the empty box: recent searches, recipes opened lately and saved recipes,
+                 all kept on this device only (search.ts, src/lib/kept.mjs). -->
+            <div class="kept" id="q-kept" hidden></div>
           </div>
         </div>
-        <p id="q-hint" class="visually-hidden">Suggestions appear as you type. Pick an ingredient, cuisine or creator to add it to your search. Backspace in an empty box removes the last one.</p>
+        <p id="q-hint" class="visually-hidden">Suggestions appear as you type. Pick an ingredient, cuisine or creator to add it to your search. Backspace in an empty box removes the last one. While the box is empty, your recent searches and saved recipes are listed under it; they are kept on this device only.</p>
+        <p class="visually-hidden" id="announce" role="status" aria-live="polite"></p>
         <p class="home-actions"><button class="lucky" type="button" id="lucky">Pick one at random</button></p>
       </form>
 
-      <div class="filters" role="group" aria-label="Narrow it down">
-        <button class="filter" type="button" popovertarget="f-show" id="f-show-btn">Show: <span id="f-show-value">recipes and videos</span></button>
-        <button class="filter" type="button" popovertarget="f-course" id="f-course-btn">Course: <span id="f-course-value">any</span></button>
-        <button class="filter" type="button" popovertarget="f-cuisine" id="f-cuisine-btn">Cuisine: <span id="f-cuisine-value">any</span></button>
-        <button class="filter" type="button" popovertarget="f-site" id="f-site-btn">Creator: <span id="f-site-value">any</span></button>
-        <button class="filter" type="button" popovertarget="f-time" id="f-time-btn">Time: <span id="f-time-value">any</span></button>
-        <button class="lucky" type="button" id="lucky-results">Pick one at random</button>
-        <button class="clear-all" type="button" id="clear-all" hidden>Start over</button>
+      <!-- On a narrow screen (a container query, so large text counts too) the seven words
+           give way to one, "Filters", which opens them all in one sheet; what's set is
+           written out under it, each part removable. -->
+      <div class="filter-zone">
+        <div class="filters" role="group" aria-label="Narrow it down">
+          <button class="filter filter-all" type="button" id="filters-open" aria-haspopup="dialog"><span id="filters-label">Filters</span></button>
+          <button class="filter" type="button" popovertarget="f-show" id="f-show-btn">Show: <span id="f-show-value">recipes and videos</span></button>
+          <button class="filter" type="button" popovertarget="f-course" id="f-course-btn">Course: <span id="f-course-value">any</span></button>
+          <button class="filter" type="button" popovertarget="f-cuisine" id="f-cuisine-btn">Cuisine: <span id="f-cuisine-value">any</span></button>
+          <button class="filter" type="button" popovertarget="f-site" id="f-site-btn">Creator: <span id="f-site-value">any</span></button>
+          <button class="filter" type="button" popovertarget="f-time" id="f-time-btn">Time: <span id="f-time-value">any</span></button>
+          <button class="filter" type="button" popovertarget="f-diet" id="f-diet-btn">Diet: <span id="f-diet-value">any</span></button>
+          <button class="filter" type="button" popovertarget="f-order" id="f-order-btn">Order: <span id="f-order-value">best match</span></button>
+        </div>
+        <p class="set-line" id="set-line" hidden></p>
+        <script is:inline>
+          // A link with filters in it: the line that lists them holds its place, and the
+          // word says how many, before the recipes arrive, so nothing under it moves.
+          (function () {
+            var p = new URLSearchParams(location.search);
+            var n = ['show', 'course', 'cuisine', 'site', 'time', 'diet', 'sort'].filter(function (k) { return p.get(k); }).length;
+            if (!n) return;
+            document.getElementById('filters-label').textContent = 'Filters, ' + n + ' set';
+            var line = document.getElementById('set-line');
+            line.hidden = false;
+            line.innerHTML = '<span class="hold">&nbsp;</span>';
+          })();
+        </script>
       </div>
 
-      <div class="pop" id="f-show" popover>
-        <fieldset><legend>Show</legend><div class="options" id="f-show-options"></div></fieldset>
-      </div>
-      <div class="pop" id="f-course" popover>
-        <fieldset><legend>Course</legend><div class="options" id="f-course-options"></div></fieldset>
-      </div>
-      <div class="pop" id="f-cuisine" popover>
-        <fieldset><legend>Cuisine</legend><div class="options" id="f-cuisine-options"></div></fieldset>
-      </div>
-      <div class="pop" id="f-site" popover>
-        <fieldset><legend>Creators</legend><div class="options" id="f-site-options"></div></fieldset>
-      </div>
-      <div class="pop" id="f-time" popover>
-        <fieldset><legend>Ready in</legend><div class="options" id="f-time-options"></div></fieldset>
+      {FILTERS.map(([id, label]) => (
+        <div class="pop" id={`f-${id}`} popover role="dialog" aria-label={label}>
+          <fieldset><legend>{label}</legend><div class="options" id={`f-${id}-options`}></div></fieldset>
+          <p class="pop-done"><button type="button" popovertarget={`f-${id}`} popovertargetaction="hide">Done</button></p>
+        </div>
+      ))}
+
+      <!-- Every filter in one sheet, for narrow screens. Its fieldsets are the menus' own,
+           moved in while it's open (search.ts), so there is one set of controls. -->
+      <dialog class="sheet" id="filter-sheet" aria-labelledby="sheet-title">
+        <h2 id="sheet-title">Filters</h2>
+        <div class="sheet-body" id="sheet-body"></div>
+        <p class="visually-hidden" id="sheet-said" role="status" aria-live="polite"></p>
+        <div class="sheet-foot">
+          <button class="clear-all" type="button" id="sheet-clear">Clear filters</button>
+          <button class="sheet-show" type="button" id="sheet-show">Done</button>
+        </div>
+      </dialog>
+
+      <!-- The count, and at its far end the three things to do with a search. They wrap
+           under the count together when there isn't room beside it. -->
+      <div class="count-line">
+        <p class="status" id="status" role="status" aria-live="polite" tabindex="-1" data-amp-mask>Loading the recipes…</p>
+        <p class="acts">
+          <button class="lucky" type="button" id="lucky-results">Pick one at random</button>
+          <button class="lucky" type="button" id="share">Share this search</button>
+          <button class="clear-all" type="button" id="clear-all" hidden>Start over</button>
+        </p>
       </div>
 
-      <p class="status" id="status" role="status" aria-live="polite">Loading the recipes…</p>
+      <!-- "Narrow it: Chinese (8), 30 minutes or less (5)." Words, not chips; only when they'd narrow something. -->
+      <p class="narrow" id="narrow" hidden></p>
 
       <p class="note" id="note" hidden></p>
-
-      <section class="start" id="start" aria-label="Ideas" hidden>
-        <p id="try"></p>
-        <p id="popular"></p>
-        <p id="creators"></p>
-      </section>
 
       <section class="picked" id="picked" aria-labelledby="picked-title" hidden tabindex="-1">
         <h2 id="picked-title">Picked at random</h2>
@@ -128,24 +250,48 @@ import '../styles/theme.css';
       <ol class="results" id="results" aria-labelledby="results-title"></ol>
       <button class="more" type="button" id="more" hidden>Show more</button>
 
+      <!-- "Related: kung pao chicken, dan dan noodles." after a dish search's results. -->
+      <p class="related" id="related" hidden></p>
+
       <section class="videos" id="videos" aria-labelledby="videos-title" hidden>
         <h2 id="videos-title">On YouTube</h2>
         <ol class="results" id="video-results"></ol>
         <button class="more" type="button" id="more-videos" hidden>Show more</button>
       </section>
 
-      <section class="empty" id="empty" aria-label="Nothing found" hidden>
-        <p id="fixes"></p>
+      <!-- What to try instead names the words that were typed, so analytics never reads its text (data-amp-mask) or its links' addresses. -->
+      <section class="empty" id="empty" aria-label="Nothing found" hidden data-amp-mask data-amp-mask-attributes="aria-label,title,href">
+        <p id="fixes" data-amp-mask></p>
       </section>
 
-      <p class="also" id="also" hidden></p>
+      <!-- The home page's ideas. They also sit under "nothing found", after what to try instead. -->
+      <section class="start" id="start" aria-label="Ideas">
+        <p id="try"></p>
+        <p id="popular"></p>
+        <p id="creators"></p>
+        <p id="kept-line" hidden></p>
+        <script is:inline>
+          // Someone with saved recipes sees the way back to them from the first paint, so the
+          // lines above don't move when the recipes arrive. Read from this device only.
+          try {
+            if (JSON.parse(localStorage.getItem('findish-saved') || '[]').length) {
+              var kept = document.getElementById('kept-line');
+              kept.textContent = 'Or go back to your saved recipes.';
+              kept.hidden = false;
+            }
+          } catch (e) {}
+        </script>
+      </section>
+
+      <p class="also" id="also" hidden data-amp-mask data-amp-mask-attributes="aria-label,title,href"></p>
 
       <noscript>
         <p class="status">
           Search runs in your browser, so it needs JavaScript. You can still search
           <a href="https://thewoksoflife.com/?s=">The Woks of Life</a>,
           <a href="https://hot-thai-kitchen.com/?s=">Hot Thai Kitchen</a> and
-          <a href="https://smittenkitchen.com/?s=">Smitten Kitchen</a> directly.
+          <a href="https://smittenkitchen.com/?s=">Smitten Kitchen</a> directly, see
+          <a href="/creators/">every creator here</a>, or <a href="/browse/">browse by cuisine, course and ingredient</a>.
         </p>
       </noscript>
     </div>
@@ -160,7 +306,9 @@ import '../styles/theme.css';
   .page {
     width: min(100% - 2 * var(--gutter), 68rem);
     margin-inline: auto;
-    padding-block: var(--space-4) var(--space-12);
+    /* The end of the page clears the phone's home indicator. (kp-design's footer already
+       leaves room under itself for the floating display-settings button.) */
+    padding-block: var(--space-4) calc(var(--space-12) + env(safe-area-inset-bottom, 0px));
   }
 
   h2 {
@@ -289,6 +437,24 @@ import '../styles/theme.css';
     margin-bottom: clamp(var(--space-1), 1.4svh, var(--space-3));
   }
 
+  /* The ideas are drawn when the recipes arrive. Their lines hold their place from the
+     first paint (two lines each on a phone, one on wider screens), so the name and the box
+     don't move when they fill in. */
+  [data-mode='home'] .start p {
+    min-height: 1lh;
+  }
+
+  @media (max-width: 40rem) {
+    [data-mode='home'] .start p {
+      min-height: 2lh;
+    }
+  }
+
+  /* Results fill the window from the first paint, so the footer doesn't jump when they arrive. */
+  [data-mode='results'] .app {
+    min-height: 100svh;
+  }
+
   [data-mode='home'] .start #fresh {
     margin-top: clamp(var(--space-3), 3svh, var(--space-6));
   }
@@ -303,7 +469,8 @@ import '../styles/theme.css';
   }
 
   @media (max-height: 620px) and (max-width: 40rem), (max-height: 540px) {
-    [data-mode='home'] .start #creators {
+    [data-mode='home'] .start #creators,
+    [data-mode='home'] .start #kept-line {
       display: none;
     }
   }
@@ -317,6 +484,21 @@ import '../styles/theme.css';
     [data-mode='home'] .top h1 {
       font-size: 2rem;
     }
+  }
+
+  /* While the recipes load: the home page keeps "Loading…" for screen readers only (it
+     would nudge the box otherwise), and a search's page doesn't show the ideas' empty lines. */
+  [data-mode='home'] .app[data-state='loading'] .status {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  [data-mode='results'] .app[data-state='loading'] .start {
+    display: none;
   }
 
   /* Phones: give the home page room to breathe. The idea lines get a narrower measure so
@@ -346,7 +528,7 @@ import '../styles/theme.css';
     }
   }
 
-  [data-mode='home'] .filters,
+  [data-mode='home'] .filter-zone,
   [data-mode='home'] .note,
   [data-mode='home'] .status:empty,
   [data-mode='results'] .home-actions,
@@ -360,11 +542,10 @@ import '../styles/theme.css';
   .box {
     position: relative;
     display: flex;
-    flex-wrap: wrap;
     align-items: center;
     gap: var(--space-2);
     min-height: 3.5rem;
-    padding: var(--space-2) 3.5rem var(--space-2) var(--space-4);
+    padding: var(--space-2) 0.35rem var(--space-2) var(--space-4);
     border: 1px solid var(--field-rule);
     border-radius: 0.5rem;
     background: var(--bg-raised);
@@ -377,9 +558,25 @@ import '../styles/theme.css';
     box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-ink) 30%, transparent);
   }
 
+  /* Tags and the field wrap together; the button sits beside them as its own item, so at
+     any text size it never lies over what's typed. */
+  .fields {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
   .tags {
     display: contents;
     list-style: none;
+  }
+
+  .tags :global(li) {
+    min-width: 0;
+    max-width: 100%;
   }
 
   .tags :global(.tag) {
@@ -388,6 +585,7 @@ import '../styles/theme.css';
     gap: 0.35em;
     min-height: 2.25rem;
     padding: 0 0.55em;
+    overflow-wrap: anywhere;
     margin: 0;
     border: 0;
     border-radius: 0.3rem;
@@ -430,7 +628,8 @@ import '../styles/theme.css';
 
   .box input {
     flex: 1 1 12rem;
-    min-width: 8rem;
+    width: 100%;
+    min-width: min(8rem, 100%);
     min-height: 2.5rem;
     padding: 0;
     border: 0;
@@ -450,10 +649,7 @@ import '../styles/theme.css';
   }
 
   .go {
-    position: absolute;
-    top: 50%;
-    right: 0.35rem;
-    translate: 0 -50%;
+    flex: none;
     display: grid;
     place-items: center;
     width: 2.75rem;
@@ -463,6 +659,27 @@ import '../styles/theme.css';
     background: var(--go);
     color: var(--go-ink);
     cursor: pointer;
+  }
+
+  /* Very large text on a small screen: the button takes its own row under the field, full
+     width, so tags and typing get the whole box. Measured against the box, in text sizes. */
+  .search {
+    container-type: inline-size;
+  }
+
+  @container (max-width: 16rem) {
+    .box {
+      flex-wrap: wrap;
+      padding-right: var(--space-4);
+    }
+
+    .fields {
+      flex-basis: 100%;
+    }
+
+    .go {
+      width: 100%;
+    }
   }
 
   .go:focus-visible {
@@ -501,16 +718,20 @@ import '../styles/theme.css';
     cursor: pointer;
   }
 
+  /* The chosen suggestion: the basil fill is too faint to see on its own (1.2:1), so a
+     tomato bar down its left edge marks it (well over 3:1 in light and dark). */
   .panel :global([role='option'][aria-selected='true']) {
     background: var(--scallion-fill);
+    box-shadow: inset 4px 0 0 var(--accent-ink);
   }
 
-  /* A line between things you add (creators, ingredients) and recipes you open. */
-  .panel :global([data-kind='creator'] + [data-kind='recipe']),
-  .panel :global([data-kind='ing'] + [data-kind='recipe']),
-  .panel :global([data-kind='recipe'] + [data-kind='all']) {
+  /* A line between things you add (creators, ingredients), recipes you open, and the
+     plain search for the words. */
+  .panel :global([role='group'] + [role='group']),
+  .panel :global([role='group'] + [role='option']) {
     margin-top: var(--space-1);
-    box-shadow: 0 -1px 0 var(--line);
+    padding-top: var(--space-1);
+    border-top: 1px solid var(--line);
   }
 
   .panel :global(.opt-thumb) {
@@ -526,6 +747,9 @@ import '../styles/theme.css';
     display: flex;
     flex-direction: column;
     min-width: 0;
+    /* A long word at very large text ("Restaurant" beside a photo on a small phone) breaks
+       instead of pushing the page sideways. */
+    overflow-wrap: anywhere;
   }
 
   .panel :global(.opt-meta) {
@@ -556,6 +780,9 @@ import '../styles/theme.css';
   .more,
   .status :global(button),
   .empty :global(button),
+  .narrow :global(button),
+  .related :global(button),
+  .kept :global(p button),
   .start :global(button) {
     min-height: 2.75rem;
     padding: 0;
@@ -579,9 +806,132 @@ import '../styles/theme.css';
 
   .start :global(button),
   .empty :global(button),
+  .narrow :global(button),
+  .related :global(button),
   .status :global(button) {
     min-height: 0;
     padding-block: 0.4rem;
+  }
+
+  .narrow :global(button:hover),
+  .related :global(button:hover),
+  .kept :global(:is(a, p button):hover) {
+    text-decoration-color: currentColor;
+  }
+
+  /* "Narrow it" under the count and "Related" after the results: one quiet sentence each,
+     the choices underlined like every other action. Each choice stays with its count. */
+  .narrow,
+  .related {
+    max-width: 44rem;
+    font-size: var(--step--1);
+    line-height: 1.9;
+    color: var(--ink-muted);
+  }
+
+  .narrow {
+    margin: calc(-1 * var(--space-3)) 0 var(--space-4);
+  }
+
+  .related {
+    margin: var(--space-8) 0 0;
+  }
+
+  .related :global(.keep) {
+    display: inline-block;
+    max-width: 100%;
+  }
+
+  .narrow :global(.n) {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Under the empty box: what's kept on this device. Headed lists of plain links; each
+     recent search has a × to take it off, sized for a finger. */
+  .kept {
+    padding: var(--space-1) var(--space-3) var(--space-2);
+  }
+
+  .kept :global(section + section),
+  .kept :global(section + p) {
+    margin-top: var(--space-2);
+    padding-top: var(--space-2);
+    border-top: 1px solid var(--line);
+  }
+
+  .kept :global(h2) {
+    margin: var(--space-2) 0 0;
+    font-size: var(--step--1);
+    font-weight: 700;
+    line-height: 1.4;
+  }
+
+  .kept :global(ul) {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .kept :global(li) {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: 2.75rem;
+  }
+
+  .kept :global(a) {
+    flex: 1;
+    min-width: 0;
+    padding-block: 0.5rem;
+    color: var(--ink);
+    text-decoration-color: var(--field-rule);
+    text-decoration-thickness: 0.08em;
+    text-underline-offset: 0.2em;
+    overflow-wrap: break-word;
+  }
+
+  .kept :global(p button) {
+    text-align: left;
+  }
+
+  .kept :global(.opt-meta) {
+    flex: none;
+    max-width: 45%;
+    text-align: right;
+  }
+
+  .kept :global(.forget) {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 0;
+    border-radius: 0.35rem;
+    background: none;
+    color: var(--ink-muted);
+    font: inherit;
+    font-size: 1.25em;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .kept :global(.forget:hover) {
+    color: var(--chili);
+    background: var(--line);
+  }
+
+  .kept :global(p) {
+    margin: 0;
+    font-size: var(--step--1);
+  }
+
+  .kept :global(p.kept-saved) {
+    display: flex;
+    align-items: center;
+    min-height: 2.75rem;
+    font-size: inherit;
   }
 
   /* Idea links and buttons sit the same on a wrapped line; the line height keeps them 24px tall. */
@@ -614,44 +964,129 @@ import '../styles/theme.css';
     text-underline-offset: 0.2em;
   }
 
+  /* A word and the comma after it stay together. As a block of its own, so a name too long
+     for a small screen at large text wraps inside instead of pushing the page wide. */
   .start :global(.keep) {
-    white-space: nowrap;
+    display: inline-block;
+    max-width: 100%;
   }
 
   /* ---------------------------------------------------------------------------------
      Filters: words, not pills. */
+  .filter-zone {
+    container: filters / inline-size;
+    margin-top: var(--space-3);
+  }
+
+  /* They wrap to a second line when the window is too narrow for all seven. */
   .filters {
     display: flex;
     flex-wrap: wrap;
     gap: 0 var(--space-4);
     align-items: center;
-    margin-top: var(--space-3);
     font-size: var(--step--1);
   }
 
-  /* "Pick one at random" and "Start over" sit at the far end. */
-  .filters .lucky {
-    margin-left: auto;
+  .filter-all,
+  .set-line {
+    display: none;
   }
 
-  /* Phones: one line that scrolls sideways, fading at the edge so it reads as more. */
-  @media (max-width: 40rem) {
-    .filters {
-      flex-wrap: nowrap;
-      overflow-x: auto;
-      scrollbar-width: none;
-      margin-inline: calc(-1 * var(--gutter));
-      padding-inline: var(--gutter);
-      mask-image: linear-gradient(to right, #000 calc(100% - 2.5rem), transparent);
+  /* Narrow (a phone, or any window once the text is large): one word, "Filters", opens
+     every filter in one sheet, and what's set is written out under it. Before this the
+     row was one line about 1,100px long that scrolled sideways. */
+  @container filters (max-width: 40rem) {
+    .filters .filter:not(.filter-all) {
+      display: none;
     }
 
-    .filters > * {
-      flex: none;
+    .filter-all {
+      display: block;
     }
 
-    .filters .lucky {
-      margin-left: 0;
+    .set-line {
+      display: block;
     }
+  }
+
+  /* "Chinese ×, 30 minutes or less ×, vegetarian ×.": a sentence, each part a button that
+     takes it off. Words and a ×, not chips. */
+  .set-line {
+    margin: calc(-1 * var(--space-1)) 0 0;
+    font-size: var(--step--1);
+    line-height: 1.5;
+    color: var(--ink-muted);
+  }
+
+  .set-line :global(button) {
+    min-height: 2.75rem;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--ink);
+    font: inherit;
+    text-align: left;
+    text-decoration: underline;
+    text-decoration-color: var(--field-rule);
+    text-decoration-thickness: 0.08em;
+    text-underline-offset: 0.2em;
+    cursor: pointer;
+  }
+
+  .set-line :global(button:hover) {
+    text-decoration-color: currentColor;
+  }
+
+  /* Holds the line's height until the script writes it (see the inline script). */
+  .set-line :global(.hold) {
+    display: inline-block;
+    min-height: 2.75rem;
+  }
+
+  .set-line :global(.x) {
+    display: inline-block;
+    margin-left: 0.3em;
+    color: var(--chili);
+    font-weight: 700;
+  }
+
+  .set-line :global(.keep) {
+    display: inline-block;
+    max-width: 100%;
+    margin-right: 0.4em;
+  }
+
+  /* The count, with "Pick one at random", "Share this search" and "Start over" at its far
+     end. When there isn't room beside the count they sit under it, together, wrapping
+     among themselves on a very narrow screen: never scrolling sideways. */
+  .count-line {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0 var(--space-6);
+    margin: var(--space-1) 0 var(--space-3);
+  }
+
+  .count-line .status {
+    flex: 1 1 16rem;
+    min-width: 0;
+    margin: var(--space-2) 0 0;
+  }
+
+  .acts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 var(--space-4);
+    margin: 0;
+    font-size: var(--step--1);
+  }
+
+  [data-mode='home'] .acts {
+    display: none;
+  }
+
+  [data-mode='home'] .count-line {
+    margin: 0;
   }
 
   .filter {
@@ -689,22 +1124,16 @@ import '../styles/theme.css';
   .pop {
     margin: 0;
     width: max-content;
-    min-width: 14rem;
-    max-width: min(26rem, calc(100vw - 2 * var(--gutter)));
+    min-width: min(14rem, calc(100vw - 2rem));
+    max-width: min(26rem, calc(100vw - 2rem));
     max-height: min(28rem, 70vh);
     overflow: auto;
-    padding: var(--space-4) var(--space-4) var(--space-3);
+    padding: var(--space-4) var(--space-4) 0;
     background: var(--bg-raised);
     color: var(--ink);
     border: 1px solid var(--line);
     border-radius: 0.5rem;
     box-shadow: 0 10px 30px rgb(0 0 0 / 0.16);
-  }
-
-  .pop fieldset {
-    margin: 0;
-    padding: 0;
-    border: 0;
   }
 
   .pop legend {
@@ -726,8 +1155,58 @@ import '../styles/theme.css';
     cursor: pointer;
   }
 
+  /* A cuisine this search has none of is folded away (search.ts sets `hidden`); the grid
+     above would otherwise show it anyway. */
+  .options :global(label[hidden]) {
+    display: none;
+  }
+
   .options :global(label:hover) {
     background: var(--scallion-fill);
+  }
+
+  /* The option the keyboard is on: the same tomato bar as a chosen suggestion. `:focus`,
+     not `:focus-visible`: Safari drops focus-visible from a radio reached with the arrow
+     keys, which left no sign of where the keyboard was. */
+  .options :global(label:has(input:focus)) {
+    background: var(--scallion-fill);
+    box-shadow: inset 4px 0 0 var(--accent-ink);
+  }
+
+  .options {
+    padding-bottom: var(--space-3);
+  }
+
+  /* Done stays at the bottom of the menu while its options scroll. Menus with one choice
+     close when you pick, so on wider screens only Creators (pick several) shows it. */
+  .pop-done {
+    display: none;
+    position: sticky;
+    bottom: 0;
+    margin: 0 calc(-1 * var(--space-4));
+    padding: 0 calc(var(--space-4) + var(--space-2));
+    border-top: 1px solid var(--line);
+    background: var(--bg-raised);
+    text-align: right;
+  }
+
+  #f-site .pop-done {
+    display: block;
+  }
+
+  .pop-done button {
+    min-height: 2.75rem;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--ink);
+    font: inherit;
+    font-weight: 700;
+    text-decoration: underline;
+    text-decoration-color: var(--accent-ink);
+    text-decoration-thickness: 0.12em;
+    text-underline-offset: 0.3em;
+    cursor: pointer;
   }
 
   .options :global(input) {
@@ -749,10 +1228,27 @@ import '../styles/theme.css';
   @media (max-width: 40rem) {
     .pop {
       inset: auto 0 0 0 !important;
+      min-width: 0;
       max-width: none;
       width: 100%;
       border-radius: 0.75rem 0.75rem 0 0;
-      padding-bottom: calc(var(--space-8) + env(safe-area-inset-bottom));
+    }
+
+    /* A sheet over the page: the page behind it dims, and a tap there only closes the
+       sheet (search.ts), it doesn't reach the result under the finger. */
+    .pop::backdrop {
+      background: rgb(0 0 0 / 0.45);
+      pointer-events: auto;
+    }
+
+    .pop-done {
+      display: block;
+      padding-bottom: calc(var(--space-2) + env(safe-area-inset-bottom));
+    }
+
+    .pop-done button {
+      min-width: 2.75rem;
+      padding-block: var(--space-2);
     }
 
     /* Fingers need the full 44px on a phone. */
@@ -774,10 +1270,195 @@ import '../styles/theme.css';
     }
   }
 
+  /* ---------------------------------------------------------------------------------
+     Every filter in one sheet (narrow screens). A modal dialog: the page behind dims and
+     can't be reached until it closes (Escape, a tap on the dimmed page, or the button). */
+  .sheet {
+    position: fixed;
+    inset: auto 0 0 0;
+    width: 100%;
+    max-width: 40rem;
+    max-height: min(88dvh, 100dvh - 2.5rem);
+    margin: 0 auto;
+    padding: var(--space-4) var(--space-4) 0;
+    overflow: auto;
+    overscroll-behavior: contain;
+    container: sheet / inline-size;
+    background: var(--bg-raised);
+    color: var(--ink);
+    border: 1px solid var(--line);
+    border-bottom: 0;
+    border-radius: 0.75rem 0.75rem 0 0;
+    box-shadow: 0 -10px 30px rgb(0 0 0 / 0.16);
+  }
+
+  .sheet::backdrop {
+    background: rgb(0 0 0 / 0.45);
+  }
+
+  /* The page behind doesn't scroll under a finger while the sheet is open. */
+  :global(html:has(.sheet[open])) {
+    overflow: hidden;
+  }
+
+  .sheet h2 {
+    margin: 0 0 var(--space-2);
+    padding: 0 var(--space-2);
+  }
+
+  :is(.pop, .sheet) fieldset {
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .sheet fieldset {
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--line);
+  }
+
+  .sheet fieldset:first-child {
+    border-top: 0;
+  }
+
+  .sheet legend {
+    float: left; /* so the rule above the group sits above its name, not through it */
+    width: 100%;
+    padding: 0 var(--space-2);
+    margin-bottom: var(--space-1);
+    font-weight: 700;
+  }
+
+  .sheet .options {
+    clear: both;
+  }
+
+  .sheet .options :global(label) {
+    min-height: 2.75rem;
+  }
+
+  /* A long list (cuisines, creators) shows its first few, whatever is chosen, and a
+     button for the rest. */
+  .sheet .options[data-folded] :global(label:nth-of-type(n + 7):not(:has(input:checked))) {
+    display: none;
+  }
+
+  .sheet :global(.unfold) {
+    min-height: 2.75rem;
+    margin: 0 var(--space-2) var(--space-3);
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--ink);
+    font: inherit;
+    font-size: var(--step--1);
+    text-decoration: underline;
+    text-decoration-color: var(--field-rule);
+    text-underline-offset: 0.2em;
+    cursor: pointer;
+  }
+
+  /* Very large text: an option's count goes under its name instead of squeezing it, and
+     only the button that closes the sheet stays at the bottom ("Clear filters" comes at
+     the end of the list), so the filters keep most of the screen. */
+  @container sheet (max-width: 20rem) {
+    .options :global(label) {
+      grid-template-columns: auto 1fr;
+      padding-block: var(--space-1);
+    }
+
+    .options :global(.count) {
+      grid-column: 2;
+      padding-left: 0;
+      text-align: left;
+    }
+
+    /* (.sheet in front, so these win over the footer's usual rules further down.) */
+    .sheet .sheet-foot {
+      display: contents;
+    }
+
+    .sheet .sheet-foot .clear-all {
+      display: block;
+      margin: 0 var(--space-2);
+    }
+
+    .sheet-show {
+      position: sticky;
+      bottom: calc(var(--space-2) + env(safe-area-inset-bottom));
+      display: block;
+      width: 100%;
+      margin: var(--space-2) 0;
+      /* A band of the sheet's own colour around it, so what scrolls behind doesn't show through. */
+      box-shadow: 0 0 0 var(--space-3) var(--bg-raised);
+    }
+  }
+
+  /* "Clear filters" and "Show 11 recipes" stay at the bottom while the filters scroll. */
+  .sheet-foot {
+    position: sticky;
+    bottom: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1) var(--space-4);
+    align-items: center;
+    justify-content: space-between;
+    margin: 0 calc(-1 * var(--space-4));
+    padding: var(--space-3) calc(var(--space-4) + var(--space-2)) calc(var(--space-3) + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--line);
+    background: var(--bg-raised);
+  }
+
+  .sheet-foot .clear-all:disabled {
+    color: var(--ink-muted);
+    text-decoration: none;
+    cursor: default;
+  }
+
+  /* The one filled button on the page besides the search button: ink, square-shouldered. */
+  .sheet-show {
+    min-height: 2.75rem;
+    margin-left: auto;
+    padding: var(--space-2) var(--space-4);
+    border: 0;
+    border-radius: 0.5rem;
+    background: var(--ink);
+    color: var(--bg);
+    font: inherit;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    cursor: pointer;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .sheet[open] {
+      animation: sheet-in var(--duration-fast) var(--ease-out);
+    }
+
+    @keyframes sheet-in {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+    }
+  }
+
   .status {
     margin: var(--space-4) 0;
     font-size: var(--step--1);
     color: var(--ink-muted);
+  }
+
+  /* Focus is moved here after a search on a phone, so a screen reader reads the count. */
+  .status:focus {
+    outline: none;
+  }
+
+  .status :global(a) {
+    color: var(--ink);
+    text-decoration-color: var(--field-rule);
+    text-underline-offset: 0.2em;
   }
 
   .status :global(strong) {
@@ -818,6 +1499,27 @@ import '../styles/theme.css';
     }
   }
 
+  /* When a row is too narrow for a photo beside the words (large text on a small phone),
+     the photo goes on top. Measured against the row's own width, in text sizes. */
+  .results :global(li) {
+    container-type: inline-size;
+  }
+
+  @container (max-width: 17rem) {
+    .results :global(.row) {
+      grid-template-columns: 1fr;
+    }
+
+    .results :global(.row .photo) {
+      max-width: 12rem;
+    }
+
+    .results :global(.row .text) {
+      grid-row: 2;
+      grid-column: 1;
+    }
+  }
+
   :global(.row .photo) {
     grid-row: 1;
     grid-column: 1;
@@ -849,36 +1551,42 @@ import '../styles/theme.css';
     grid-column: 2;
   }
 
-  :global(.row h3) {
+  :global(.row :is(h3, h4)) {
     margin: 0 0 var(--space-1);
     font-size: var(--step-0);
     font-weight: 600;
     line-height: 1.3;
   }
 
-  :global(.row h3 a) {
+  :global(.row :is(h3, h4) a) {
     color: var(--ink);
     text-decoration: none;
+    overflow-wrap: anywhere;
+  }
+
+  /* A recipe you've already opened: quieter, like the line under it. */
+  :global(.row :is(h3, h4) a:visited) {
+    color: var(--ink-muted);
   }
 
   /* The whole row is the link's hit area; the name stays the accessible name. */
-  :global(.row h3 a::after) {
+  :global(.row :is(h3, h4) a::after) {
     content: '';
     position: absolute;
     inset: -0.25rem;
   }
 
-  :global(.row h3 a:focus-visible) {
+  :global(.row :is(h3, h4) a:focus-visible) {
     outline: none;
   }
 
-  :global(.row h3 a:focus-visible::after) {
+  :global(.row :is(h3, h4) a:focus-visible::after) {
     outline: 3px solid var(--accent-ink);
     outline-offset: 2px;
     border-radius: 0.4rem;
   }
 
-  :global(.row:hover h3 a) {
+  :global(.row:hover :is(h3, h4) a) {
     text-decoration: underline;
     text-decoration-color: var(--accent);
     text-underline-offset: 0.15em;
@@ -894,6 +1602,76 @@ import '../styles/theme.css';
   :global(.row .uses) {
     margin-top: var(--space-1);
     color: var(--ink);
+  }
+
+  /* The creator's name in the line under a recipe opens their page. Like "Save" beside it,
+     it's lifted above the row's stretched recipe link so it can be pressed on its own. */
+  :global(.row .meta a),
+  :global(.row .save) {
+    position: relative;
+    z-index: 1;
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-color: var(--field-rule);
+    text-decoration-thickness: 0.08em;
+    text-underline-offset: 0.2em;
+  }
+
+  :global(.row .meta a:hover),
+  :global(.row .save:hover) {
+    color: var(--ink);
+    text-decoration-color: currentColor;
+  }
+
+  /* "Save" keeps a recipe on this device: a quiet word at the end of the line. Once saved
+     it reads "Saved", in ink with a tomato underline, like a filter that's set. */
+  :global(.row .save) {
+    min-height: 1.5rem;
+    margin-left: 0.15em;
+    padding: 0.2rem 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    cursor: pointer;
+  }
+
+  :global(.row .save[aria-pressed='true']) {
+    color: var(--ink);
+    font-weight: 600;
+    text-decoration-color: var(--accent-ink);
+    text-decoration-thickness: 0.12em;
+  }
+
+  :global(.picked .save) {
+    color: var(--ink);
+  }
+
+  /* Ingredient results under headings: "Uses all 3", "Uses 2 of 3". A heading runs the
+     full width, with a rule over every one but the first. */
+  .results :global(li.group) {
+    grid-column: 1 / -1;
+    margin-bottom: calc(-1 * var(--space-4));
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--line);
+  }
+
+  .results :global(li.group:first-child) {
+    padding-top: 0;
+    border-top: 0;
+  }
+
+  .results :global(li.group h3) {
+    margin: 0;
+    font-size: var(--step-0);
+    font-weight: 700;
+    line-height: 1.3;
+  }
+
+  .results :global(li.group h3 span) {
+    margin-left: 0.4em;
+    font-size: var(--step--1);
+    font-weight: 400;
+    color: var(--ink-muted);
   }
 
   .more {
@@ -928,7 +1706,7 @@ import '../styles/theme.css';
     grid-template-columns: minmax(8rem, 12rem) 1fr;
   }
 
-  .picked :global(.row h3) {
+  .picked :global(.row :is(h3, h4)) {
     font-size: var(--step-1);
   }
 
@@ -954,6 +1732,22 @@ import '../styles/theme.css';
   .empty p {
     max-width: 32em;
     line-height: 1.9;
+  }
+
+  .empty :global(a) {
+    color: var(--ink);
+    text-decoration-color: var(--field-rule);
+    text-underline-offset: 0.2em;
+  }
+
+  /* Ideas under "nothing found": the home page's lines, left-aligned like the results. */
+  [data-mode='results'] .start {
+    margin-top: var(--space-4);
+  }
+
+  [data-mode='results'] .start p {
+    margin-inline: 0;
+    text-wrap: wrap;
   }
 
   .also {
@@ -1004,6 +1798,8 @@ import '../styles/theme.css';
     color: var(--accent-ink);
     font: inherit;
     font-weight: 700;
+    /* A button centres its words; these start at the left like the lines around them when they wrap. */
+    text-align: left;
     text-decoration: underline;
     text-decoration-thickness: 0.08em;
     text-underline-offset: 0.2em;
@@ -1043,5 +1839,10 @@ import '../styles/theme.css';
 
   .app[data-state='loading'] .results {
     opacity: 0.5;
+  }
+
+  /* The cuisine line is fetched after the results: it holds its place meanwhile. */
+  .note[data-waiting] {
+    visibility: hidden;
   }
 </style>

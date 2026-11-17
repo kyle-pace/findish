@@ -1,0 +1,74 @@
+---
+// Every browse page in one list: cuisines, courses and ingredients, each with its count.
+// The way in for people (from the footer) and for search engines. Added 2026-11-17; see
+// design/PLAN.md, "Browse pages".
+import LabLayout from 'kp-design/layouts/LabLayout.astro';
+import { jsonForScript } from '../../lib/json-script.mjs';
+import { SITE } from '../../lib/site';
+import SiteHead from '../../components/SiteHead.astro';
+import { n, totals, CREATORS } from '../../lib/creators';
+import { CUISINES, COURSES, INGREDIENTS, type Browse } from '../../lib/browse';
+import '../../styles/theme.css';
+import '../../styles/creators.css';
+import '../../styles/browse.css';
+
+const groups: [string, string, Browse[]][] = [
+  ['cuisines', 'Cuisines', CUISINES],
+  ['courses', 'Courses', COURSES],
+  ['ingredients', 'Ingredients', INGREDIENTS],
+];
+const ld = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Findish', item: 'https://findish.now/' },
+    { '@type': 'ListItem', position: 2, name: 'Browse', item: 'https://findish.now/browse/' },
+  ],
+};
+---
+
+<LabLayout
+  favicon="/favicon-v3.svg"
+  site={SITE}
+  bar={false}
+  lab={{ name: 'the search', href: '/' }}
+  about="/about/"
+  title="Browse Findish by cuisine, course or ingredient"
+  description={`${n(totals.recipes, 'recipe')} from ${n(CREATORS.filter((c) => c.recipes).length, 'independent cook')}, sorted into ${CUISINES.length} cuisines, ${COURSES.length} courses and ${INGREDIENTS.length} ingredients. Every one opens on the cook’s own site.`}
+  image="/og.png"
+  imageAlt="Findish: a search box holding ginger and tofu. Recipes from The Woks of Life, Hot Thai Kitchen, Smitten Kitchen and more."
+  themeColor={{ light: '#fbf5ec', dark: '#1d1714' }}
+>
+  <link slot="head" rel="manifest" href="/manifest.webmanifest" />
+  <script slot="head" type="application/ld+json" set:html={jsonForScript(ld)} />
+  <SiteHead wide />
+
+  <article class="creators-page browse" data-page="browse">
+    <h1>Browse</h1>
+    <p class="lede">
+      {n(totals.recipes, 'recipe')} by cuisine, by course or by something you have. Or <a href="/">search for anything</a>.
+    </p>
+
+    {
+      groups.map(([id, name, list]) => (
+        <section class="group" aria-labelledby={id}>
+          <h2 id={id}>{name}</h2>
+          <ul class="list">
+            {list.map((b) => (
+              <li>
+                <a href={b.path} data-browse-kind={b.kind === 'with' ? 'ingredient' : b.kind} data-browse-page={b.slug}>
+                  {b.kind === 'with' ? b.name.replace(/^./, (c) => c.toUpperCase()) : b.name}
+                </a>
+                <span class="has">{n(b.count, 'recipe')}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))
+    }
+  </article>
+
+  <script>
+    import '../../scripts/browse';
+  </script>
+</LabLayout>

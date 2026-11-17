@@ -1,0 +1,24 @@
+/*
+  The browse pages (/browse/, /cuisine/…, /course/…, /with/…), added 2026-11-17. They wear
+  the creator pages' styles (creators.css): the same heading, rows and ruled lists. This
+  file only holds what differs. Plan: design/PLAN.md, "Browse pages".
+*/
+.browse h2 {
+  margin-top: var(--space-12);
+}
+
+/* On one cuisine's page the lists are short, so they stay near the reading width. The
+   list of everything (/browse/) uses the full width, in as many columns as fit. */
+.creator.browse .list {
+  max-width: 56rem;
+}
+
+@media (min-width: 48rem) {
+  .creators-page.browse .list {
+    grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+  }
+}
+
+.browse .who + .picks h2 {
+  margin-top: var(--space-8);
+}

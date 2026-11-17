@@ -7,6 +7,7 @@ import { search, searchVideos } from '../lib/search-core.mjs';
 import { LIMITS, SYSTEM, chat, cleanMessages, cleanQuery, guardReply, pageQuery, searchArgs, searchShown, stateFor, summarize, toolsFor } from './chat.mjs';
 import { MODEL, callClaude } from './anthropic.mjs';
 import { readJson, visitorKey } from './request.mjs';
+import { readFileSync } from 'node:fs';
 
 // ing: [id, name, recipe count, parent positions, ...other names]
 const ing = [
@@ -460,6 +461,25 @@ test('a body bigger than it claims is cut off while reading, not after', async (
   const req = new Request('https://findish.now/api/chat', { method: 'POST', headers: { 'content-type': 'application/json' }, body: endless, duplex: 'half' });
   assert.equal((await readJson(req, 8192)).status, 413);
   assert.ok(pulled < 20, `read ${pulled} KB of an endless body`);
+});
+
+test('/api/with reads its body the same way, without asking for a content-type', async () => {
+  let pulled = 0;
+  const endless = new ReadableStream({
+    pull(c) {
+      pulled++;
+      c.enqueue(new Uint8Array(1024).fill(32));
+    },
+  });
+  // No content-length and no content-type: what request.text() would have read to the end.
+  const req = new Request('https://findish.now/api/with', { method: 'POST', body: endless, duplex: 'half' });
+  assert.equal((await readJson(req, 4096, { anyType: true })).status, 413);
+  assert.ok(pulled < 12, `read ${pulled} KB of an endless body`);
+  const plain = new Request('https://findish.now/api/with', { method: 'POST', headers: { 'content-type': 'text/plain' }, body: '{"with":["tofu"]}' });
+  assert.deepEqual(await readJson(plain, 4096, { anyType: true }), { value: { with: ['tofu'] } });
+  const src = readFileSync(new URL('../pages/api/with.ts', import.meta.url), 'utf8');
+  assert.match(src, /readJson\(request, MAX_BODY, \{ anyType: true \}\)/);
+  assert.doesNotMatch(src, /request\.text\(\)/);
 });
 
 test("the rate limit counts an IPv6 visitor by their block, not each address", () => {

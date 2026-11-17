@@ -10,6 +10,7 @@
 import type { APIRoute } from 'astro';
 import { recipesWith } from '../../mcp/search.mjs';
 import { loadIndex } from '../../mcp/load-index';
+import { readJson } from '../../chat/request.mjs';
 
 export const prerender = false;
 
@@ -18,16 +19,10 @@ const HEADERS = { 'content-type': 'application/json; charset=utf-8', 'cache-cont
 const reply = (status: number, value: unknown) => new Response(JSON.stringify(value), { status, headers: HEADERS });
 
 export const POST: APIRoute = async ({ request }) => {
-  const length = Number(request.headers.get('content-length') || 0);
-  if (length > MAX_BODY) return reply(413, { error: 'Too much in one request.' });
-  let body: unknown;
-  try {
-    const text = await request.text();
-    if (text.length > MAX_BODY) return reply(413, { error: 'Too much in one request.' });
-    body = JSON.parse(text);
-  } catch {
-    return reply(400, { error: 'Send JSON: {"with": ["catalog-id", ...]}' });
-  }
+  // Reading stops the moment the body passes MAX_BODY, whatever its content-length says.
+  const read = await readJson(request, MAX_BODY, { anyType: true });
+  if (read.error) return reply(read.status === 413 ? 413 : 400, { error: read.status === 413 ? read.error : 'Send JSON: {"with": ["catalog-id", ...]}' });
+  const body: unknown = read.value;
   if (!body || typeof body !== 'object' || !Array.isArray((body as { with?: unknown }).with)) {
     return reply(400, { error: 'Send JSON: {"with": ["catalog-id", ...]}' });
   }

@@ -1,14 +1,17 @@
-// Small guards for POST /api/chat (src/pages/api/chat.ts), kept here without any Worker
-// code so `npm test` can run them.
+// Small guards for POST /api/chat and POST /api/with (src/pages/api/), kept here without any
+// Worker code so `npm test` can run them.
 
 /**
  * Read a JSON body without trusting what the request says about itself: it must be labeled
  * application/json, and reading stops the moment it passes `max` bytes, so a huge body is
  * never held in memory. Returns { value } or { status, error }.
+ *
+ * `anyType` skips the label check, for /api/with: it is called by an app, not a page, takes
+ * nothing but catalog ids, and builds of the app already out there shouldn't break over a header.
  */
-export async function readJson(request, max) {
+export async function readJson(request, max, { anyType = false } = {}) {
   const type = (request.headers.get('content-type') || '').split(';')[0].trim().toLowerCase();
-  if (type !== 'application/json') return { status: 415, error: 'Send JSON, with content-type: application/json.' };
+  if (!anyType && type !== 'application/json') return { status: 415, error: 'Send JSON, with content-type: application/json.' };
   if (Number(request.headers.get('content-length') || 0) > max) return { status: 413, error: 'Too much in one request.' };
   if (!request.body) return { status: 400, error: 'Nothing was sent.' };
   const reader = request.body.getReader();

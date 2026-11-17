@@ -321,6 +321,7 @@ type Understood = {
   notWords: string[];
   sites: string[];
   diet: '' | 'vegetarian' | 'vegan';
+  cuisine: string;
 };
 
 /**
@@ -358,7 +359,7 @@ function creatorFor(phrase: string): string | null {
 }
 
 function understand(text: string): Understood {
-  const out: Understood = { q: '', time: 0, with: [], without: [], notWords: [], sites: [], diet: '' };
+  const out: Understood = { q: '', time: 0, with: [], without: [], notWords: [], sites: [], diet: '', cuisine: '' };
   // Lowercase, no accents or apostrophes, hyphens as spaces ("pork-free", "López-Alt").
   let t = ` ${text
     .toLowerCase()
@@ -424,6 +425,18 @@ function understand(text: string): Understood {
         t = t.replace(re, ' ');
         break;
       }
+    }
+  }
+
+  // Cuisines, only when said as one: "thai food", "korean recipes", "mexican cooking". A bare
+  // "thai" stays a word, since it also finds dishes a site filed under another cuisine.
+  for (const [c] of data.cuisines) {
+    const name = words(c).join(' ');
+    const re = new RegExp(`\\b${name.replace(/ /g, '\\s+')}\\s+(?:food|foods|cuisine|recipes?|dish(?:es)?|cooking)\\b`);
+    if (re.test(t)) {
+      out.cuisine = c;
+      t = t.replace(re, ' ');
+      break;
     }
   }
 
@@ -722,6 +735,7 @@ function render() {
     statusEl.innerHTML = `Showing results for “${esc(q.join(' '))}”. <button type="button" data-exact="1">Search for “${esc(
       state.q,
     )}” instead</button>. ${statusEl.innerHTML}`;
+  renderNote();
   if (!hits.length && !videos.length && state.show !== 'videos') renderEmpty();
   // Six videos under the recipes; a page at a time when there are only videos (a
   // YouTube-only creator like Kenji).
@@ -739,15 +753,16 @@ function renderTags() {
     `<li><button type="button" class="tag tag-${kind}" ${attr}="${esc(value)}" aria-label="Remove ${esc(label)}">${esc(label)}<span class="x" aria-hidden="true">×</span></button></li>`;
   $('with-chips').innerHTML = [
     ...[...state.sites].map((id) => tag('data-remove-creator', id, `from ${creatorById.get(id)?.name || id}`, 'creator')),
+    ...(state.cuisine ? [tag('data-remove-cuisine', state.cuisine, `${state.cuisine} cuisine`, 'cuisine')] : []),
     ...(state.fresh ? [tag('data-remove-fresh', 1, 'new this week', 'diet')] : []),
     ...(state.diet ? [tag('data-remove-diet', state.diet, state.diet, 'diet')] : []),
     ...state.with.map((p) => tag('data-remove', p, ingName(p), 'ing')),
     ...state.without.map((p) => tag('data-remove-not', p, `no ${ingName(p)}`, 'not')),
     ...state.notWords.map((w) => tag('data-remove-word', w, `no ${w}`, 'not')),
   ].join('');
-  const any = state.sites.size || state.with.length || state.without.length || state.notWords.length || state.diet || state.fresh;
+  const any = state.sites.size || state.with.length || state.without.length || state.notWords.length || state.diet || state.fresh || state.cuisine;
   $('box').toggleAttribute('data-tags', !!any);
-  qInput.placeholder = any ? 'and…' : 'A dish, ingredient or creator';
+  qInput.placeholder = any ? 'and…' : 'A dish, ingredient, cuisine or creator';
 }
 
 function renderEmpty() {
@@ -804,6 +819,55 @@ function renderVideos(hits: VideoRow[], q: string[], only: boolean) {
     </article></li>`,
     )
     .join('');
+}
+
+// ---------------------------------------------------------------------------------------
+// A short card when the search is about exactly one cuisine or one ingredient: one sentence
+// from World cuisine (which takes it from Wikipedia) and links to both. Nothing for anything
+// broader, so it never stacks up. Its text loads only the first time a card is needed.
+
+type Note = { name: string; line: string; page: string; wiki: string };
+let notes: { cuisines: Record<string, Note>; ingredients: Record<string, Note> } | null = null;
+let notesLoading = false;
+
+function noteFor(): { kind: 'cuisine' | 'ingredient'; id: string; label: string } | null {
+  const others = state.sites.size || state.without.length || state.notWords.length || state.fresh || state.picked >= 0;
+  if (others) return null;
+  if (state.cuisine && !state.q && !state.with.length) return { kind: 'cuisine', id: state.cuisine, label: `${state.cuisine} cuisine` };
+  // One ingredient tag, or the name of one typed on its own ("ginger").
+  const typed = state.q && !state.with.length && !state.cuisine ? ingredientFor(state.q, true) : null;
+  const p = state.with.length === 1 && !state.q && !state.cuisine ? state.with[0] : typed;
+  if (p != null) return { kind: 'ingredient', id: data.ing[p][0], label: data.ing[p][1] };
+  return null;
+}
+
+function renderNote() {
+  const box = $('note');
+  const want = noteFor();
+  if (!want) return void (box.hidden = true);
+  if (!notes) {
+    box.hidden = true;
+    if (!notesLoading) {
+      notesLoading = true;
+      fetch('/notes.json')
+        .then((r) => (r.ok ? r.json() : null))
+        .then((n) => {
+          notes = n || { cuisines: {}, ingredients: {} };
+          renderNote();
+        })
+        .catch(() => (notes = { cuisines: {}, ingredients: {} }));
+    }
+    return;
+  }
+  const note = want.kind === 'cuisine' ? notes.cuisines[want.id] : notes.ingredients[want.id];
+  if (!note) return void (box.hidden = true);
+  const data_ = `data-note="${want.kind}" data-note-id="${esc(want.id)}"`;
+  box.innerHTML = `<h2 id="note-title">${esc(want.kind === 'cuisine' ? note.name : want.label)}</h2>
+    <p>${esc(note.line)}</p>
+    <p class="note-more"><a href="${esc(note.page)}" ${data_} data-note-link="world-cuisine">Explore ${esc(
+      want.kind === 'cuisine' ? note.name : want.label.toLowerCase(),
+    )} on World cuisine</a>. Text from <a href="${esc(note.wiki)}" ${data_} data-note-link="wikipedia">Wikipedia</a>.</p>`;
+  box.hidden = false;
 }
 
 function renderAlso() {
@@ -1027,6 +1091,7 @@ function buildStart() {
 type Option =
   | { kind: 'not'; p: number }
   | { kind: 'creator'; c: Creator }
+  | { kind: 'cuisine'; c: string; n: number }
   | { kind: 'ing'; p: number }
   | { kind: 'recipe'; h: Hit; n: number }
   | { kind: 'all'; n: number; text: string };
@@ -1077,6 +1142,13 @@ const creatorMatches = (text: string): Creator[] => {
   );
 };
 
+/** Cuisines whose name starts with what's typed: "tha" -> Thai. */
+const cuisineMatches = (text: string): [string, number][] => {
+  const qs = words(text.replace(/\b(food|cuisine|recipes?|cooking)\b/gi, '')).join(' ');
+  if (qs.length < 3) return [];
+  return data.cuisines.filter(([c]) => c !== state.cuisine && words(c).join(' ').startsWith(qs));
+};
+
 const ingMatches = (text: string): number[] => {
   const qs = words(text).join(' ');
   if (!qs) return [];
@@ -1097,6 +1169,7 @@ function buildOptions(text: string): Option[] {
   const out: Option[] = creatorMatches(text)
     .slice(0, 2)
     .map((c) => ({ kind: 'creator' as const, c }));
+  out.push(...cuisineMatches(text).slice(0, 1).map(([c, n]) => ({ kind: 'cuisine' as const, c, n })));
   if (text.length > 1) out.push(...ingMatches(text).slice(0, 3).map((p) => ({ kind: 'ing' as const, p })));
   const hits = search({ q: text });
   out.push(...hits.slice(0, 4).map((h, n) => ({ kind: 'recipe' as const, h, n: n + 1 })));
@@ -1112,6 +1185,8 @@ function optionLabel(o: Option, text: string): string {
     const has = [o.c.recipes ? plural(o.c.recipes, 'recipe') : '', o.c.videos ? plural(o.c.videos, 'video') : ''].filter(Boolean);
     return `<span class="opt-text"><span class="opt-name">${esc(o.c.name)}</span><span class="opt-meta">Creator, ${andList(has)}</span></span>`;
   }
+  if (o.kind === 'cuisine')
+    return `<span class="opt-text"><span class="opt-name">${esc(o.c)} cuisine</span><span class="opt-meta">Cuisine, ${plural(o.n, 'recipe')}</span></span>`;
   if (o.kind === 'ing') {
     // When it matched another name ("thai ginger" for galangal), say so.
     const others = data.ing[o.p].slice(4) as string[];
@@ -1148,6 +1223,12 @@ function choose(n: number) {
   } else if (o.kind === 'creator') {
     qInput.value = '';
     addCreator(o.c.id, 'suggestions');
+    qInput.focus();
+  } else if (o.kind === 'cuisine') {
+    qInput.value = '';
+    state.cuisine = o.c;
+    afterTag();
+    track('Added Cuisine', { cuisine: o.c, added_from: 'suggestions' });
     qInput.focus();
   } else if (o.kind === 'ing') {
     qInput.value = '';
@@ -1195,6 +1276,7 @@ function submit() {
   for (const id of u.sites) state.sites.add(id);
   if (u.time) state.time = u.time;
   if (u.diet) state.diet = u.diet;
+  if (u.cuisine) state.cuisine = u.cuisine;
   state.exact = false;
   qInput.value = u.q;
   state.q = u.q;
@@ -1316,14 +1398,15 @@ qInput.addEventListener('keydown', (e) => {
     e.key === 'Backspace' &&
     !qInput.value &&
     qInput.selectionStart === 0 &&
-    (state.with.length || state.without.length || state.notWords.length || state.diet || state.sites.size)
+    (state.with.length || state.without.length || state.notWords.length || state.diet || state.sites.size || state.cuisine)
   ) {
     // Backspace in an empty box takes off the last tag, right to left.
     if (state.notWords.length) state.notWords.pop();
     else if (state.without.length) state.without.pop();
     else if (state.with.length) state.with.pop();
     else if (state.diet) state.diet = '';
-    else state.sites.delete([...state.sites].at(-1)!);
+    else if (state.sites.size) state.sites.delete([...state.sites].at(-1)!);
+    else state.cuisine = '';
     state.shown = PAGE;
     render();
     writeUrl(false);
@@ -1374,12 +1457,13 @@ app.addEventListener('click', (e) => {
     writeUrl(true);
     resultsEl.querySelector<HTMLAnchorElement>('h3 a')?.focus();
     track('Opened New Recipes', { result_count: (data.fresh || []).length });
-  } else if (el.dataset.remove || el.dataset.removeCreator || el.dataset.removeNot || el.dataset.removeWord || el.dataset.removeDiet || el.dataset.removeFresh) {
+  } else if (el.dataset.remove || el.dataset.removeCreator || el.dataset.removeNot || el.dataset.removeWord || el.dataset.removeDiet || el.dataset.removeFresh || el.dataset.removeCuisine) {
     if (el.dataset.remove) state.with = state.with.filter((p) => p !== Number(el.dataset.remove));
     else if (el.dataset.removeWord) state.notWords = state.notWords.filter((w) => w !== el.dataset.removeWord);
     else if (el.dataset.removeNot) state.without = state.without.filter((p) => p !== Number(el.dataset.removeNot));
     else if (el.dataset.removeDiet) state.diet = '';
     else if (el.dataset.removeFresh) state.fresh = false;
+    else if (el.dataset.removeCuisine) state.cuisine = '';
     else state.sites.delete(el.dataset.removeCreator!);
     state.shown = PAGE;
     render();
@@ -1392,6 +1476,8 @@ app.addEventListener('click', (e) => {
     render();
     writeUrl(true);
     qInput.focus();
+  } else if (el.dataset.noteLink) {
+    track('Opened World Cuisine', { note_kind: el.dataset.note, note_id: el.dataset.noteId, link: el.dataset.noteLink });
   } else if (el.dataset.srcId) {
     openedRecipe(el.dataset.srcId, Number(el.dataset.pos || 0), el.dataset.from || 'results', el.dataset.key);
   } else if (el.dataset.support) {

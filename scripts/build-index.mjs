@@ -273,6 +273,24 @@ const index = {
 
 mkdirSync(dirname(out), { recursive: true });
 const json = JSON.stringify(index);
+
+// Notes for the card above results when a search is one cuisine or one ingredient
+// (vendor/world-cuisine/notes.json, from World cuisine; refresh with npm run sync-world-cuisine).
+// Only what Findish has recipes for, in its own file so the page loads it only when a card shows.
+const NOTE_CUISINE = { 'chinese american': 'american chinese', 'italian american': 'italian-american' };
+const notesFile = join(root, 'vendor/world-cuisine/notes.json');
+if (existsSync(notesFile)) {
+  const wc = JSON.parse(readFileSync(notesFile, 'utf8'));
+  const notes = { cuisines: {}, ingredients: {} };
+  for (const [c] of cuisines) {
+    const k = c.toLowerCase();
+    const note = wc.cuisines[NOTE_CUISINE[k] || k];
+    if (note) notes.cuisines[c] = note;
+  }
+  for (const g of ing) if (wc.ingredients[g[0]]) notes.ingredients[g[0]] = wc.ingredients[g[0]];
+  writeFileSync(join(dirname(out), 'notes.json'), JSON.stringify(notes));
+  console.log(`notes: ${Object.keys(notes.cuisines).length} of ${cuisines.length} cuisines, ${Object.keys(notes.ingredients).length} ingredients`);
+}
 writeFileSync(out, json);
 // The repo is private, so the hub's Connections page reads this copy of the list.
 copyFileSync(join(root, '.agents/allowed-hosts.txt'), join(dirname(out), 'allowed-hosts.txt'));

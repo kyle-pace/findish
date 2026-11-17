@@ -52,7 +52,7 @@ import '../styles/theme.css';
       </header>
 
       <form class="search" id="search-form" role="search" action="/" method="get" aria-label="Recipes">
-        <label class="visually-hidden" for="q">Search recipes by dish, ingredient or creator</label>
+        <label class="visually-hidden" for="q">Search recipes by dish, ingredient, cuisine or creator</label>
         <div class="box" id="box">
           <ul class="tags" id="with-chips" aria-label="Added to your search"></ul>
           <input
@@ -63,7 +63,7 @@ import '../styles/theme.css';
             autocapitalize="none"
             spellcheck="false"
             enterkeyhint="search"
-            placeholder="A dish, ingredient or creator"
+            placeholder="A dish, ingredient, cuisine or creator"
             role="combobox"
             aria-autocomplete="list"
             aria-expanded="false"
@@ -78,7 +78,7 @@ import '../styles/theme.css';
             <div class="list" id="q-list" role="listbox" aria-label="Suggestions"></div>
           </div>
         </div>
-        <p id="q-hint" class="visually-hidden">Suggestions appear as you type. Pick an ingredient or creator to add it to your search. Backspace in an empty box removes the last one.</p>
+        <p id="q-hint" class="visually-hidden">Suggestions appear as you type. Pick an ingredient, cuisine or creator to add it to your search. Backspace in an empty box removes the last one.</p>
         <p class="home-actions"><button class="lucky" type="button" id="lucky">Pick one at random</button></p>
       </form>
 
@@ -109,6 +109,8 @@ import '../styles/theme.css';
       </div>
 
       <p class="status" id="status" role="status" aria-live="polite">Loading the recipes…</p>
+
+      <aside class="note" id="note" aria-labelledby="note-title" hidden></aside>
 
       <section class="start" id="start" aria-label="Ideas" hidden>
         <p id="try"></p>
@@ -311,6 +313,12 @@ import '../styles/theme.css';
   .tags :global(.tag-creator) {
     background: transparent;
     box-shadow: inset 0 0 0 2px var(--creator-ring);
+  }
+
+  /* A cuisine ("Thai cuisine"): a basil outline, between an ingredient's fill and a creator's ring. */
+  .tags :global(.tag-cuisine) {
+    background: transparent;
+    box-shadow: inset 0 0 0 2px var(--scallion-fill);
   }
 
   /* Leaving something out ("no pork"): a plain outline, the word "no" says what it means. */
@@ -915,6 +923,35 @@ import '../styles/theme.css';
 
   :global(.row .sides button:hover) {
     text-decoration-thickness: 0.14em;
+  }
+
+  /* About one cuisine or ingredient: a quiet strip under the count, sized like a result's
+     text, with a basil rule on the left (tomato is for things you do). */
+  .note {
+    max-width: 46rem;
+    margin: var(--space-2) 0 var(--space-6);
+    padding: var(--space-2) 0 var(--space-2) var(--space-4);
+    border-left: 3px solid var(--field-rule);
+  }
+
+  .note :global(h2) {
+    margin: 0;
+    font-size: var(--step-0);
+  }
+
+  .note :global(p) {
+    margin: var(--space-1) 0 0;
+    max-width: 38em;
+    color: var(--ink-muted);
+  }
+
+  .note :global(.note-more) {
+    font-size: var(--step--1);
+  }
+
+  .note :global(a) {
+    color: var(--ink);
+    text-decoration-color: var(--field-rule);
   }
 
   .picked :global(.support) {

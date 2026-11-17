@@ -16,3 +16,4 @@ public/allowed-hosts.txt
 
 # npm run check output (screenshots)
 .check/
+public/notes.json

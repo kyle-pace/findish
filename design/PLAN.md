@@ -90,3 +90,10 @@ Kyle found the home page cramped and the menus fussy. From filter menus on Navan
 - **Home:** clear space between the name and its line, the box, and the ideas (more on tall screens, via `clamp()` with `vh`); lines break evenly (`text-wrap: balance`) so no word sits alone; New this week is set a little apart, since it's news rather than a way in.
 - **Filter menus:** as wide as the longest option, one line per option (radio, label, count in a grid), counts right-aligned and never wrapping, a soft basil highlight on hover. Show's counts are plain numbers like the other menus. 40px rows on desktop, 44px on phones.
 - **Results:** the "Support them" links are muted ink with a quiet underline instead of tomato, so the recipe's name leads.
+
+## Cuisines and the note card (November 16, 2026)
+
+Kyle wanted people to be able to search for a cuisine, or an ingredient, as the thing itself, without the page getting busy. The rule: one extra thing at a time, and only when the search is clearly about it.
+
+- A cuisine is a suggestion like a creator or an ingredient, and becomes a tag with a basil outline (between an ingredient's fill and a creator's tomato ring).
+- When the search is exactly one cuisine or one ingredient, a quiet strip under the count: its name, one sentence from World cuisine (from Wikipedia), and links to both. A field-rule line on the left, not a panel or card, so it reads as a note and not a result. Two ingredients, a dish name, a creator or anything left out: no strip.

@@ -67,14 +67,15 @@ To connect: the For AI assistants page has an Add to Claude button and the addre
 
 ## Ask (an experiment)
 
-At [findish.now/?chat=1](https://findish.now/?chat=1) only: say what you want in your own words and Claude (Haiku 5.5, through Anthropic's API) turns it into a Findish search, which the page shows like any other. Claude never writes recipe names or links; it only picks the search. Nothing typed is kept.
+At [findish.now/?chat=1](https://findish.now/?chat=1) only: type a question in the search box ("what can I make with fish, kimchi and onions?") and Claude (Haiku 5.5, through Anthropic's API) turns it into a Findish search, which the page shows like any other. Claude never writes recipe names or links; it only picks the search. Nothing typed is kept.
 
 | What | Where |
 | --- | --- |
 | The logic and its tests | `src/chat/chat.mjs`, `src/chat/chat.test.mjs` |
 | The one file that calls Anthropic | `src/chat/anthropic.mjs` (key: the Worker secret `ANTHROPIC_API_KEY`) |
 | The endpoint | `src/pages/api/chat.ts`, rate limits in `wrangler.jsonc` |
-| The chat box | `src/scripts/chat.ts`, `src/styles/chat.css` |
+| Telling a question from a search | `looksLikeAsk()` in `src/scripts/search.ts` |
+| The hint and the answer line | `src/scripts/chat.ts`, `src/styles/chat.css` |
 
 ## The prototype
 

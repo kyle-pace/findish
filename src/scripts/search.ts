@@ -1286,6 +1286,12 @@ function addCreator(id: string, from: string) {
 
 function submit() {
   suggest.close();
+  // With Ask on, something that reads like a question goes to Ask instead (src/scripts/chat.ts).
+  if (askReady && looksLikeAsk(qInput.value)) {
+    dispatchEvent(new CustomEvent('findish:ask', { detail: { text: qInput.value.trim() } }));
+    if (matchMedia('(max-width: 40rem)').matches) qInput.blur();
+    return;
+  }
   // Plain phrases become tags and filters ("no pork", "under 30 minutes"); the rest stays words.
   const u = understand(qInput.value);
   for (const p of u.with) if (!state.with.includes(p)) state.with.push(p);
@@ -1573,6 +1579,21 @@ addEventListener('popstate', () => {
 // ---------------------------------------------------------------------------------------
 // Ask, the chat experiment (src/scripts/chat.ts, src/chat/chat.mjs). Only at ?chat=1 for
 // now, remembered for the rest of the visit in this tab. Its code loads only then.
+
+let askReady = false;
+addEventListener('findish:ask-ready', () => (askReady = true));
+
+// A question or a request in a sentence ("what can I make with fish and kimchi", "something
+// quick and vegetarian for dinner"), not a dish name ("red braised pork belly"). A miss just
+// means a plain search, which still works.
+const ASK_START = /^(what|whats|what's|how|which|any|anything|something|give|suggest|recommend|help|need|i|i'm|im|i've|ive|we|my|can|could|should|ideas?|got|have)\b/;
+const ASK_WORDS = /\b(i|me|my|we|our|have|got|make|cook|using|use up|leftover|leftovers|something|anything|tonight|for dinner|for lunch|that|without|but not|go with|goes with)\b/;
+function looksLikeAsk(text: string) {
+  const t = text.trim().toLowerCase();
+  const n = t.split(/\s+/).filter(Boolean).length;
+  if (n < 3) return false;
+  return t.includes('?') || ASK_START.test(t) || (n >= 5 && ASK_WORDS.test(t));
+}
 
 function askOn() {
   const asked = new URLSearchParams(location.search).get('chat') === '1';

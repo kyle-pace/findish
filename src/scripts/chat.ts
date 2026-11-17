@@ -1,113 +1,87 @@
-// Ask: say what you want in your own words and the page shows the search for it. The chat
-// experiment Kyle started on 2026-11-16. search.ts loads this file only at ?chat=1 (then for
-// the rest of the visit in that tab). The server side is src/pages/api/chat.ts and
-// src/chat/chat.mjs.
+// Ask: type what you want in your own words, right in the search box ("what can I make with
+// fish, kimchi and onions?"), and the page shows the search for it. The chat experiment Kyle
+// started on 2026-11-16. search.ts loads this file only at ?chat=1 (then for the rest of the
+// visit in that tab). The server side is src/pages/api/chat.ts and src/chat/chat.mjs.
 //
-// The answer is a sentence or two plus a search. The search goes back to search.ts as a
-// "findish:show" event, which shows it with the page's own results, filters and tags, so
-// the person can keep adjusting it by hand.
+// search.ts decides what reads like a question and sends it here as a "findish:ask" event.
+// The answer comes back as a sentence or two plus a search; the search goes back to search.ts
+// as "findish:show", which shows it with the page's own results, tags and filters, and the
+// sentence shows as one line above the results. Asking again while those results are up
+// carries on the same chat ("make it vegetarian"); changing the search by hand ends it.
 
 import { track } from 'kp-design/analytics';
 import '../styles/chat.css';
 
-const MAX_TURNS = 4; // then a fresh start, to keep each chat short and cheap
+const MAX_TURNS = 4; // then a fresh chat, to keep each one short and cheap
 const MAX_CHARS = 400;
 
 type Message = { role: 'user' | 'assistant'; content: string };
 let messages: Message[] = [];
 let busy = false;
 
+const app = document.getElementById('app')!;
 const searchForm = document.getElementById('search-form')!;
-const section = document.createElement('section');
-section.className = 'ask';
-section.setAttribute('aria-label', 'Ask');
-section.innerHTML = `
-  <button type="button" class="ask-toggle" id="ask-toggle" aria-expanded="false" aria-controls="ask-panel">Ask in your own words</button>
-  <div class="ask-panel" id="ask-panel" hidden>
-    <div class="ask-log" id="ask-log" role="log" aria-live="polite" aria-label="Your chat with Ask"></div>
-    <form class="ask-form" id="ask-form">
-      <label for="ask-input">What are you in the mood for?</label>
-      <div class="ask-row">
-        <textarea id="ask-input" name="ask" rows="2" maxlength="${MAX_CHARS}" placeholder="What can I make with fish, kimchi and onions?" required></textarea>
-        <button type="submit" class="ask-send" id="ask-send">Ask</button>
-      </div>
-      <p class="ask-note">An experiment. What you type here goes to Claude, Anthropic’s AI, to turn into a search. Findish doesn’t keep it. <a href="/privacy/#ask">More on privacy</a></p>
-      <button type="button" class="ask-new" id="ask-new" hidden>Start a new chat</button>
-    </form>
-  </div>`;
-searchForm.after(section);
+const statusEl = document.getElementById('status')!;
+const qInput = document.getElementById('q') as HTMLInputElement;
 
-const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
-const toggle = $<HTMLButtonElement>('ask-toggle');
-const panel = $('ask-panel');
-const log = $<HTMLDivElement>('ask-log');
-const form = $<HTMLFormElement>('ask-form');
-const input = $<HTMLTextAreaElement>('ask-input');
-const send = $<HTMLButtonElement>('ask-send');
-const fresh = $<HTMLButtonElement>('ask-new');
+// Said under the box, before anything is sent.
+const hint = document.createElement('p');
+hint.className = 'ask-hint';
+hint.innerHTML = 'You can also ask in your own words. Questions go to Claude, Anthropic’s AI, to turn into a search, and aren’t kept. <a href="/privacy/#ask">Privacy</a>';
+searchForm.append(hint);
+qInput.placeholder = 'A dish, ingredient or question';
+const qHint = document.getElementById('q-hint');
+if (qHint) qHint.textContent += ' You can also type a question and press Enter to ask.';
 
-function say(role: 'you' | 'ask' | 'note', text: string) {
-  const li = document.createElement('p');
-  li.className = `ask-${role}`;
-  const who = document.createElement('span');
-  who.className = 'visually-hidden';
-  who.textContent = role === 'you' ? 'You: ' : 'Ask: ';
-  li.append(who, text);
-  log.append(li);
-  li.scrollIntoView({ block: 'nearest' });
-  return li;
-}
+// The answer, one line above the results.
+const line = document.createElement('div');
+line.className = 'ask-line';
+line.hidden = true;
+line.innerHTML = `
+  <p class="ask-asked"></p>
+  <p class="ask-reply" role="status" aria-live="polite"></p>
+  <p class="ask-actions"><button type="button" class="ask-plain">Search my words instead</button></p>`;
+statusEl.before(line);
+const asked = line.querySelector<HTMLElement>('.ask-asked')!;
+const replyEl = line.querySelector<HTMLElement>('.ask-reply')!;
+const plain = line.querySelector<HTMLButtonElement>('.ask-plain')!;
+let lastText = '';
 
-function setBusy(on: boolean) {
-  busy = on;
-  send.disabled = on;
-  send.textContent = on ? 'Looking…' : 'Ask';
-  form.setAttribute('aria-busy', String(on));
-}
-
-function atLimit() {
-  const done = messages.filter((m) => m.role === 'user').length >= MAX_TURNS;
-  input.disabled = done;
-  send.disabled = done || busy;
-  fresh.hidden = !messages.length;
-  if (done) input.placeholder = 'That’s the end of this chat. Start a new one to keep going.';
-}
-
-toggle.addEventListener('click', () => {
-  const open = panel.hidden;
-  panel.hidden = !open;
-  toggle.setAttribute('aria-expanded', String(open));
-  if (open) {
-    input.focus();
-    track('Opened Chat', { opened_from: document.getElementById('page')?.dataset.mode === 'home' ? 'home' : 'results' });
+// When the person changes the search by hand, search.ts drops data-from-ask: the chat is over.
+new MutationObserver(() => {
+  if (!app.dataset.fromAsk && !busy) {
+    line.hidden = true;
+    messages = [];
   }
-});
+}).observe(app, { attributes: true, attributeFilter: ['data-from-ask'] });
 
-fresh.addEventListener('click', () => {
+const show = (query: string) => {
+  const detail: { query: string; count?: number } = { query };
+  dispatchEvent(new CustomEvent('findish:show', { detail }));
+  return detail.count ?? 0;
+};
+
+plain.addEventListener('click', () => {
   messages = [];
-  log.replaceChildren();
-  input.disabled = false;
-  input.placeholder = 'What can I make with fish, kimchi and onions?';
-  atLimit();
-  input.focus();
+  line.hidden = true;
+  show(new URLSearchParams({ q: lastText.slice(0, 120) }).toString());
+  delete app.dataset.fromAsk; // a plain search is the person's own
+  track('Tapped Search Instead', {});
 });
 
-// Enter sends, Shift+Enter makes a new line, like most chat boxes.
-input.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) {
-    e.preventDefault();
-    form.requestSubmit();
-  }
-});
-
-form.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const text = input.value.trim().slice(0, MAX_CHARS);
+addEventListener('findish:ask', async (e) => {
+  const text = String((e as CustomEvent<{ text: string }>).detail.text || '').trim().slice(0, MAX_CHARS);
   if (!text || busy) return;
+  if (!app.dataset.fromAsk || messages.filter((m) => m.role === 'user').length >= MAX_TURNS) messages = [];
   messages.push({ role: 'user', content: text });
-  say('you', text);
-  input.value = '';
-  setBusy(true);
+  lastText = text;
+
+  busy = true;
+  searchForm.setAttribute('aria-busy', 'true');
+  line.hidden = false;
+  asked.textContent = `You asked: “${text}”`;
+  replyEl.textContent = 'Looking…';
+  plain.hidden = true;
 
   let answer: { reply?: string; query?: string; fallback?: string } | null = null;
   try {
@@ -120,36 +94,33 @@ form.addEventListener('submit', async (e) => {
   } catch {
     answer = null;
   }
-  setBusy(false);
+  busy = false;
+  searchForm.removeAttribute('aria-busy');
 
   if (!answer?.reply) {
     messages.pop();
-    say('note', 'That didn’t go through. Try again in a moment.');
-    input.value = text;
-    atLimit();
-    return input.focus();
+    replyEl.textContent = 'That didn’t go through. Try again in a moment, or search your words.';
+    plain.hidden = false;
+    return;
   }
 
-  // Ask hands its search to the page (search.ts), which shows it and says how many it found.
-  const detail: { query: string; count?: number } = { query: answer.query || '' };
-  if (detail.query) dispatchEvent(new CustomEvent('findish:show', { detail }));
-
   // The search goes back to Claude with the reply, so "make it vegetarian" knows what "it" is.
-  messages.push({ role: 'assistant', content: detail.query ? `${answer.reply} [showed: ${detail.query}]` : answer.reply });
-  say(answer.fallback ? 'note' : 'ask', answer.reply);
+  messages.push({ role: 'assistant', content: answer.query ? `${answer.reply} [showed: ${answer.query}]` : answer.reply });
+  const count = answer.query ? show(answer.query) : 0;
+  app.dataset.fromAsk = '1'; // set again after showing, so the chat carries on
+  line.hidden = false;
+  asked.textContent = `You asked: “${text}”`;
+  replyEl.textContent = answer.reply;
+  plain.hidden = Boolean(answer.fallback);
 
-  const turn = messages.filter((m) => m.role === 'user').length;
   // Never the words themselves: only their length and what came back.
   track('Sent Chat Message', {
-    turn_number: turn,
+    turn_number: messages.filter((m) => m.role === 'user').length,
     message_length: text.length,
-    showed_search: Boolean(detail.query),
-    result_count: detail.count ?? 0,
+    showed_search: Boolean(answer.query),
+    result_count: count,
     fell_back: answer.fallback || '',
   });
-
-  atLimit();
-  if (!input.disabled) input.focus();
 });
 
-atLimit();
+dispatchEvent(new Event('findish:ask-ready'));

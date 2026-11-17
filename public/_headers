@@ -17,3 +17,8 @@
 
 /manifest.webmanifest
   Content-Type: application/manifest+json
+
+# The index as the page loads it (scripts/build-index.mjs). Each file is named after what's
+# in it, so a browser can keep it for a year and never ask again; a new crawl makes new names.
+/i/*
+  Cache-Control: public, max-age=31536000, immutable

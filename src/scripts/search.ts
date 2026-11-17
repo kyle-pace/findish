@@ -1,6 +1,12 @@
-// Findish, in the browser. Loads the index once (about 660 KB over the wire), then
-// every keystroke searches it locally: no server and no search service. What's typed stays
-// on the page, unless Ask is on and it reads like a question (see the end of this file).
+// Findish, in the browser. Loads the index once, then every keystroke searches it locally:
+// no server and no search service. What's typed stays on the page, unless Ask is on and it
+// reads like a question (see the end of this file).
+//
+// The index comes in two files (src/scripts/index-load.ts): the recipes first, about
+// 290 KB over the wire, then the videos, about 170 KB, once the recipes are on the page.
+// Both are named after their contents, so a browser downloads them again only after a
+// crawl changes them. Until the videos land, a search shows recipes only, then draws
+// itself again with the videos (videosLanded below).
 //
 // This file is the page: the box, the tags, the results, the address. The search itself
 // (words, typo fixing, understanding a sentence, ranking, videos) is src/lib/search-core.mjs,
@@ -17,6 +23,7 @@ import { track } from 'kp-design/analytics';
 import * as core from '../lib/search-core.mjs';
 import type { Creator, Hit, Ready, Recipe, Understood } from '../lib/search-core.mjs';
 import { looksLikeAsk, words } from '../lib/search-core.mjs';
+import { loadIndex } from './index-load.ts';
 
 type Source = { id: string; name: string; site: string; host: string; count: number };
 // [catalog id, name, recipes naming it, parent positions, ...other names]
@@ -135,15 +142,16 @@ const creatorOfChannel = (k: number) => data.videos.sources[k].site || data.vide
 // Loading
 
 async function load() {
+  let loaded: Awaited<ReturnType<typeof loadIndex>>;
   try {
-    const res = await fetch('/index.json');
-    if (!res.ok) throw new Error(String(res.status));
-    data = await res.json();
+    loaded = await loadIndex();
   } catch {
     statusEl.textContent = 'The recipes didn’t load. Refresh the page to try again.';
     return;
   }
-  ready = core.prepare(data);
+  data = loaded.index as Index;
+  ready = loaded.ready;
+  videosPending = !!loaded.videos;
   // The groups you can leave out ("dairy") sit after the real ingredients from here on.
   data.ing = ready.ing as Ing[];
   recipes = ready.recipes;
@@ -161,8 +169,28 @@ async function load() {
   // instead of drawing the page over it.
   if (submitWaiting) submit();
   else render();
+  // The videos come second, so recipe search doesn't wait for them.
+  loaded
+    .videos?.()
+    .catch(() => {}) // no videos this visit: recipes still work
+    .then(videosLanded);
 }
 let submitWaiting = false;
+/** The video rows haven't arrived yet (they load after the recipes). */
+let videosPending = false;
+
+/** The videos are in: a search on the page is drawn again, now with them. */
+function videosLanded() {
+  videosPending = false;
+  if (isBlank() && state.picked < 0) return; // the home page shows none
+  // render() puts the last search back in the box; someone may be typing the next one.
+  const [typed, from, to] = [qInput.value, qInput.selectionStart, qInput.selectionEnd];
+  render();
+  if (qInput.value !== typed) {
+    qInput.value = typed;
+    qInput.setSelectionRange(from, to);
+  }
+}
 
 // ---------------------------------------------------------------------------------------
 // The search itself is src/lib/search-core.mjs. These hand it the page's state.
@@ -289,6 +317,13 @@ function render() {
   const loose = !hits.length && q.length > 1 && state.show !== 'videos' && !hidden;
   if (loose) hits = search({ loose: true });
   const videos = state.show === 'recipes' ? [] : searchVideos();
+  // Only videos could match, and they're still on their way: say so instead of "nothing matches".
+  if (videosPending && !hits.length && state.show !== 'recipes') {
+    resultsEl.innerHTML = '';
+    moreBtn.hidden = true;
+    statusEl.textContent = 'Loading videos…';
+    return;
+  }
   const shown = hits.slice(0, state.shown);
   // Ways to support a creator go under their first recipe on the page, not under every one,
   // so a page of Woks of Life results doesn't repeat the same line twenty times.
@@ -660,7 +695,7 @@ const keepPunct = (html: string) => html.replace(/(<button[^>]*>[^<]*<\/button>[
 
 function buildStart() {
   // Totals, not names: the list of creators is under the box and on the About page.
-  $('from').textContent = `${plural(data.recipes.length, 'recipe')} and ${plural(data.videos.rows.length, 'video')} from ${creators.length} creators. Every one opens on its creator’s own site.`;
+  $('from').textContent = `${plural(data.recipes.length, 'recipe')} and ${plural(data.videos.sources.reduce((n, c) => n + c.count, 0), 'video')} from ${creators.length} creators. Every one opens on its creator’s own site.`;
   // Every line is a fresh draw on each visit: four dishes, five of the 18 most-used
   // ingredients and two creators. New this week moved to the footer (Kyle, 2026-11-16).
   const tries: string[] = [];

@@ -19,7 +19,7 @@ The other two directions considered: a cookbook-index list (one column, time on 
 
 ## The wordmark (November 16, 2026)
 
-Findish is set in Atkinson bold with a nori curve under "dish" that grows out of the d, so the d is the connector and it reads as find + dish (Kyle's pick over a filled bowl, November 16). It's text plus one CSS shape (`src/components/Wordmark.astro`), so it scales, follows light and dark, and screen readers hear "Findish". It's the big name on the home page, the small link home in results, and a link home at the top of every other page (`src/components/SiteHead.astro`, since there's no top bar). The bowl is the one extra place nori appears. The home share card (`design/og.html`) uses it too.
+Findish is "fin", a plate-shaped d, "ish", in Atkinson bold. A nori bar runs over "fin" and the d, another under the d and "ish", so the d (a plate seen from above, with its stem) is where find and dish meet. Kyle picked it on November 16 from mocks that combined two earlier ideas, the bars and the plate d; it replaced the curve under "dish". It's text, CSS borders and one small inline SVG for the d (`src/components/Wordmark.astro`), so it scales and follows light and dark; screen readers hear "Findish" from hidden text and skip the drawing. It's the big name on the home page, the small link home in results, and a link home at the top of every other page (`src/components/SiteHead.astro`, since there's no top bar). The plate d on its own is the favicon (`public/favicon-v2.svg`, renamed so search engines refetch it; every page passes it to `LabLayout`), and the home share card (`design/og.html`) uses the full mark.
 
 ## The subject
 

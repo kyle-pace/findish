@@ -1,42 +1,75 @@
 ---
-// The Findish wordmark: the name in Atkinson bold, with "dish" sitting in a shallow nori
-// bowl, so it reads as find + dish (a curved stroke that grows out of the d, Kyle's pick, 2026-11-16). Pure text and CSS: it scales with the font size it's
-// given, follows light and dark mode, and screen readers hear one word, "Findish".
+// The Findish wordmark (Kyle's pick, 2026-11-16): "fin", a plate-shaped d, "ish". A bar runs
+// over "fin" and the d, another under the d and "ish", so the d is where find and dish meet.
+// Text and CSS plus one small inline SVG: it scales with the font size it's given and
+// follows light and dark mode. Screen readers hear one word, "Findish".
+const plate = '<svg viewBox="0 0 60 76" class="wordmark-plate" focusable="false"><circle cx="25" cy="50" r="20" fill="none" stroke="currentColor" stroke-width="8"/><circle cx="25" cy="50" r="8" fill="currentColor" opacity="0.35"/><rect x="41" y="2" width="9" height="72" rx="4.5" fill="currentColor"/></svg>';
 ---
 
-<span class="wordmark">Fin<span class="wordmark-dish">dish</span></span>
+<span class="wordmark"><span class="wordmark-text">Findish</span><span class="wordmark-art" aria-hidden="true"><span class="wm-fin">fin</span><span class="wm-d" set:html={plate}></span><span class="wm-ish">ish</span></span></span>
 
 <style>
   .wordmark {
     display: inline-block;
     font-weight: 700;
-    letter-spacing: -0.03em;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+    line-height: 1;
+  }
+
+  /* The name for screen readers and copy-paste; the drawn version is hidden from them. */
+  .wordmark-text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
     white-space: nowrap;
   }
 
-  .wordmark-dish {
-    position: relative;
-    display: inline-block;
-    padding-inline: 0.02em 0.04em;
+  .wordmark-art {
+    --bar: 0.08em;
+    display: inline-flex;
+    align-items: stretch;
   }
 
-  /* The bowl: a curved stroke under "dish" that starts out of the d's round, so the d
-     reads as the connector between "find" and "dish". Decoration only. */
-  .wordmark-dish::after {
-    content: '';
-    position: absolute;
-    inset-inline: -0.06em -0.02em;
-    bottom: -0.1em;
-    height: 0.26em;
-    border: 0.085em solid var(--accent-ink);
-    border-top: 0;
-    border-radius: 0 0 50% 50% / 0 0 100% 100%;
-    pointer-events: none;
+  /* Bar over "fin" and the d */
+  .wm-fin {
+    border-top: var(--bar) solid var(--accent-ink);
+    padding: 0.13em 0 0.2em;
+  }
+
+  /* The plate d sits between both bars */
+  .wm-d {
+    display: flex;
+    align-items: flex-end;
+    border-block: var(--bar) solid var(--accent-ink);
+    padding: 0.13em 0.02em;
+  }
+
+  .wm-d :global(.wordmark-plate) {
+    display: block;
+    width: 0.585em;
+    height: 0.74em;
+    margin-bottom: 0.15em;
+    color: var(--accent-ink);
+  }
+
+  /* Bar under the d and "ish" */
+  .wm-ish {
+    border-bottom: var(--bar) solid var(--accent-ink);
+    padding: 0.2em 0 0.13em;
   }
 
   @media (forced-colors: active) {
-    .wordmark-dish::after {
+    .wm-fin,
+    .wm-d,
+    .wm-ish {
       border-color: CanvasText;
+    }
+
+    .wm-d :global(.wordmark-plate) {
+      color: CanvasText;
     }
   }
 </style>

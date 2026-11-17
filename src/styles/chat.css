@@ -1,33 +1,10 @@
 /*
   Ask, the chat experiment (src/scripts/chat.ts). Loaded only with it. Ask lives in the search
-  box itself, so this is just two quiet lines: a hint under the box, and the answer above the
-  results, set like the World cuisine note. The answer's own words are full ink; who asked
-  is muted; the way back to a plain search is an underlined text button like "Pick one at random".
+  box itself, so this is one quiet block above the results, set like the World cuisine note:
+  the question (a button that puts it back in the box), the answer in full ink, and one small
+  line saying who answered, with the way back to a plain search. Short on a phone: the
+  question keeps to one line there.
 */
-
-.ask-hint {
-  margin: var(--space-2) 0 0;
-  color: var(--ink-muted);
-  font-size: var(--step--1);
-  line-height: 1.45;
-}
-
-[data-mode='home'] .ask-hint {
-  text-align: center;
-}
-
-.ask-about {
-  margin-top: var(--space-1);
-  color: var(--ink-muted);
-  font-size: var(--step--1);
-}
-
-.ask-hint a,
-.ask-about a {
-  color: var(--ink-muted);
-  text-decoration-color: var(--field-rule);
-  text-underline-offset: 0.2em;
-}
 
 .ask-line {
   max-width: 65ch;
@@ -36,47 +13,115 @@
   border-left: 3px solid var(--accent);
 }
 
+.ask-line:focus {
+  outline: none;
+}
+
 .ask-line p {
   margin: 0;
   line-height: 1.45;
 }
 
-.ask-asked {
+/* On the home page (an answer with no search to show) it sits centred under the box. */
+[data-mode='home'] .ask-line {
+  margin: var(--space-6) auto 0;
+  padding-left: 0;
+  border-left: 0;
+  text-align: center;
+}
+
+.ask-asked,
+.ask-foot {
   color: var(--ink-muted);
   font-size: var(--step--1);
 }
 
 .ask-reply {
+  /* Room for a sentence or two from the start, so the results don't jump when it arrives. */
+  min-height: 2lh;
   margin-top: var(--space-1);
   color: var(--ink);
 }
 
+.ask-foot {
+  margin-top: var(--space-1);
+}
+
+.ask-again,
 .ask-plain {
-  min-height: 2.75rem;
-  padding: 0;
+  padding: 0.3rem 0;
   border: 0;
   background: none;
-  color: var(--ink);
+  color: inherit;
   font: inherit;
-  font-size: var(--step--1);
+  text-align: inherit;
+  cursor: pointer;
+}
+
+.ask-again {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.ask-plain {
+  color: var(--ink);
   text-decoration: underline;
   text-decoration-color: var(--field-rule);
   text-decoration-thickness: 0.08em;
   text-underline-offset: 0.2em;
-  cursor: pointer;
 }
 
+.ask-again:hover,
 .ask-plain:hover {
+  text-decoration: underline;
   text-decoration-color: currentColor;
+  text-underline-offset: 0.2em;
 }
 
+.ask-foot a {
+  color: var(--ink-muted);
+  text-decoration-color: var(--field-rule);
+  text-underline-offset: 0.2em;
+}
+
+.ask-again:focus-visible,
 .ask-plain:focus-visible,
-.ask-hint a:focus-visible,
-.ask-about a:focus-visible {
+.ask-foot a:focus-visible {
   outline: 3px solid var(--accent-ink);
   outline-offset: 2px;
 }
 
+@media (max-width: 40rem) {
+  .ask-line {
+    margin-bottom: var(--space-3);
+  }
+
+  /* One line for the question on a phone; the whole of it is still read out, and a tap puts it back in the box. */
+  .ask-again {
+    display: block;
+    width: 100%;
+    overflow: hidden;
+    overflow-wrap: normal;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .ask-reply {
+    margin-top: 0;
+  }
+}
+
+/* While Ask is looking: the button rests, the old results dim, and the home page's ideas
+   step aside, so it's clear something is on its way. */
 [aria-busy='true'] .go {
-  opacity: 0.6;
+  opacity: 0.55;
+  cursor: progress;
+}
+
+#app[data-asking] :is(.results, .videos, .status, .note, .picked) {
+  opacity: 0.45;
+}
+
+#app[data-asking] :is(.start, .empty, .also) {
+  display: none;
 }

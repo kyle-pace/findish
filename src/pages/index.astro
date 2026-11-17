@@ -12,6 +12,24 @@ import LabLayout from 'kp-design/layouts/LabLayout.astro';
 import { SITE } from '../lib/site';
 import Wordmark from '../components/Wordmark.astro';
 import '../styles/theme.css';
+// The totals under the name are worked out at build time, so the line is there from the
+// first paint and nothing moves when the index arrives (search.ts writes the same words).
+import indexJson from '../../public/index.json';
+import { prepare } from '../lib/search-core.mjs';
+
+const index: any = indexJson;
+const count = (n: number, one: string) => `${n.toLocaleString('en-US')} ${n === 1 ? one : one + 's'}`;
+const creators = prepare(index).creators;
+const fromLine = `${count(index.recipes.length, 'recipe')} and ${count(index.videos.rows.length, 'video')} from ${creators.length} creators. Every one opens on its creator’s own site.`;
+// Creator names by id, for the tags a link to a search shows before the index has loaded.
+const creatorNames = JSON.stringify(Object.fromEntries(creators.map((c: { id: string; name: string }) => [c.id, c.name])));
+const FILTERS = [
+  ['show', 'Show'],
+  ['course', 'Course'],
+  ['cuisine', 'Cuisine'],
+  ['site', 'Creators'],
+  ['time', 'Ready in'],
+];
 ---
 
 <LabLayout
@@ -46,16 +64,70 @@ import '../styles/theme.css';
   </script>
 
   <div class="page" id="page" data-mode="home">
+    <script is:inline>
+      // A link to a search is laid out as results from the first paint (the box at the top,
+      // the filters under it), so nothing jumps when the recipes arrive. search.ts takes over.
+      if (/[?&](q|with|site|time|cuisine|course|new|show|without|not|diet|pick)=[^&]/.test(location.search))
+        document.getElementById('page').dataset.mode = 'results';
+    </script>
     <div class="app" id="app" data-state="loading">
       <header class="top">
         <h1><a href="/" id="home-link"><Wordmark /></a></h1>
-        <p class="from" id="from">Recipes and videos from the cooks I trust. Every one opens on its creator’s own site.</p>
+        <p class="from" id="from">{fromLine}</p>
       </header>
 
       <form class="search" id="search-form" role="search" action="/" method="get" aria-label="Recipes">
         <label class="visually-hidden" for="q">Search recipes by dish, ingredient, cuisine or creator</label>
         <div class="box" id="box">
-          <ul class="tags" id="with-chips" aria-label="Added to your search"></ul>
+          <div class="fields">
+          <ul class="tags" id="with-chips" aria-label="Added to your search" data-amp-mask data-creators={creatorNames}></ul>
+          <script is:inline>
+            // A link to a search with tags (?with=tofu&cuisine=Thai) shows them from the first
+            // paint, as plain labels, so the box is already its full height when the recipes
+            // arrive and search.ts draws the real ones (with their × buttons).
+            (function () {
+              var p = new URLSearchParams(location.search);
+              var list = document.getElementById('with-chips');
+              var names = {};
+              try {
+                names = JSON.parse(list.dataset.creators || '{}');
+              } catch (e) {}
+              var ids = function (k) {
+                return (p.get(k) || '').split(',').filter(Boolean);
+              };
+              var add = function (kind, label) {
+                var li = document.createElement('li');
+                var tag = document.createElement('span');
+                tag.className = 'tag tag-' + kind;
+                tag.textContent = label;
+                var x = document.createElement('span');
+                x.className = 'x';
+                x.setAttribute('aria-hidden', 'true');
+                x.textContent = '×';
+                tag.appendChild(x);
+                li.appendChild(tag);
+                list.appendChild(li);
+              };
+              var plain = function (id) {
+                return id.replace(/[-_]/g, ' ');
+              };
+              ids('site').forEach(function (id) {
+                if (names[id]) add('creator', 'from ' + names[id]);
+              });
+              if (p.get('cuisine')) add('cuisine', p.get('cuisine') + ' cuisine');
+              if (p.get('new') === '1') add('diet', 'new this week');
+              if (p.get('diet') === 'vegetarian' || p.get('diet') === 'vegan') add('diet', p.get('diet'));
+              ids('with').forEach(function (id) {
+                add('ing', plain(id));
+              });
+              ids('without').forEach(function (id) {
+                add('not', 'no ' + plain(id));
+              });
+              ids('not').forEach(function (w) {
+                add('not', 'no ' + w);
+              });
+            })();
+          </script>
           <input
             id="q"
             name="q"
@@ -71,15 +143,21 @@ import '../styles/theme.css';
             aria-controls="q-list"
             aria-describedby="q-hint"
           />
+          <script is:inline>
+            // The words a link searches for are in the box from the first paint too.
+            document.getElementById('q').value = (new URLSearchParams(location.search).get('q') || '').trim();
+          </script>
+          </div>
           <button class="go" type="submit">
             <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2.4"></circle><path d="m15.5 15.5 5 5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"></path></svg>
             <span class="visually-hidden">Find recipes</span>
           </button>
-          <div class="panel" id="q-panel" hidden>
+          <div class="panel" id="q-panel" hidden data-amp-mask>
             <div class="list" id="q-list" role="listbox" aria-label="Suggestions"></div>
           </div>
         </div>
         <p id="q-hint" class="visually-hidden">Suggestions appear as you type. Pick an ingredient, cuisine or creator to add it to your search. Backspace in an empty box removes the last one.</p>
+        <p class="visually-hidden" id="announce" role="status" aria-live="polite"></p>
         <p class="home-actions"><button class="lucky" type="button" id="lucky">Pick one at random</button></p>
       </form>
 
@@ -93,31 +171,16 @@ import '../styles/theme.css';
         <button class="clear-all" type="button" id="clear-all" hidden>Start over</button>
       </div>
 
-      <div class="pop" id="f-show" popover>
-        <fieldset><legend>Show</legend><div class="options" id="f-show-options"></div></fieldset>
-      </div>
-      <div class="pop" id="f-course" popover>
-        <fieldset><legend>Course</legend><div class="options" id="f-course-options"></div></fieldset>
-      </div>
-      <div class="pop" id="f-cuisine" popover>
-        <fieldset><legend>Cuisine</legend><div class="options" id="f-cuisine-options"></div></fieldset>
-      </div>
-      <div class="pop" id="f-site" popover>
-        <fieldset><legend>Creators</legend><div class="options" id="f-site-options"></div></fieldset>
-      </div>
-      <div class="pop" id="f-time" popover>
-        <fieldset><legend>Ready in</legend><div class="options" id="f-time-options"></div></fieldset>
-      </div>
+      {FILTERS.map(([id, label]) => (
+        <div class="pop" id={`f-${id}`} popover role="dialog" aria-label={label}>
+          <fieldset><legend>{label}</legend><div class="options" id={`f-${id}-options`}></div></fieldset>
+          <p class="pop-done"><button type="button" popovertarget={`f-${id}`} popovertargetaction="hide">Done</button></p>
+        </div>
+      ))}
 
-      <p class="status" id="status" role="status" aria-live="polite">Loading the recipes…</p>
+      <p class="status" id="status" role="status" aria-live="polite" tabindex="-1" data-amp-mask>Loading the recipes…</p>
 
       <p class="note" id="note" hidden></p>
-
-      <section class="start" id="start" aria-label="Ideas" hidden>
-        <p id="try"></p>
-        <p id="popular"></p>
-        <p id="creators"></p>
-      </section>
 
       <section class="picked" id="picked" aria-labelledby="picked-title" hidden tabindex="-1">
         <h2 id="picked-title">Picked at random</h2>
@@ -139,6 +202,13 @@ import '../styles/theme.css';
         <p id="fixes"></p>
       </section>
 
+      <!-- The home page's ideas. They also sit under "nothing found", after what to try instead. -->
+      <section class="start" id="start" aria-label="Ideas">
+        <p id="try"></p>
+        <p id="popular"></p>
+        <p id="creators"></p>
+      </section>
+
       <p class="also" id="also" hidden></p>
 
       <noscript>
@@ -146,7 +216,8 @@ import '../styles/theme.css';
           Search runs in your browser, so it needs JavaScript. You can still search
           <a href="https://thewoksoflife.com/?s=">The Woks of Life</a>,
           <a href="https://hot-thai-kitchen.com/?s=">Hot Thai Kitchen</a> and
-          <a href="https://smittenkitchen.com/?s=">Smitten Kitchen</a> directly.
+          <a href="https://smittenkitchen.com/?s=">Smitten Kitchen</a> directly, see
+          <a href="/creators/">every creator here</a>, or <a href="/browse/">browse by cuisine, course and ingredient</a>.
         </p>
       </noscript>
     </div>
@@ -290,6 +361,24 @@ import '../styles/theme.css';
     margin-bottom: clamp(var(--space-1), 1.4svh, var(--space-3));
   }
 
+  /* The ideas are drawn when the recipes arrive. Their lines hold their place from the
+     first paint (two lines each on a phone, one on wider screens), so the name and the box
+     don't move when they fill in. */
+  [data-mode='home'] .start p {
+    min-height: 1lh;
+  }
+
+  @media (max-width: 40rem) {
+    [data-mode='home'] .start p {
+      min-height: 2lh;
+    }
+  }
+
+  /* Results fill the window from the first paint, so the footer doesn't jump when they arrive. */
+  [data-mode='results'] .app {
+    min-height: 100svh;
+  }
+
   [data-mode='home'] .start #fresh {
     margin-top: clamp(var(--space-3), 3svh, var(--space-6));
   }
@@ -320,6 +409,21 @@ import '../styles/theme.css';
     }
   }
 
+  /* While the recipes load: the home page keeps "Loading…" for screen readers only (it
+     would nudge the box otherwise), and a search's page doesn't show the ideas' empty lines. */
+  [data-mode='home'] .app[data-state='loading'] .status {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  [data-mode='results'] .app[data-state='loading'] .start {
+    display: none;
+  }
+
   [data-mode='home'] .filters,
   [data-mode='home'] .note,
   [data-mode='home'] .status:empty,
@@ -334,11 +438,10 @@ import '../styles/theme.css';
   .box {
     position: relative;
     display: flex;
-    flex-wrap: wrap;
     align-items: center;
     gap: var(--space-2);
     min-height: 3.5rem;
-    padding: var(--space-2) 3.5rem var(--space-2) var(--space-4);
+    padding: var(--space-2) 0.35rem var(--space-2) var(--space-4);
     border: 1px solid var(--field-rule);
     border-radius: 0.5rem;
     background: var(--bg-raised);
@@ -351,9 +454,25 @@ import '../styles/theme.css';
     box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-ink) 30%, transparent);
   }
 
+  /* Tags and the field wrap together; the button sits beside them as its own item, so at
+     any text size it never lies over what's typed. */
+  .fields {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
   .tags {
     display: contents;
     list-style: none;
+  }
+
+  .tags :global(li) {
+    min-width: 0;
+    max-width: 100%;
   }
 
   .tags :global(.tag) {
@@ -362,6 +481,7 @@ import '../styles/theme.css';
     gap: 0.35em;
     min-height: 2.25rem;
     padding: 0 0.55em;
+    overflow-wrap: anywhere;
     margin: 0;
     border: 0;
     border-radius: 0.3rem;
@@ -404,7 +524,8 @@ import '../styles/theme.css';
 
   .box input {
     flex: 1 1 12rem;
-    min-width: 8rem;
+    width: 100%;
+    min-width: min(8rem, 100%);
     min-height: 2.5rem;
     padding: 0;
     border: 0;
@@ -424,10 +545,7 @@ import '../styles/theme.css';
   }
 
   .go {
-    position: absolute;
-    top: 50%;
-    right: 0.35rem;
-    translate: 0 -50%;
+    flex: none;
     display: grid;
     place-items: center;
     width: 2.75rem;
@@ -437,6 +555,27 @@ import '../styles/theme.css';
     background: var(--go);
     color: var(--go-ink);
     cursor: pointer;
+  }
+
+  /* Very large text on a small screen: the button takes its own row under the field, full
+     width, so tags and typing get the whole box. Measured against the box, in text sizes. */
+  .search {
+    container-type: inline-size;
+  }
+
+  @container (max-width: 16rem) {
+    .box {
+      flex-wrap: wrap;
+      padding-right: var(--space-4);
+    }
+
+    .fields {
+      flex-basis: 100%;
+    }
+
+    .go {
+      width: 100%;
+    }
   }
 
   .go:focus-visible {
@@ -475,16 +614,20 @@ import '../styles/theme.css';
     cursor: pointer;
   }
 
+  /* The chosen suggestion: the basil fill is too faint to see on its own (1.2:1), so a
+     tomato bar down its left edge marks it (well over 3:1 in light and dark). */
   .panel :global([role='option'][aria-selected='true']) {
     background: var(--scallion-fill);
+    box-shadow: inset 4px 0 0 var(--accent-ink);
   }
 
-  /* A line between things you add (creators, ingredients) and recipes you open. */
-  .panel :global([data-kind='creator'] + [data-kind='recipe']),
-  .panel :global([data-kind='ing'] + [data-kind='recipe']),
-  .panel :global([data-kind='recipe'] + [data-kind='all']) {
+  /* A line between things you add (creators, ingredients), recipes you open, and the
+     plain search for the words. */
+  .panel :global([role='group'] + [role='group']),
+  .panel :global([role='group'] + [role='option']) {
     margin-top: var(--space-1);
-    box-shadow: 0 -1px 0 var(--line);
+    padding-top: var(--space-1);
+    border-top: 1px solid var(--line);
   }
 
   .panel :global(.opt-thumb) {
@@ -608,8 +751,13 @@ import '../styles/theme.css';
     margin-left: auto;
   }
 
-  /* Phones: one line that scrolls sideways, fading at the edge so it reads as more. */
+  /* Phones: one line that scrolls sideways, fading at the edge so it reads as more. A
+     filter that's set moves to the front of the line, so it's never off the screen. */
   @media (max-width: 40rem) {
+    .filters .filter[data-active] {
+      order: -1;
+    }
+
     .filters {
       flex-wrap: nowrap;
       overflow-x: auto;
@@ -663,11 +811,11 @@ import '../styles/theme.css';
   .pop {
     margin: 0;
     width: max-content;
-    min-width: 14rem;
-    max-width: min(26rem, calc(100vw - 2 * var(--gutter)));
+    min-width: min(14rem, calc(100vw - 2rem));
+    max-width: min(26rem, calc(100vw - 2rem));
     max-height: min(28rem, 70vh);
     overflow: auto;
-    padding: var(--space-4) var(--space-4) var(--space-3);
+    padding: var(--space-4) var(--space-4) 0;
     background: var(--bg-raised);
     color: var(--ink);
     border: 1px solid var(--line);
@@ -704,6 +852,48 @@ import '../styles/theme.css';
     background: var(--scallion-fill);
   }
 
+  /* The option the keyboard is on: the same tomato bar as a chosen suggestion. */
+  .options :global(label:has(input:focus-visible)) {
+    background: var(--scallion-fill);
+    box-shadow: inset 4px 0 0 var(--accent-ink);
+  }
+
+  .options {
+    padding-bottom: var(--space-3);
+  }
+
+  /* Done stays at the bottom of the menu while its options scroll. Menus with one choice
+     close when you pick, so on wider screens only Creators (pick several) shows it. */
+  .pop-done {
+    display: none;
+    position: sticky;
+    bottom: 0;
+    margin: 0 calc(-1 * var(--space-4));
+    padding: 0 calc(var(--space-4) + var(--space-2));
+    border-top: 1px solid var(--line);
+    background: var(--bg-raised);
+    text-align: right;
+  }
+
+  #f-site .pop-done {
+    display: block;
+  }
+
+  .pop-done button {
+    min-height: 2.75rem;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--ink);
+    font: inherit;
+    font-weight: 700;
+    text-decoration: underline;
+    text-decoration-color: var(--accent-ink);
+    text-decoration-thickness: 0.12em;
+    text-underline-offset: 0.3em;
+    cursor: pointer;
+  }
+
   .options :global(input) {
     width: 1.1rem;
     height: 1.1rem;
@@ -723,10 +913,27 @@ import '../styles/theme.css';
   @media (max-width: 40rem) {
     .pop {
       inset: auto 0 0 0 !important;
+      min-width: 0;
       max-width: none;
       width: 100%;
       border-radius: 0.75rem 0.75rem 0 0;
-      padding-bottom: calc(var(--space-8) + env(safe-area-inset-bottom));
+    }
+
+    /* A sheet over the page: the page behind it dims, and a tap there only closes the
+       sheet (search.ts), it doesn't reach the result under the finger. */
+    .pop::backdrop {
+      background: rgb(0 0 0 / 0.45);
+      pointer-events: auto;
+    }
+
+    .pop-done {
+      display: block;
+      padding-bottom: calc(var(--space-2) + env(safe-area-inset-bottom));
+    }
+
+    .pop-done button {
+      min-width: 2.75rem;
+      padding-block: var(--space-2);
     }
 
     /* Fingers need the full 44px on a phone. */
@@ -752,6 +959,17 @@ import '../styles/theme.css';
     margin: var(--space-4) 0;
     font-size: var(--step--1);
     color: var(--ink-muted);
+  }
+
+  /* Focus is moved here after a search on a phone, so a screen reader reads the count. */
+  .status:focus {
+    outline: none;
+  }
+
+  .status :global(a) {
+    color: var(--ink);
+    text-decoration-color: var(--field-rule);
+    text-underline-offset: 0.2em;
   }
 
   .status :global(strong) {
@@ -789,6 +1007,27 @@ import '../styles/theme.css';
     .results :global(.row) {
       grid-template-columns: 6.5rem 1fr;
       gap: var(--space-3);
+    }
+  }
+
+  /* When a row is too narrow for a photo beside the words (large text on a small phone),
+     the photo goes on top. Measured against the row's own width, in text sizes. */
+  .results :global(li) {
+    container-type: inline-size;
+  }
+
+  @container (max-width: 17rem) {
+    .results :global(.row) {
+      grid-template-columns: 1fr;
+    }
+
+    .results :global(.row .photo) {
+      max-width: 12rem;
+    }
+
+    .results :global(.row .text) {
+      grid-row: 2;
+      grid-column: 1;
     }
   }
 
@@ -833,6 +1072,12 @@ import '../styles/theme.css';
   :global(.row h3 a) {
     color: var(--ink);
     text-decoration: none;
+    overflow-wrap: anywhere;
+  }
+
+  /* A recipe you've already opened: quieter, like the line under it. */
+  :global(.row h3 a:visited) {
+    color: var(--ink-muted);
   }
 
   /* The whole row is the link's hit area; the name stays the accessible name. */
@@ -930,6 +1175,22 @@ import '../styles/theme.css';
     line-height: 1.9;
   }
 
+  .empty :global(a) {
+    color: var(--ink);
+    text-decoration-color: var(--field-rule);
+    text-underline-offset: 0.2em;
+  }
+
+  /* Ideas under "nothing found": the home page's lines, left-aligned like the results. */
+  [data-mode='results'] .start {
+    margin-top: var(--space-4);
+  }
+
+  [data-mode='results'] .start p {
+    margin-inline: 0;
+    text-wrap: wrap;
+  }
+
   .also {
     margin-top: var(--space-12);
     color: var(--ink-muted);
@@ -1017,5 +1278,10 @@ import '../styles/theme.css';
 
   .app[data-state='loading'] .results {
     opacity: 0.5;
+  }
+
+  /* The cuisine line is fetched after the results: it holds its place meanwhile. */
+  .note[data-waiting] {
+    visibility: hidden;
   }
 </style>

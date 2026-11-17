@@ -1,0 +1,10 @@
+export function cleanQ(text: unknown): string;
+export function tagOrder(before: string[], now: string[]): string[];
+export function titleFor(parts: (string | undefined)[], home: string, name?: string): string;
+export function dishName(text: unknown): string;
+export function ignoredSentence(ignored: string[], quote?: (w: string) => string): string;
+export function linkOnlyTyped<T extends { name: string }>(text: string, sites: T[] | undefined): { site: T; rest: string } | null;
+export function goesToAsk(o: { on: boolean; how?: 'enter' | 'ask' | 'plain'; text?: string; fromAsk?: boolean; question?: boolean; chosen?: boolean }): boolean;
+export function askKey(search: unknown): string;
+export type Turn = { role: 'user'; content: string } | { role: 'assistant'; showed: string };
+export function askMessages(turns: Turn[]): ({ role: 'user'; content: string } | { role: 'assistant'; showed: string })[];

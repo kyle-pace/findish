@@ -11,12 +11,15 @@
 // ingredient tags rank recipes by how many of them they use, creator tags narrow to that
 // creator's recipes and videos. With nothing searched, the page is just the box (home);
 // after a search, the box moves up and results fill the page (results).
-// State lives in the URL (?q=, &with=, &site=, &time=, &cuisine=, &course=, &new=), so searches can be
-// shared and the back button works. (`site` holds creator ids, for older links.)
+// State lives in the URL (?q=, &with=, &site=, &time=, &cuisine=, &course=, &new=, &pick= for
+// a recipe picked at random), so searches can be shared and the back button works. (`site`
+// holds creator ids, for older links.) How many results "Show more" has opened, and how far
+// down the page was, ride along in history.state, so Back from a recipe lands where you were.
 import { track } from 'kp-design/analytics';
 import * as core from '../lib/search-core.mjs';
 import type { Creator, Hit, Ready, Recipe, Understood } from '../lib/search-core.mjs';
 import { looksLikeAsk, words } from '../lib/search-core.mjs';
+import { cleanQ, dishName, goesToAsk, ignoredSentence, linkOnlyTyped, tagOrder, titleFor } from '../lib/page-state.mjs';
 
 type Source = { id: string; name: string; site: string; host: string; count: number };
 // [catalog id, name, recipes naming it, parent positions, ...other names]
@@ -52,6 +55,14 @@ type Index = {
 };
 
 const PAGE = 24;
+const MOST_SHOWN = 20 * PAGE; // as far as Back will reopen "Show more"
+// The tab's title could name the search ("mapo tofu: Findish"), which helps tell tabs and
+// history apart. It stays off: Amplitude copies the page's title onto every page view and
+// click it records, so the typed words would leave the browser. Turn it on only once
+// kp-design's analytics strips "[Amplitude] Page Title" the way it strips the address.
+const TITLE_NAMES_SEARCH = false;
+const HOME_TITLE = document.title;
+const phone = () => matchMedia('(max-width: 40rem)').matches;
 const TIMES = [15, 30, 45, 60];
 // The home page's ideas are drawn at random from these on every visit, so a refresh brings
 // new ones. Dishes are specific (not "salad" or "soup"), from many cuisines and courses;
@@ -98,7 +109,14 @@ const andList = (xs: string[]) => (xs.length < 2 ? xs.join('') : `${xs.slice(0, 
 const fmtDay = (d: string) => new Date(`${d}T12:00:00`).toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
 const orList = (xs: string[]) => (xs.length < 2 ? xs.join('') : `${xs.slice(0, -1).join(', ')} or ${xs.at(-1)}`);
 
+// Result names are semi-bold and book titles italic, and a browser only fetches a font's
+// face when something first uses it. Asking for them now, while the index loads, means the
+// first results don't reflow a moment after they appear.
+for (const face of ['600', 'italic', '700']) document.fonts?.load(`${face} 1em "Atkinson Hyperlegible Next"`).catch(() => {});
+
 let data: Index;
+/** Ask (the chat experiment, at the end of this file) has loaded and can take questions. */
+let askReady = false;
 /** The index, ready to search (src/lib/search-core.mjs). Not set until it has loaded. */
 let ready: Ready | undefined;
 let recipes: Recipe[] = [];
@@ -117,7 +135,7 @@ const state = {
   cuisine: '',
   course: '',
   fresh: false, // only what's new this week
-  sidesFor: -1, // the main a "Sides to go with it" search came from (not kept in the URL)
+  sidesFor: '', // the dish a "sides to go with it" search is for (&sidesFor= in the URL, letters only)
   show: '' as '' | 'recipes' | 'videos', // both, or just one kind
   without: [] as number[], // ingredients to leave out ("no pork")
   notWords: [] as string[], // words to leave out by title, for things that aren't one ingredient ("no peas")
@@ -126,6 +144,7 @@ const state = {
   list: false, // a comma just made an ingredient tag, so what's typed next carries on the list
   shown: PAGE,
   picked: -1, // a recipe picked at random, by index into recipes
+  order: [] as string[], // the tags, in the order they were added (see tagList)
 };
 
 /** The creator a channel belongs to: its site's id, or its own. */
@@ -140,6 +159,7 @@ async function load() {
     if (!res.ok) throw new Error(String(res.status));
     data = await res.json();
   } catch {
+    app.dataset.state = 'failed';
     statusEl.textContent = 'The recipes didn’t load. Refresh the page to try again.';
     return;
   }
@@ -153,16 +173,52 @@ async function load() {
   ingRecipes = ready.ingUsed;
   data.ing.forEach((g, p) => ingById.set(g[0], p));
   for (const r of recipes) if (r.course === 'side' && r.cuisine) sideCount.set(r.cuisine, (sideCount.get(r.cuisine) || 0) + 1);
+  recipes.forEach((r) => keyIndex.set(r.key, r.i));
   buildFilters();
   buildStart();
   readUrl();
+  state.shown = entryShown = shownFrom(history.state);
   app.dataset.state = 'ready';
-  // Enter was pressed before the recipes had loaded: search for what's in the box now,
-  // instead of drawing the page over it.
+  // Enter was pressed before the recipes had loaded: search for what's in the box now.
+  // Anything typed meanwhile stays in the box; the page is never drawn over it.
   if (submitWaiting) submit();
-  else render();
+  else {
+    if (!typedEarly) qInput.value = state.q;
+    render();
+    restoreScroll();
+  }
 }
+/** Enter was pressed before the recipes had loaded; the search runs as soon as they have. */
 let submitWaiting = false;
+/** Something was typed before the recipes had loaded. */
+let typedEarly = false;
+const keyIndex = new Map<string, number>(); // recipe key -> index, for &pick=
+
+// Back from a recipe (or a reload) puts the page where it was: how many results were open
+// and how far down it was scrolled are kept on the history entry, and put back by hand
+// once the results are drawn (the browser tries before they exist).
+type View = { shown?: number; y?: number };
+const shownFrom = (v: View | null) => Math.min(MOST_SHOWN, Math.max(PAGE, Math.round(Number(v?.shown)) || PAGE));
+try {
+  history.scrollRestoration = 'manual';
+} catch {
+  // Older browsers restore the scroll position themselves, as best they can.
+}
+/** How many results are open on the history entry being looked at (state.shown resets before a new search is pushed). */
+let entryShown = PAGE;
+function saveView() {
+  if (!ready) return;
+  try {
+    history.replaceState({ shown: entryShown, y: Math.round(scrollY) }, '');
+  } catch {
+    // A full history state isn't worth breaking the page over.
+  }
+}
+function restoreScroll() {
+  const y = Number((history.state as View | null)?.y) || 0;
+  scrollTo(0, y);
+}
+addEventListener('pagehide', saveView);
 
 // ---------------------------------------------------------------------------------------
 // The search itself is src/lib/search-core.mjs. These hand it the page's state.
@@ -189,6 +245,9 @@ function searchVideos(opts: { q?: string; skip?: Skip } = {}): VideoRow[] {
   return core.searchVideos(ready!, state, opts) as VideoRow[];
 }
 
+
+/** The results of the search on the page, from the last render(), so nothing has to search again just to count. */
+let lastHits: Hit[] = [];
 
 const isBlank = () =>
   !state.q && !state.with.length && !state.without.length && !state.notWords.length && !state.diet && !state.sites.size && !state.time && !state.cuisine && !state.course && !state.fresh;
@@ -256,10 +315,14 @@ function row(h: Hit, position: number, _q: string[], from = 'results', support =
   </article>`;
 }
 
+/**
+ * Draws the page from `state`. It never writes to the box: whoever changes the words
+ * (a search, Back, Start over) sets the box themselves, so text someone is still typing is
+ * never replaced.
+ */
 function render() {
   const understood = queryWords(state.q);
   const q = understood.words;
-  qInput.value = state.q;
   renderTags();
   renderFilterButtons();
   renderPicked();
@@ -268,6 +331,7 @@ function render() {
   page.dataset.mode = blank && state.picked < 0 ? 'home' : 'results';
   // The home page's ideas belong to the home page: a random pick from there shows only the pick.
   $('start').hidden = !blank || state.picked >= 0;
+  if (TITLE_NAMES_SEARCH) document.title = titleFor([state.q, ...tagList().map((t) => t.label)], HOME_TITLE);
   $('empty').hidden = true;
   $('also').hidden = true;
   $('videos').hidden = true;
@@ -278,6 +342,9 @@ function render() {
     // A note belongs to the search it was for; back home, it goes with the results.
     $('note').hidden = true;
     statusEl.innerHTML = '';
+    lastHits = [];
+    say(spoken || notice);
+    spoken = notice = '';
     return;
   }
 
@@ -288,6 +355,7 @@ function render() {
   const hidden = !hits.length && (state.diet || state.without.length || state.notWords.length) && core.search(ready!, { ...state, diet: '', without: [], notWords: [] }, { count: true }) > 0;
   const loose = !hits.length && q.length > 1 && state.show !== 'videos' && !hidden;
   if (loose) hits = search({ loose: true });
+  lastHits = hits;
   const videos = state.show === 'recipes' ? [] : searchVideos();
   const shown = hits.slice(0, state.shown);
   // Ways to support a creator go under their first recipe on the page, not under every one,
@@ -297,7 +365,7 @@ function render() {
     .map((h, n) => {
       const first = !supported.has(h.r.src.id);
       supported.add(h.r.src.id);
-      return `<li>${row(h, n + 1, q, state.sidesFor >= 0 ? 'sides' : 'results', first ? supportLine(h.r.src.id) : '')}</li>`;
+      return `<li>${row(h, n + 1, q, state.sidesFor ? 'sides' : 'results', first ? supportLine(h.r.src.id) : '')}</li>`;
     })
     .join('');
   moreBtn.hidden = hits.length <= state.shown;
@@ -305,7 +373,8 @@ function render() {
 
   const count = `<strong>${hits.length.toLocaleString()}</strong>`;
   const vids = videos.length ? ` and ${plural(videos.length, 'video')} on YouTube` : '';
-  if (loose && hits.length) statusEl.innerHTML = `Nothing has every word, so these ${plural(hits.length, 'recipe')} have most of them.`;
+  if (loose && hits.length)
+    statusEl.innerHTML = hits.length === 1 ? 'Nothing has every word, so this 1 recipe has most of them.' : `Nothing has every word, so these ${plural(hits.length, 'recipe')} have most of them.`;
   else if (state.show === 'videos' && !videos.length) statusEl.textContent = 'No videos match all of that.';
   else if (!hits.length && videos.length) statusEl.innerHTML = `<strong>${videos.length.toLocaleString()}</strong> ${videos.length === 1 ? 'video' : 'videos'} on YouTube.`;
   else if (!hits.length) statusEl.textContent = 'Nothing matches all of that.';
@@ -313,18 +382,24 @@ function render() {
     statusEl.innerHTML = `${count} ${hits.length === 1 ? 'recipe uses' : 'recipes use'} at least one of them${vids}. The ones that use the most come first.`;
   else statusEl.innerHTML = `${count} ${hits.length === 1 ? 'recipe' : 'recipes'}${vids}.`;
 
-  // A typo we fixed: say what we searched, and offer the words as typed.
-  if (state.sidesFor >= 0 && hits.length && state.course === 'side')
-    statusEl.innerHTML = `${count} ${state.cuisine ? esc(state.cuisine) + ' ' : ''}${hits.length === 1 ? 'side' : 'sides'} to go with ${esc(recipes[state.sidesFor].name)}.`;
+  if (state.sidesFor && hits.length && state.course === 'side')
+    statusEl.innerHTML = `${count} ${state.cuisine ? esc(state.cuisine) + ' ' : ''}${hits.length === 1 ? 'side' : 'sides'} to go with ${esc(state.sidesFor)}.`;
   if (state.fresh && hits.length)
     statusEl.innerHTML = `${count} ${hits.length === 1 ? 'recipe' : 'recipes'} new this week, from the crawl on ${esc(fmtDay(data.crawled))}.`;
   // A word nothing here has was left out of the search: say which.
   if (understood.ignored.length && (hits.length || videos.length))
-    statusEl.innerHTML += ` Nothing here has “${esc(understood.ignored.join(' '))}”, so that was left out.`;
+    statusEl.innerHTML += ` ${ignoredSentence(understood.ignored, (w) => `“${esc(w)}”`)}`;
+  // "serious eats lasagna": that site isn't in the index, but its own search is one tap away.
+  if (hits.length || videos.length) statusEl.innerHTML += linkOnlyLine();
+  // A typo we fixed: say what we searched, and offer the words as typed.
   if (understood.fixes.length)
     statusEl.innerHTML = `Showing results for “${esc(q.join(' '))}”. <button type="button" data-exact="1">Search for “${esc(
       state.q,
     )}” instead</button>. ${statusEl.innerHTML}`;
+  // What just changed ("Added tofu.") is read out with the new count, as one sentence.
+  if (spoken) statusEl.insertAdjacentHTML('afterbegin', `<span class="visually-hidden">${esc(spoken)} </span>`);
+  if (notice) statusEl.insertAdjacentHTML('afterbegin', `${esc(notice)} `);
+  spoken = notice = '';
   renderNote();
   if (!hits.length && !videos.length && state.show !== 'videos') renderEmpty();
   // Six videos under the recipes; a page at a time when there are only videos (a
@@ -337,59 +412,140 @@ function render() {
   renderAlso();
 }
 
-/** Creator and ingredient tags, inside the box before the text. */
-function renderTags() {
-  const tag = (attr: string, value: string | number, label: string, kind: string) =>
-    `<li><button type="button" class="tag tag-${kind}" ${attr}="${esc(value)}" aria-label="Remove ${esc(label)}">${esc(label)}<span class="x" aria-hidden="true">×</span></button></li>`;
-  $('with-chips').innerHTML = [
-    ...[...state.sites].map((id) => tag('data-remove-creator', id, `from ${creatorById.get(id)?.name || id}`, 'creator')),
-    ...(state.cuisine ? [tag('data-remove-cuisine', state.cuisine, `${state.cuisine} cuisine`, 'cuisine')] : []),
-    ...(state.fresh ? [tag('data-remove-fresh', 1, 'new this week', 'diet')] : []),
-    ...(state.diet ? [tag('data-remove-diet', state.diet, state.diet, 'diet')] : []),
-    ...state.with.map((p) => tag('data-remove', p, ingName(p), 'ing')),
-    ...state.without.map((p) => tag('data-remove-not', p, `no ${ingName(p)}`, 'not')),
-    ...state.notWords.map((w) => tag('data-remove-word', w, `no ${w}`, 'not')),
-  ].join('');
-  const any = state.sites.size || state.with.length || state.without.length || state.notWords.length || state.diet || state.fresh || state.cuisine;
-  $('box').toggleAttribute('data-tags', !!any);
-  qInput.placeholder = any ? 'and…' : 'A dish, ingredient, cuisine or creator';
+type Tag = { key: string; label: string; kind: string };
+
+/**
+ * Every tag in the box, in the order it was added. Backspace in an empty box takes the
+ * last one off, whatever kind it is ("new this week" and "no pork" included).
+ */
+function tagList(): Tag[] {
+  const all: Tag[] = [
+    ...[...state.sites].map((id) => ({ key: `site:${id}`, label: `from ${creatorById.get(id)?.name || id}`, kind: 'creator' })),
+    ...(state.cuisine ? [{ key: 'cuisine', label: `${state.cuisine} cuisine`, kind: 'cuisine' }] : []),
+    ...(state.fresh ? [{ key: 'fresh', label: 'new this week', kind: 'diet' }] : []),
+    ...(state.diet ? [{ key: 'diet', label: state.diet, kind: 'diet' }] : []),
+    ...state.with.map((p) => ({ key: `with:${p}`, label: ingName(p), kind: 'ing' })),
+    ...state.without.map((p) => ({ key: `not:${p}`, label: `no ${ingName(p)}`, kind: 'not' })),
+    ...state.notWords.map((w) => ({ key: `word:${w}`, label: `no ${w}`, kind: 'not' })),
+  ];
+  state.order = tagOrder(state.order, all.map((t) => t.key));
+  return state.order.map((k) => all.find((t) => t.key === k)!);
 }
 
+function removeTag(key: string) {
+  const at = key.indexOf(':');
+  const kind = at < 0 ? key : key.slice(0, at);
+  const value = key.slice(at + 1);
+  if (kind === 'site') state.sites.delete(value);
+  else if (kind === 'cuisine') state.cuisine = '';
+  else if (kind === 'fresh') state.fresh = false;
+  else if (kind === 'diet') state.diet = '';
+  else if (kind === 'with') state.with = state.with.filter((p) => p !== Number(value));
+  else if (kind === 'not') state.without = state.without.filter((p) => p !== Number(value));
+  else if (kind === 'word') state.notWords = state.notWords.filter((w) => w !== value);
+}
+
+/** What to read out with the next count: "Added tofu." / "Removed tofu." */
+let spoken = '';
+/** A sentence to show before the next count (Ask couldn't answer, so this is a plain search). */
+let notice = '';
+/** Reads a short line out politely, for screen readers (nothing shows). */
+function say(text: string) {
+  if (text) $('announce').textContent = text;
+}
+
+/** Creator and ingredient tags, inside the box before the text. */
+function renderTags() {
+  const tags = tagList();
+  $('with-chips').innerHTML = tags
+    .map(
+      (t) =>
+        `<li><button type="button" class="tag tag-${t.kind}" data-remove-tag="${esc(t.key)}" aria-label="Remove ${esc(t.label)}">${esc(t.label)}<span class="x" aria-hidden="true">×</span></button></li>`,
+    )
+    .join('');
+  $('box').toggleAttribute('data-tags', tags.length > 0);
+  qInput.placeholder = placeholder(tags.length > 0);
+}
+
+/** The hint in the empty box. Shorter on a phone, where the long one was cut off. */
+function placeholder(tagged: boolean) {
+  if (tagged) return !app.dataset.fromAsk ? 'and…' : phone() ? 'Ask a follow-up' : 'Ask a follow-up, or add an ingredient';
+  if (app.dataset.fromAsk) return phone() ? 'Ask a follow-up' : 'Ask a follow-up, or search again';
+  if (askReady) return phone() ? 'Dish or question' : 'A dish, ingredient or question';
+  return phone() ? 'Dish or ingredient' : 'A dish, ingredient, cuisine or creator';
+}
+matchMedia('(max-width: 40rem)').addEventListener('change', () => (qInput.placeholder = placeholder($('box').hasAttribute('data-tags'))));
+qInput.placeholder = placeholder(false);
+
+/** "Serious Eats isn't one of the sites searched here. Search Serious Eats for “lasagna”." when a link-only site was typed; else ''. */
+function linkOnlyLine(): string {
+  const named = linkOnlyTyped(state.q, data.linkOnly);
+  if (!named) return '';
+  const href = named.site.search.replace('{q}', encodeURIComponent(named.rest));
+  return ` ${esc(named.site.name)} isn’t one of the sites searched here. <a href="${esc(href)}" data-other="${esc(named.site.name)}">Search ${esc(named.site.name)}${named.rest ? ` for “${esc(named.rest)}”` : ''}</a>.`;
+}
+
+/**
+ * Nothing matched. Offer what would: each thing asked for taken off, each typed word on its
+ * own ("tacos, 88 recipes"), a closer spelling, and under them the home page's ideas. A
+ * site Findish only links to (Serious Eats) is named when it was typed.
+ */
 function renderEmpty() {
   const fixes: { label: string; n: number; apply: () => void }[] = [];
+  const countFor = (over: Partial<typeof state>) => core.search(ready!, { ...state, ...over }, { count: true }) as unknown as number;
   for (const p of state.with) {
     if (state.with.length < 2 && !state.q) continue;
     const rest = state.with.filter((x) => x !== p);
-    fixes.push({ label: `without ${ingName(p)}`, n: search({ with: rest }).length, apply: () => (state.with = rest) });
+    fixes.push({ label: `without ${esc(ingName(p))}`, n: search({ with: rest }).length, apply: () => (state.with = rest) });
   }
   if (state.q && state.with.length)
-    fixes.push({ label: `any dish, not just “${state.q}”`, n: search({ q: '' }).length, apply: () => (state.q = '') });
+    fixes.push({ label: `any dish, not just “${esc(state.q)}”`, n: search({ q: '' }).length, apply: () => (state.q = '') });
   if (state.without.length || state.notWords.length || state.diet)
     fixes.push({
       label: 'leaving nothing out',
-      n: (() => {
-        const [w, nw, d] = [state.without, state.notWords, state.diet];
-        [state.without, state.notWords, state.diet] = [[], [], ''];
-        const n = search().length;
-        [state.without, state.notWords, state.diet] = [w, nw, d];
-        return n;
-      })(),
+      n: countFor({ without: [], notWords: [], diet: '' }),
       apply: () => ([state.without, state.notWords, state.diet] = [[], [], '']),
     });
   if (state.sites.size) fixes.push({ label: 'any creator', n: search({ skip: 'site' }).length, apply: () => state.sites.clear() });
   if (state.time) fixes.push({ label: 'any time', n: search({ skip: 'time' }).length, apply: () => (state.time = 0) });
   if (state.cuisine) fixes.push({ label: 'any cuisine', n: search({ skip: 'cuisine' }).length, apply: () => (state.cuisine = '') });
   if (state.course) fixes.push({ label: 'any course', n: search({ skip: 'course' }).length, apply: () => (state.course = '') });
-  const useful = fixes.filter((f) => f.n > 0).sort((a, b) => b.n - a.n);
-  emptyFixes = useful.map((f) => f.apply);
+  // Each word on its own, when there are several: "tacos" (88 recipes).
+  // (As typed, "tacos" not the stem the search matches on.)
+  const typed = [...new Set(state.q.toLowerCase().split(/\s+/).map((t) => t.replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, '')))].filter(
+    (t) => words(t).length === 1 && !core.isFiller(words(t)[0]),
+  );
+  const lonely: string[] = [];
+  for (const w of typed) {
+    const n = typed.length > 1 ? countFor({ q: w, exact: true }) : 0;
+    if (n > 0) fixes.push({ label: `“${esc(w)}”`, n, apply: () => ((state.q = w), (state.exact = false)) });
+    else lonely.push(w);
+  }
+  // A word nothing has: the closest spelling that finds something, with how many.
+  const spelled: { label: string; n: number; apply: () => void }[] = [];
+  for (const w of lonely.slice(0, 3)) {
+    for (const v of core.closeWords(ready!, w, { real: true }).slice(0, 3)) {
+      const q = typed.map((x) => (x === w ? v : x)).join(' ');
+      const n = countFor({ q, exact: true }) || (typed.length > 1 ? countFor({ q: v, exact: true }) : 0);
+      if (!n) continue;
+      const one = countFor({ q, exact: true }) ? q : v;
+      spelled.push({ label: esc(one), n, apply: () => ((state.q = one), (state.exact = false)) });
+      break;
+    }
+  }
+  const useful = fixes.filter((f) => f.n > 0).sort((a, b) => b.n - a.n).slice(0, 6);
+  emptyFixes = [...useful, ...spelled].map((f) => f.apply);
   $('empty').hidden = false;
-  const tries = useful.map((f, n) => `<button type="button" data-fix="${n}">${esc(f.label)}</button> (${plural(f.n, 'recipe')})`);
+  const tries = useful.map((f, n) => `<button type="button" data-fix="${n}">${f.label}</button> (${plural(f.n, 'recipe')})`);
+  const also = spelled.map((f, n) => `<button type="button" data-fix="${useful.length + n}">${f.label}</button> (${f.n.toLocaleString()})`);
   const over = `<button type="button" data-fix="clear">start over</button>`;
-  $('fixes').innerHTML = tries.length
-    ? `Try ${orList([...tries, over])}.`
-    : state.q
-      ? `Try fewer or different words, or ${over}.`
-      : `Try ${over}.`;
+  const lines = [
+    tries.length ? `Try ${orList([...tries, over])}.` : also.length ? `Try ${orList([...also, over])}.` : state.q ? `Try fewer or different words, or ${over}.` : `Try ${over}.`,
+    tries.length && also.length ? `Also try ${orList(also)}.` : '',
+  ];
+  $('fixes').innerHTML = [linkOnlyLine().trim(), ...lines].filter(Boolean).join('<br>');
+  // The home page's ideas, so a dead end still has somewhere to go.
+  $('start').hidden = false;
 }
 let emptyFixes: (() => void)[] = [];
 
@@ -442,12 +598,16 @@ function renderNote() {
   const cuisine = noteFor();
   const creator = creatorNote();
   if (creator) {
+    box.removeAttribute('data-waiting');
     box.innerHTML = creator;
     return void (box.hidden = false);
   }
   if (!cuisine) return void (box.hidden = true);
   if (!notes) {
-    box.hidden = true;
+    // Holds its line while the link is fetched, so the results under it don't move.
+    box.innerHTML = '&nbsp;';
+    box.toggleAttribute('data-waiting', true);
+    box.hidden = false;
     if (!notesLoading) {
       notesLoading = true;
       fetch('/notes.json')
@@ -456,10 +616,14 @@ function renderNote() {
           notes = n?.cuisines ? n : { cuisines: {} };
           renderNote();
         })
-        .catch(() => (notes = { cuisines: {} }));
+        .catch(() => {
+          notes = { cuisines: {} };
+          renderNote();
+        });
     }
     return;
   }
+  box.removeAttribute('data-waiting');
   const note = notes.cuisines[cuisine];
   if (!note) return void (box.hidden = true);
   box.innerHTML = `<a href="${esc(note.page)}" data-note="cuisine" data-note-id="${esc(cuisine)}" data-note-link="world-cuisine">Explore ${esc(note.name)} on World cuisine</a>`;
@@ -502,8 +666,12 @@ function pickRandom() {
   if (!pool.length) return;
   let next = pool[Math.floor(Math.random() * pool.length)].r.i;
   if (pool.length > 1 && next === state.picked) next = pool[(pool.findIndex((h) => h.r.i === next) + 1) % pool.length].r.i;
+  const first = state.picked < 0;
   state.picked = next;
   render();
+  // The pick goes in the address (&pick=), so it can be reloaded or shared. "Pick another"
+  // replaces it instead of filling Back with picks.
+  writeUrl(first, true);
   const box = $('picked');
   box.focus({ preventScroll: true });
   box.scrollIntoView({ block: 'nearest', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
@@ -560,6 +728,9 @@ function buildFilters() {
     .join('');
 
   for (const pop of document.querySelectorAll<HTMLElement>('.pop')) {
+    // A tap or click, as opposed to arrowing through the options with the keyboard.
+    let pointed = 0;
+    pop.addEventListener('pointerup', () => (pointed = performance.now()));
     pop.addEventListener('change', (e) => {
       const el = e.target as HTMLInputElement;
       if (el.name === 'site') el.checked ? state.sites.add(el.value) : state.sites.delete(el.value);
@@ -568,17 +739,39 @@ function buildFilters() {
       if (el.name === 'course') state.course = el.value;
       if (el.name === 'show') state.show = el.value as typeof state.show;
       state.shown = PAGE;
+      // Words typed but not yet searched are searched too, so the box and the results agree.
+      commitBox();
+      // On a phone a filter that's set moves to the front of the row: show the front.
+      document.querySelector('.filters')!.scrollLeft = 0;
+      // One search: the menu's own counts don't change with its own choice, and the event
+      // takes its count from what was just drawn.
       render();
-      updateCounts(pop);
       writeUrl(false);
       // Which filters people reach for, and what they pick (ids and labels, never typed text).
-      track('Changed Filter', { filter_name: el.name, filter_value: el.name === 'site' ? (el.checked ? el.value : '') : el.value, result_count: search().length });
+      track('Changed Filter', { filter_name: el.name, filter_value: el.name === 'site' ? (el.checked ? el.value : '') : el.value, result_count: lastHits.length });
+      // A menu with one choice has done its job once it's picked. Arrowing through it with
+      // the keyboard keeps it open (each arrow is a change); Escape or Done closes it then.
+      if (el.type === 'radio' && performance.now() - pointed < 700) pop.hidePopover();
+    });
+    // Phones: the menu is a sheet over a dimmed page. A tap on the dimmed part lands on the
+    // sheet's backdrop, so it closes the sheet and never reaches the result underneath.
+    pop.addEventListener('click', (e) => {
+      if (e.target !== pop) return;
+      const r = pop.getBoundingClientRect();
+      const inside = e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+      if (!inside) pop.hidePopover();
+    });
+    // Closing a sheet by tapping the page behind it must not also press what was under the
+    // finger. Some browsers hand that tap to the page once the sheet is gone, so the click
+    // that follows a sheet closing is dropped unless it was on the menus themselves.
+    pop.addEventListener('beforetoggle', (e) => {
+      if ((e as ToggleEvent).newState === 'closed') sheetClosed = performance.now();
     });
     // Open under its word on wider screens; on phones CSS makes it a sheet at the bottom.
     pop.addEventListener('toggle', (e) => {
       if ((e as ToggleEvent).newState !== 'open') return;
       updateCounts(pop);
-      if (matchMedia('(max-width: 40rem)').matches) return;
+      if (phone()) return;
       const btn = document.querySelector<HTMLElement>(`[popovertarget="${pop.id}"]`)!;
       const r = btn.getBoundingClientRect();
       pop.style.inset = 'auto';
@@ -589,12 +782,24 @@ function buildFilters() {
   addEventListener(
     'scroll',
     () => {
-      if (matchMedia('(max-width: 40rem)').matches) return;
+      if (phone()) return;
       document.querySelectorAll<HTMLElement>('.pop:popover-open').forEach((p) => p.hidePopover());
     },
     { passive: true },
   );
 }
+
+let sheetClosed = -1e9;
+addEventListener(
+  'click',
+  (e) => {
+    if (!phone() || performance.now() - sheetClosed > 500) return;
+    if ((e.target as HTMLElement).closest?.('.pop, .filters')) return;
+    e.preventDefault();
+    e.stopPropagation();
+  },
+  true,
+);
 
 /** Each option's count, given everything else you've picked, so "Thai 12" means 12 here. */
 function updateCounts(pop: HTMLElement) {
@@ -689,7 +894,10 @@ type Option =
   | { kind: 'cuisine'; c: string; n: number }
   | { kind: 'ing'; p: number }
   | { kind: 'recipe'; h: Hit; n: number }
-  | { kind: 'all'; n: number; text: string };
+  | { kind: 'all'; n: number; text: string }
+  // With Ask on: send what's typed to Ask, or search the words here instead.
+  | { kind: 'ask'; text: string }
+  | { kind: 'words'; text: string };
 
 const suggest = {
   options: [] as Option[],
@@ -703,21 +911,39 @@ const suggest = {
     this.options = buildOptions(text);
     if (!this.options.length) return this.close();
     this.active = -1;
-    this.list.innerHTML = this.options
-      .map((o, n) => `<span role="option" id="q-opt-${n}" aria-selected="false" data-n="${n}" data-kind="${o.kind}">${optionLabel(o, text)}</span>`)
-      .join('');
+    // Grouped by what picking one does, each group named for screen readers: things that
+    // join the search, recipes that open on their own site, then the plain search.
+    const option = (o: Option, n: number) =>
+      `<span role="option" id="q-opt-${n}" aria-selected="false" data-n="${n}" data-kind="${o.kind}">${optionLabel(o, text)}</span>`;
+    const group = (label: string, kinds: Option['kind'][]) => {
+      const inside = this.options.map((o, n) => (kinds.includes(o.kind) ? option(o, n) : '')).join('');
+      return inside ? `<div role="group" aria-label="${label}">${inside}</div>` : '';
+    };
+    this.list.innerHTML =
+      group('Ask or search', ['ask', 'words']) +
+      group('Add to your search', ['not', 'creator', 'cuisine', 'ing']) +
+      group('Recipes, each opens on its own site', ['recipe']) +
+      this.options.map((o, n) => (o.kind === 'all' ? option(o, n) : '')).join('');
     this.panel.hidden = false;
     qInput.setAttribute('aria-expanded', 'true');
     qInput.removeAttribute('aria-activedescendant');
+    // Said once typing pauses, so a screen reader isn't interrupted on every letter.
+    clearTimeout(this.counting);
+    const n = this.options.length;
+    this.counting = window.setTimeout(() => !this.panel.hidden && say(`${plural(n, 'suggestion')}. Use the arrow keys to hear them.`), 700);
   },
 
   close() {
+    clearTimeout(this.counting);
     this.panel.hidden = true;
+    // Nothing stays marked as chosen once the list is closed.
+    this.list.innerHTML = '';
     qInput.setAttribute('aria-expanded', 'false');
     qInput.removeAttribute('aria-activedescendant');
     this.options = [];
     this.active = -1;
   },
+  counting: 0,
 
   move(by: number) {
     if (this.panel.hidden) return this.open();
@@ -749,6 +975,16 @@ const ingMatches = (text: string): number[] => {
 };
 
 function buildOptions(text: string): Option[] {
+  // With Ask on, a question gets two choices and nothing else: send it to Ask (and say
+  // where it goes before it's sent), or search the words here. No unrelated suggestions.
+  const fromAsk = !!app.dataset.fromAsk;
+  if (askReady && looksLikeAsk(text)) return [{ kind: 'ask', text }, { kind: 'words', text }];
+  // While Ask's results are up, what's typed carries on that chat unless something else is picked.
+  if (askReady && fromAsk) return [{ kind: 'ask', text }, { kind: 'words', text }, ...plainOptions(text).filter((o) => o.kind !== 'all')];
+  return plainOptions(text);
+}
+
+function plainOptions(text: string): Option[] {
   // "no pork", "without pea…": offer to leave an ingredient out.
   const not = text.match(/^(?:no|without|not)\s+(.{2,})$/i);
   if (not) {
@@ -768,6 +1004,10 @@ function buildOptions(text: string): Option[] {
 }
 
 function optionLabel(o: Option, text: string): string {
+  if (o.kind === 'ask')
+    return `<span class="opt-text"><span class="opt-name">Ask: ${esc(o.text)}</span><span class="opt-meta">Sent to Claude to turn into a search. Not kept.</span></span>`;
+  if (o.kind === 'words')
+    return `<span class="opt-text"><span class="opt-name">Search for these words</span><span class="opt-meta">Searched here, on your device.</span></span>`;
   if (o.kind === 'not')
     return `<span class="opt-text"><span class="opt-name">No ${esc(ingName(o.p))}</span><span class="opt-meta">Leave out recipes that use it</span></span>`;
   const qs = words(text).join(' ');
@@ -795,7 +1035,7 @@ function optionLabel(o: Option, text: string): string {
     const thumb = r.img
       ? `<img class="opt-thumb" src="${esc(r.img)}" alt="" loading="lazy" referrerpolicy="no-referrer" width="44" height="44">`
       : `<span class="opt-thumb" aria-hidden="true"></span>`;
-    return `${thumb}<span class="opt-text"><span>${highlight(r.name, words(text))}</span><span class="opt-meta">${esc(r.src.name)}${
+    return `${thumb}<span class="opt-text"><span>${highlight(r.name, words(text))}</span><span class="opt-meta"><span class="visually-hidden">Opens on </span>${esc(r.src.name)}${
       r.min ? `, ${fmtTime(r.min)}` : ''
     }</span></span>`;
   }
@@ -805,9 +1045,14 @@ function optionLabel(o: Option, text: string): string {
 function choose(n: number) {
   const o = suggest.options[n];
   if (!o) return;
-  if (o.kind === 'not') {
+  if (o.kind === 'ask' || o.kind === 'words') {
+    // The person's own choice between Ask and a plain search (never what they typed).
+    track(o.kind === 'ask' ? 'Chose Ask' : 'Chose Plain Search', { follow_up: !!app.dataset.fromAsk });
+    submit(o.kind === 'ask' ? 'ask' : 'plain');
+  } else if (o.kind === 'not') {
     qInput.value = '';
     if (!state.without.includes(o.p)) state.without.push(o.p);
+    spoken = `Added no ${ingName(o.p)}.`;
     afterTag();
     qInput.focus();
   } else if (o.kind === 'creator') {
@@ -817,6 +1062,7 @@ function choose(n: number) {
   } else if (o.kind === 'cuisine') {
     qInput.value = '';
     state.cuisine = o.c;
+    spoken = `Added ${o.c} cuisine.`;
     afterTag();
     track('Added Cuisine', { cuisine: o.c, added_from: 'suggestions' });
     qInput.focus();
@@ -833,10 +1079,15 @@ function choose(n: number) {
 // ---------------------------------------------------------------------------------------
 // Actions
 
+/** What's in the box becomes the words searched, as it is (no tags made from it). */
+function commitBox() {
+  state.q = cleanQ(qInput.value);
+}
+
 /** Adding a tag keeps any words still in the box as words, and searches. */
 function afterTag() {
   suggest.close();
-  state.q = qInput.value.trim();
+  commitBox();
   state.exact = false; // "search for exactly this" was about the words before the tag
   state.shown = PAGE;
   state.picked = -1;
@@ -847,26 +1098,67 @@ function afterTag() {
 
 function addIngredient(p: number, from: string) {
   if (!state.with.includes(p)) state.with.push(p);
+  spoken = `Added ${ingName(p)}.`;
   afterTag();
   track('Added Ingredient', { ingredient_id: data.ing[p][0], added_from: from });
 }
 
 function addCreator(id: string, from: string) {
   state.sites.add(id);
+  spoken = `Added ${creatorById.get(id)?.name || 'creator'}.`;
   afterTag();
   track('Added Creator', { creator_id: id, added_from: from });
 }
 
-function submit() {
-  // The recipes haven't loaded yet: keep what's typed, and search once they have.
-  if (!ready) return void (submitWaiting = true);
+/** Whether the person has picked Ask themselves this visit; from then on Enter may ask. */
+const askChosen = {
+  get: () => {
+    try {
+      return sessionStorage.getItem('findish-ask-chosen') === '1';
+    } catch {
+      return false;
+    }
+  },
+  set: () => {
+    try {
+      sessionStorage.setItem('findish-ask-chosen', '1');
+    } catch {
+      // Private mode: Enter keeps searching here, and the Ask option is still offered.
+    }
+  },
+};
+
+/**
+ * Search for what's in the box. `how` is 'enter' for the Enter key or the button, 'ask'
+ * when the person picked "Ask: …", and 'plain' for "Search for these words".
+ */
+function submit(how: 'enter' | 'ask' | 'plain' = 'enter') {
+  // The recipes haven't loaded yet: keep what's typed, say so, and search once they have.
+  if (!ready) {
+    if (!qInput.value.trim() || app.dataset.state !== 'loading') return;
+    submitWaiting = true;
+    page.dataset.mode = 'results';
+    statusEl.textContent = 'Loading the recipes…';
+    return;
+  }
   submitWaiting = false;
   suggest.close();
-  // With Ask on, something that reads like a question goes to Ask instead (src/scripts/chat.ts).
-  if (askReady && looksLikeAsk(qInput.value)) {
-    dispatchEvent(new CustomEvent('findish:ask', { detail: { text: qInput.value.trim() } }));
-    if (matchMedia('(max-width: 40rem)').matches) qInput.blur();
+  const fromAsk = !!app.dataset.fromAsk;
+  // With Ask on, what's typed goes to Ask (src/scripts/chat.ts) only when the person chose
+  // that: see goesToAsk(). The suggestions say where it goes before it's sent.
+  const text = qInput.value.trim();
+  if (goesToAsk({ on: askReady, how, text, fromAsk, question: looksLikeAsk(text), chosen: askChosen.get() })) {
+    if (how === 'ask') askChosen.set();
+    dispatchEvent(new CustomEvent('findish:ask', { detail: { text } }));
+    // On a phone the keyboard goes away and focus lands on Ask's line, which reads the answer out.
+    if (phone()) document.querySelector<HTMLElement>('.ask-line')?.focus({ preventScroll: true });
     return;
+  }
+  // A new search typed over Ask's results starts clean: it doesn't keep the cuisine,
+  // course or tags Ask had set.
+  if (fromAsk && text) {
+    clearAll();
+    qInput.value = text;
   }
   // Plain phrases become tags and filters ("no pork", "under 30 minutes"); the rest stays words.
   const u = understand(qInput.value);
@@ -881,14 +1173,16 @@ function submit() {
   if (u.show) state.show = u.show;
   state.exact = false;
   state.list = false;
-  qInput.value = u.q;
-  state.q = u.q;
+  state.q = cleanQ(u.q);
+  qInput.value = state.q;
   state.shown = PAGE;
   state.picked = -1;
   render();
   writeUrl(true);
   searched();
-  if (matchMedia('(max-width: 40rem)').matches) qInput.blur();
+  // On a phone the keyboard goes away and focus lands on the count, so a screen reader
+  // reads how many were found (focus used to fall back to the top of the page).
+  if (phone()) statusEl.focus({ preventScroll: true });
 }
 
 function searched() {
@@ -898,7 +1192,7 @@ function searched() {
     ingredient_count: state.with.length,
     creator_count: state.sites.size,
     filter_count: filterCount(),
-    result_count: search().length,
+    result_count: lastHits.length,
   });
 }
 
@@ -918,8 +1212,13 @@ function openedRecipe(source: string, position: number, from: string, key = '') 
 // ---------------------------------------------------------------------------------------
 // URL state
 
-function writeUrl(push: boolean) {
-  delete app.dataset.fromAsk; // the person changed the search, so it's theirs now
+/** The address for the search on the page. `keepAsk`: this isn't the person changing the search (a random pick), so Ask's chat carries on. */
+function writeUrl(push: boolean, keepAsk = false) {
+  if (!keepAsk && app.dataset.fromAsk) {
+    delete app.dataset.fromAsk; // the person changed the search, so it's theirs now
+    qInput.placeholder = placeholder($('box').hasAttribute('data-tags'));
+  }
+  if (state.course !== 'side') state.sidesFor = '';
   const u = new URL(location.href);
   u.search = '';
   u.hash = '';
@@ -935,13 +1234,18 @@ function writeUrl(push: boolean) {
   if (state.notWords.length) u.searchParams.set('not', state.notWords.join(','));
   if (state.diet) u.searchParams.set('diet', state.diet);
   if (state.exact) u.searchParams.set('exact', '1');
+  if (state.sidesFor) u.searchParams.set('sidesFor', state.sidesFor);
+  if (state.picked >= 0) u.searchParams.set('pick', recipes[state.picked].key);
   if (u.href === location.href) return;
-  history[push ? 'pushState' : 'replaceState'](null, '', u);
+  // The entry being left remembers how far "Show more" and the scroll had got, for Back.
+  if (push) saveView();
+  entryShown = state.shown;
+  history[push ? 'pushState' : 'replaceState']({ shown: state.shown }, '', u);
 }
 
 function readUrl() {
   const p = new URLSearchParams(location.search);
-  state.q = (p.get('q') || '').trim();
+  state.q = cleanQ(p.get('q') || '');
   state.with = (p.get('with') || '')
     .split(',')
     .map((id) => ingById.get(id))
@@ -962,11 +1266,12 @@ function readUrl() {
   const course = p.get('course') || '';
   state.course = (data.courses || []).some(([id]) => id === course) ? course : '';
   state.fresh = p.get('new') === '1' && !!data.fresh?.length;
-  state.sidesFor = -1;
+  // Ask's "what goes with bulgogi" names the dish here. Letters only, and escaped when shown.
+  state.sidesFor = state.course === 'side' ? dishName(p.get('sidesFor')) : '';
   const show = p.get('show');
   state.show = show === 'recipes' || show === 'videos' ? show : '';
   state.shown = PAGE;
-  state.picked = -1;
+  state.picked = keyIndex.get(p.get('pick') || '') ?? -1;
 }
 
 // ---------------------------------------------------------------------------------------
@@ -979,14 +1284,18 @@ form.addEventListener('submit', (e) => {
 });
 
 qInput.addEventListener('input', () => {
+  if (!ready) typedEarly = true;
+  // A question for Ask keeps its commas ("fish, kimchi and onions"): it isn't a list of tags.
+  const question = askReady && looksLikeAsk(qInput.value);
   // A comma finishes an ingredient (or a creator), like a tag field: "ginger, tofu, ". A
   // pasted list ("eggplant, tofu, scallions") makes a tag of each piece before its last
   // comma; what's after it stays in the box, and Enter carries on the list (understand()).
-  if (ready && qInput.value.includes(',')) {
+  if (ready && !question && qInput.value.includes(',')) {
     const pieces = qInput.value.split(',');
     const typing = pieces.pop()!.trim();
     const kept: string[] = [];
     const added: [string, string][] = [];
+    const names: string[] = [];
     for (const piece of pieces) {
       const text = piece.replace(/^\s*(?:i\s+have|i['’]?ve\s+got|we\s+have|with|using)\s+/i, '').trim();
       if (!text) continue;
@@ -995,13 +1304,16 @@ qInput.addEventListener('input', () => {
       if (ing != null) {
         if (!state.with.includes(ing)) state.with.push(ing);
         added.push(['Added Ingredient', data.ing[ing][0]]);
+        names.push(ingName(ing));
       } else if (creator) {
         state.sites.add(creator.id);
         added.push(['Added Creator', creator.id]);
+        names.push(creator.name);
       } else kept.push(piece.trim());
     }
-    qInput.value = [...kept, typing].filter(Boolean).join(' ');
     if (added.length) {
+      qInput.value = [...kept, typing].filter(Boolean).join(' ');
+      spoken = `Added ${andList(names)}.`;
       afterTag();
       state.list = true;
       for (const [event, id] of added) track(event, { [event === 'Added Creator' ? 'creator_id' : 'ingredient_id']: id, added_from: 'typed' });
@@ -1018,19 +1330,15 @@ qInput.addEventListener('keydown', (e) => {
   } else if (e.key === 'Escape' && !suggest.panel.hidden) {
     e.preventDefault();
     suggest.close();
-  } else if (
-    e.key === 'Backspace' &&
-    !qInput.value &&
-    qInput.selectionStart === 0 &&
-    (state.with.length || state.without.length || state.notWords.length || state.diet || state.sites.size || state.cuisine)
-  ) {
-    // Backspace in an empty box takes off the last tag, right to left.
-    if (state.notWords.length) state.notWords.pop();
-    else if (state.without.length) state.without.pop();
-    else if (state.with.length) state.with.pop();
-    else if (state.diet) state.diet = '';
-    else if (state.sites.size) state.sites.delete([...state.sites].at(-1)!);
-    else state.cuisine = '';
+  } else if (e.key === 'Backspace' && ready && !qInput.value && qInput.selectionStart === 0) {
+    // Backspace in an empty box takes off the tag added last, whatever kind it is. The box
+    // is empty, so the words searched are too: the old words are never put back.
+    const last = tagList().at(-1);
+    if (!last) return;
+    e.preventDefault();
+    removeTag(last.key);
+    spoken = `Removed ${last.label}.`;
+    commitBox();
     state.shown = PAGE;
     render();
     writeUrl(false);
@@ -1051,13 +1359,15 @@ $('box').addEventListener('click', (e) => {
 app.addEventListener('click', (e) => {
   const el = (e.target as HTMLElement).closest<HTMLElement>('button, a');
   if (!el) return;
+  // An idea picked under "nothing found" replaces the search that found nothing.
+  if ((el.dataset.add || el.dataset.creator || el.dataset.try) && ready && !$('empty').hidden) clearAll();
   if (el.dataset.add) addIngredient(Number(el.dataset.add), 'popular');
   else if (el.dataset.creator) addCreator(el.dataset.creator, 'home');
   else if (el.dataset.try) {
     // Which of the rotating dishes people pick (a typed search looks the same otherwise).
     track('Tapped Dish Idea', { dish: el.dataset.try });
     qInput.value = el.dataset.try;
-    submit();
+    submit('plain');
   } else if (el.dataset.exact) {
     state.exact = true;
     render();
@@ -1067,7 +1377,7 @@ app.addEventListener('click', (e) => {
     clearAll();
     state.course = 'side';
     state.cuisine = data.cuisines.some(([c]) => c === r.cuisine) ? r.cuisine : '';
-    state.sidesFor = r.i;
+    state.sidesFor = dishName(r.name);
     state.shown = PAGE;
     render();
     writeUrl(true);
@@ -1083,14 +1393,10 @@ app.addEventListener('click', (e) => {
     writeUrl(true);
     resultsEl.querySelector<HTMLAnchorElement>('h3 a')?.focus();
     track('Opened New Recipes', { result_count: (data.fresh || []).length });
-  } else if (el.dataset.remove || el.dataset.removeCreator || el.dataset.removeNot || el.dataset.removeWord || el.dataset.removeDiet || el.dataset.removeFresh || el.dataset.removeCuisine) {
-    if (el.dataset.remove) state.with = state.with.filter((p) => p !== Number(el.dataset.remove));
-    else if (el.dataset.removeWord) state.notWords = state.notWords.filter((w) => w !== el.dataset.removeWord);
-    else if (el.dataset.removeNot) state.without = state.without.filter((p) => p !== Number(el.dataset.removeNot));
-    else if (el.dataset.removeDiet) state.diet = '';
-    else if (el.dataset.removeFresh) state.fresh = false;
-    else if (el.dataset.removeCuisine) state.cuisine = '';
-    else state.sites.delete(el.dataset.removeCreator!);
+  } else if (el.dataset.removeTag) {
+    removeTag(el.dataset.removeTag);
+    spoken = `${(el.getAttribute('aria-label') || 'Removed').replace(/^Remove /, 'Removed ')}.`;
+    commitBox();
     state.shown = PAGE;
     render();
     writeUrl(true);
@@ -1098,6 +1404,7 @@ app.addEventListener('click', (e) => {
   } else if (el.dataset.fix) {
     if (el.dataset.fix === 'clear') clearAll();
     else emptyFixes[Number(el.dataset.fix)]?.();
+    qInput.value = state.q;
     state.shown = PAGE;
     render();
     writeUrl(true);
@@ -1105,6 +1412,7 @@ app.addEventListener('click', (e) => {
   } else if (el.dataset.noteLink) {
     track('Opened World Cuisine', { note_kind: el.dataset.note, note_id: el.dataset.noteId, link: el.dataset.noteLink });
   } else if (el.dataset.srcId) {
+    saveView(); // so Back from the recipe lands here, this far down
     openedRecipe(el.dataset.srcId, Number(el.dataset.pos || 0), el.dataset.from || 'results', el.dataset.key);
   } else if (el.dataset.creatorPage) {
     track('Opened Creator Page', { source: el.dataset.creatorPage, opened_from: el.dataset.from || 'results' });
@@ -1123,7 +1431,7 @@ function clearAll() {
   state.cuisine = '';
   state.course = '';
   state.fresh = false;
-  state.sidesFor = -1;
+  state.sidesFor = '';
   state.show = '';
   state.without = [];
   state.notWords = [];
@@ -1152,7 +1460,9 @@ for (const [btn, list] of [[moreBtn, resultsEl], [$('more-videos'), $('video-res
   btn.addEventListener('click', () => {
     const first = state.shown;
     state.shown += PAGE;
+    entryShown = state.shown;
     render();
+    saveView();
     // Move focus to the first new result, so keyboard and screen reader users keep their place.
     list.querySelectorAll<HTMLAnchorElement>('h3 a')[first]?.focus();
   });
@@ -1172,16 +1482,24 @@ app.addEventListener(
 
 addEventListener('popstate', () => {
   if (!data) return;
+  suggest.close();
+  delete app.dataset.fromAsk; // Ask's line comes back with its own search (chat.ts), not with this one
   readUrl();
+  state.shown = entryShown = shownFrom(history.state);
+  qInput.value = state.q;
   render();
+  restoreScroll();
+  dispatchEvent(new Event('findish:url'));
 });
 
 // ---------------------------------------------------------------------------------------
 // Ask, the chat experiment (src/scripts/chat.ts, src/chat/chat.mjs). Only at ?chat=1 for
 // now, remembered for the rest of the visit in this tab. Its code loads only then.
 
-let askReady = false;
-addEventListener('findish:ask-ready', () => (askReady = true));
+addEventListener('findish:ask-ready', () => {
+  askReady = true;
+  qInput.placeholder = placeholder($('box').hasAttribute('data-tags'));
+});
 
 function askOn() {
   const asked = new URLSearchParams(location.search).get('chat') === '1';
@@ -1201,11 +1519,29 @@ addEventListener('findish:show', (e) => {
   const u = new URL(location.href);
   u.search = detail.query;
   u.hash = '';
-  history.pushState(null, '', u);
+  saveView();
+  history.pushState({ shown: PAGE }, '', u);
+  entryShown = PAGE;
   readUrl();
-  render();
+  // The question stays in the address bar's history, not in the box: the box is free for a follow-up.
+  qInput.value = state.q;
   app.dataset.fromAsk = '1';
-  detail.count = isBlank() ? 0 : search().length;
+  render();
+  detail.count = isBlank() ? 0 : lastHits.length;
+});
+
+// "Search my words instead" (and Ask's fallback when it can't answer): the words go through
+// the page's own understanding, as if typed and entered, starting from a clean search.
+addEventListener('findish:plain', (e) => {
+  const detail = (e as CustomEvent<{ text: string; notice?: string }>).detail;
+  if (!ready) return;
+  delete app.dataset.fromAsk;
+  clearAll();
+  qInput.value = String(detail.text || '');
+  notice = String(detail.notice || '');
+  submit('plain');
+  // Chosen by hand ("Search my words instead"): back to the box, to change the words.
+  if (!detail.notice) qInput.focus();
 });
 
 load().then(() => {

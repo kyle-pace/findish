@@ -25,3 +25,6 @@ export function setFilters(
 export function filtersLabel(set: SetFilter[]): string;
 export function showLabel(recipes: number, videos: number, blank?: boolean): string;
 export const MAX_Q: number;
+export function underBox<T extends { name: string }>(set: T[]): T[];
+export function snapTime(minutes: unknown, menu?: number[]): number;
+export function timeWords(minutes: number): string;

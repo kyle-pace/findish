@@ -6,6 +6,7 @@
 // Imported, not read from disk: the Cloudflare adapter prerenders inside its own runtime.
 import indexJson from '../../public/index.json';
 import sourcesJson from '../../vendor/kitchen-catalog/sources.json';
+import { timeWords } from './page-state.mjs';
 
 const index: any = indexJson;
 // The cuisines KitchenCatalog lists for each source (first is its main one), by creator id.
@@ -59,8 +60,7 @@ export const slugOf = (id: string) => id.replace(/-yt$/, '');
 export const pagePath = (id: string) => `/creators/${slugOf(id)}/`;
 export const n = (x: number, one: string) => `${x.toLocaleString('en-US')} ${x === 1 ? one : one + 's'}`;
 export const andList = (xs: string[]) => (xs.length < 2 ? xs.join('') : `${xs.slice(0, -1).join(', ')} and ${xs.at(-1)}`);
-export const fmtTime = (m: number) =>
-  m < 60 ? n(m, 'minute') : `${n(Math.floor(m / 60), 'hour')}${m % 60 ? ` ${n(m % 60, 'minute')}` : ''}`;
+export const fmtTime = (m: number) => timeWords(m);
 const hostOf = (u: string) => {
   try {
     return new URL(u).hostname.replace(/^www\./, '');

@@ -23,7 +23,7 @@ import {
   words,
 } from '../lib/search-core.mjs';
 
-import { sortHits } from '../lib/page-state.mjs';
+import { sortHits, timeWords } from '../lib/page-state.mjs';
 
 export { words };
 export const SITE = 'https://findish.now/';
@@ -100,7 +100,8 @@ export function cuisineFor(ready, wanted) {
   return coreCuisineFor(ready, wanted);
 }
 
-const fmtTime = (m) => (m < 60 ? `${m} min` : `${Math.floor(m / 60)} hr${m % 60 ? ` ${m % 60} min` : ''}`);
+// Past two days in days ("5 days"), like the page: a ferment isn't "120 hr".
+const fmtTime = (m) => (m < 60 ? `${m} min` : m > 2880 ? timeWords(m) : `${Math.floor(m / 60)} hr${m % 60 ? ` ${m % 60} min` : ''}`);
 const shuffle = (a) => {
   for (let i = a.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));

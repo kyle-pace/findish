@@ -125,15 +125,17 @@ export function askMessages(turns) {
  * The words of a link like /?q=quick+vegetarian+dinner (what the site's SearchAction hands
  * out), when `q` is the only thing the address searches for: those are read as a typed
  * sentence, so the link finds what typing it would. '' when the address also holds tags or
- * filters (then `q` is just the words, as the page itself wrote it). Ask's switch and
- * campaign tags don't count as part of the search.
+ * filters (then `q` is just the words, as the page itself wrote it). Ask's switch,
+ * campaign tags and a creator (a creator page's own search box sends /?site=woks&q=…)
+ * don't count: the sentence is still read, and the creator stays.
  */
 export function soleQuery(search) {
   const p = new URLSearchParams(String(search ?? '').replace(/^\?/, ''));
   let q = '';
   for (const [k, v] of p) {
     if (k === 'q') q = v;
-    else if (k !== 'chat' && !k.startsWith('utm_') && v) return '';
+    // A creator rides along from the search box on their own page (/?site=woks&q=…).
+    else if (k !== 'chat' && k !== 'site' && !k.startsWith('utm_') && v) return '';
   }
   return cleanQ(q);
 }
@@ -228,6 +230,39 @@ export function setFilters(s, say) {
   if (s.diet) out.push({ name: 'diet', value: s.diet, label: s.diet });
   if (s.sort) out.push({ name: 'order', value: s.sort, label: say.order(s.sort) || s.sort });
   return out;
+}
+
+/**
+ * The set filters a narrow screen lists under "Filters": the ones the search box doesn't
+ * already show. A cuisine, a creator and a diet are tags in the box, each with its own ×, so
+ * listing them again under it said everything twice.
+ */
+export function underBox(set) {
+  return set.filter((f) => f.name !== 'cuisine' && f.name !== 'site' && f.name !== 'diet');
+}
+
+/**
+ * A time limit from an address or a typed sentence, as one the page offers: a round number
+ * of minutes (a multiple of 5, up to ten hours) stays; anything else ("?time=7") becomes the
+ * nearest choice in the menu. 0 for none.
+ */
+export function snapTime(minutes, menu = [15, 30, 45, 60]) {
+  const t = Math.round(Number(minutes));
+  if (!(t > 0) || t > 600) return 0;
+  if (t % 5 === 0) return t;
+  return menu.reduce((best, m) => (Math.abs(m - t) < Math.abs(best - t) ? m : best), menu[0]);
+}
+
+/** "25 minutes", "1 hour 30 minutes", and past two days in days: "5 days", not "120 hours". */
+export function timeWords(m) {
+  const n = (x, one) => `${x.toLocaleString('en-US')} ${x === 1 ? one : `${one}s`}`;
+  if (m < 60) return n(m, 'minute');
+  if (m > 48 * 60) {
+    const days = Math.floor(m / 1440);
+    const hours = Math.round((m % 1440) / 60);
+    return hours === 24 ? n(days + 1, 'day') : `${n(days, 'day')}${hours ? ` ${n(hours, 'hour')}` : ''}`;
+  }
+  return `${n(Math.floor(m / 60), 'hour')}${m % 60 ? ` ${n(m % 60, 'minute')}` : ''}`;
 }
 
 /** The one filter control on a narrow screen: "Filters", or "Filters, 2 set" (creators count once). */

@@ -12,7 +12,7 @@ import '../styles/theme.css';
 import '../styles/prose.css';
 import { ASSISTANTS_PAGE } from '../lib/assistants';
 
-const updated = 'November 16, 2026';
+const updated = 'November 17, 2026';
 ---
 
 <LabLayout
@@ -76,13 +76,14 @@ const updated = 'November 16, 2026';
       <p>
         Findish uses <a href="https://amplitude.com">Amplitude</a> to see which pages are viewed
         and what gets clicked, so it can be improved. It records things like “searched with 2 ingredients and got 14 results”, “added tofu from the
-        suggestions” or “opened the third result, from The Woks of Life”, never the words you typed. It stores no IP address and sets
+        suggestions” or “opened the third result, from The Woks of Life”, never the words you typed. A page’s address is recorded
+        without the search in it: “findish.now/”, not what comes after the question mark. It stores no IP address and sets
         no cookies; a random ID in your browser’s storage tells a return visit from a new one, and basic details like browser type and
         screen size come along.
       </p>
       <p>
         About 1 in 20 visits is also recorded as a Session Replay to see where the page is confusing. In those recordings all text and
-        everything you type is hidden, so they show only the layout, scrolling and taps.
+        everything you type is hidden, and addresses are cut short the same way, so they show only the layout, scrolling and taps.
       </p>
       <p>
         Once a day, the site counts how often each recipe was opened in the last 90 days, so popular recipes get a small boost in results.

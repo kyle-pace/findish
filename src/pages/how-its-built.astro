@@ -91,7 +91,7 @@ const creators: number = index.sources.length;
           It also sorts each recipe into a course (<code>scripts/course.mjs</code>): sites label courses about 185 ways, so their
           labels fold into nine plain ones, a clear dish name decides when there's no label, and anything unclear stays unlabeled
           rather than guessed. Each recipe also keeps the day the crawler first found it, which is how "New this week" knows what's new.
-          If the index comes out with far fewer recipes than the last crawl counted, the build stops and the site keeps the one it has.
+          If the index comes out with far fewer recipes or videos than the last crawl counted, or with one of its sites or channels missing, the build stops and the site keeps the one it has.
         </li>
         <li>
           <strong>No search server.</strong> The browser downloads the index and searches it locally. Its copy is packed smaller

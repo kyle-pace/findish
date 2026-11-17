@@ -204,7 +204,7 @@ Checked against the defaults: the new things are sentences, words in the filter 
 The filter row had grown to ten words (seven filters and three actions): about 1,100px in one line on a 390px phone, so the actions were a long swipe away and a filter that was set was easy to miss. From the filter sheets on Airbnb, NYT Cooking and Epicurious (one control, one sheet, a button that says how many it will show), drawn with what the page already has.
 
 - **One word on a narrow screen: "Filters ▾".** It reads "Filters, 2 set" when any are, in ink with the tomato underline of a filter that's set, so the state is in the words and not in a colour. "Narrow" is the row's own width (a container query at 40rem), so a desktop at 200% text gets it too.
-- **What's set is a sentence under it:** "Chinese ×, 30 minutes or less ×, vegetarian ×." Underlined words like every other action, each with a chili × that takes it off. Not chips: no fill, no outline, commas between them.
+- **What's set is a sentence under it:** "mains ×, 30 minutes or less ×, quickest first ×." Underlined words like every other action, each with a chili × that takes it off. Not chips: no fill, no outline, commas between them. It lists only what the box doesn't already show: a cuisine, a creator and a diet are tags in the box with their own ×, and the first build said each of them twice (once in the box, once in the sentence). So "Filters, 2 set" counts the words in the sentence, and a search with only a cuisine reads plain "Filters". The wide row is unchanged: its words ("Cuisine: Chinese ▾") are the controls themselves.
 - **One sheet holds every filter,** stacked under bold names with a rule between groups: Show, Course, Cuisine, Creators, Ready in, Diet, Order. The page behind dims. Cuisines the search has none of are left out, and a list longer than twelve shows its first six with "Show all 14 creators". At the bottom, staying put while the filters scroll: "Clear filters" (an underlined word; muted when there is nothing to clear) and the page's second filled button, an ink square-shouldered "Show 24 recipes" that counts as you pick and closes the sheet. ("Nothing matches" when it would show none.)
 - **The actions sit with the count:** "24 recipes." on the left and "Pick one at random", "Share this search", "Start over" at the far end of the same line. When there isn't room (a phone) they go under the count together. Nothing on the results page scrolls sideways any more.
 - **Wide screens keep the row** of seven words, which now fits one line at 1280 and wraps to two below that.
@@ -214,10 +214,10 @@ The filter row had grown to ten words (seven filters and three actions): about 1
 Phone                                   Its sheet
 [ Chinese cuisine × vegetarian ×  (⌕) ] Filters
 [ tofu                                ]
-Filters, 3 set ▾                        Show
-Chinese ×, 30 minutes or less ×,        (•) Recipes and videos        416
-vegetarian ×.                           ( ) Recipes                   334
-24 recipes.                             ────────────────────────────────
+Filters, 2 set ▾                        Show
+mains ×, 30 minutes or less ×.          (•) Recipes and videos        416
+24 recipes.                             ( ) Recipes                   334
+                                        ────────────────────────────────
 Pick one at random  Share this search   Course
 Start over                              (•) Any course                334
 [photo] Spicy Cold Tofu                 …

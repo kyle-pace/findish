@@ -96,7 +96,9 @@ const updated = 'November 17, 2026';
         Findish uses <a href="https://amplitude.com">Amplitude</a> to see which pages are viewed
         and what gets clicked, so it can be improved. It records things like “searched with 2 ingredients and got 14 results”, “added tofu from the
         suggestions” or “opened the third result, from The Woks of Life”, never the words you typed. A page’s address is recorded
-        without the search in it: “findish.now/”, not what comes after the question mark. It stores no IP address and sets
+        without the search in it: “findish.now/”, not what comes after the question mark. A click is recorded as which button or link
+        it was, without the words on it or on the things around it, so a tag you made (“no cilantro”) and your recent searches aren’t
+        copied either. It stores no IP address and sets
         no cookies; a random ID in your browser’s storage tells a return visit from a new one, and basic details like browser type and
         screen size come along.
       </p>

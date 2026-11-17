@@ -1,0 +1,421 @@
+/*
+  The creator pages: /creators/ (everyone, grouped by cuisine) and /creators/<id>/ (one
+  creator: who, how to back them, a few recipes). Added 2026-11-16; the plan is in
+  design/PLAN.md under "Creator pages". The bold thing is the bookshelf; the rest is quiet.
+*/
+.creator,
+.creators-page {
+  width: min(100% - 2 * var(--gutter), 64rem);
+  margin-inline: auto;
+  padding-block: var(--space-8) var(--space-16);
+}
+
+.creator h1,
+.creators-page h1 {
+  margin: 0;
+  font-size: clamp(2rem, 1.4rem + 2.8vw, 3.25rem);
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+  overflow-wrap: anywhere;
+}
+
+.creator h2,
+.creators-page h2 {
+  margin: var(--space-12) 0 var(--space-4);
+  font-size: var(--step-1);
+  line-height: 1.25;
+}
+
+.lede {
+  max-width: 38em;
+  margin: var(--space-2) 0 0;
+  color: var(--ink-muted);
+  font-size: var(--step-0);
+  line-height: 1.55;
+  font-variant-numeric: tabular-nums;
+}
+
+.creator a,
+.creators-page a {
+  color: var(--accent-ink);
+  text-underline-offset: 0.15em;
+}
+
+.paused {
+  max-width: 38em;
+  margin: var(--space-3) 0 0;
+  line-height: 1.55;
+}
+
+/* "Search their recipes" in ink, square-shouldered like the search box's button, then their site. */
+.go-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-6);
+  margin: var(--space-6) 0 0;
+}
+
+.creator .go-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 var(--space-4);
+  border-radius: 0.5rem;
+  background: var(--ink);
+  color: var(--bg);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.creator .go-link:hover {
+  text-decoration: underline;
+}
+
+.creator a:focus-visible,
+.creators-page a:focus-visible,
+.creators-page input:focus-visible {
+  outline: 3px solid var(--accent-ink);
+  outline-offset: 2px;
+}
+
+/* ---------------------------------------------------------------------------------
+   How to back them: one block per way, the way's name on the left on wide screens. */
+.back .way {
+  display: grid;
+  gap: var(--space-1) var(--space-8);
+  padding: var(--space-6) 0;
+  border-top: 1px solid var(--line);
+}
+
+.back .way:last-child {
+  border-bottom: 1px solid var(--line);
+}
+
+@media (min-width: 48rem) {
+  .back .way {
+    grid-template-columns: 9rem 1fr;
+  }
+
+  .back .way > * {
+    grid-column: 2;
+  }
+
+  .back .way h3 {
+    grid-column: 1;
+    grid-row: 1 / span 3;
+  }
+}
+
+.back h3 {
+  margin: 0;
+  font-size: var(--step-1);
+  line-height: 1.25;
+}
+
+.why {
+  max-width: 38em;
+  margin: 0;
+  color: var(--ink-muted);
+  line-height: 1.55;
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-6);
+  padding: 0;
+  margin: var(--space-3) 0 0;
+  list-style: none;
+}
+
+.links a {
+  display: inline-block;
+  padding-block: 0.4rem;
+}
+
+.links.big a {
+  font-size: var(--step-1);
+  font-weight: 700;
+}
+
+/* The bookshelf: covers stand on one tomato rule, titles under the shelf. Each book's slot
+   carries its stretch of the rule and the slots touch, so a row reads as one shelf. */
+.shelf {
+  display: flex;
+  flex-wrap: wrap;
+  row-gap: var(--space-8);
+  padding: 0;
+  margin: var(--space-4) 0 0;
+  list-style: none;
+}
+
+.shelf li {
+  width: 9rem;
+}
+
+.shelf a {
+  display: grid;
+  gap: var(--space-2);
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.shelf .slot {
+  display: flex;
+  align-items: flex-end;
+  height: 11rem;
+  padding: 0 0.75rem 2px;
+  border-bottom: 4px solid var(--accent);
+}
+
+.shelf img {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.18));
+}
+
+/* A book with no cover found: a plain cloth binding with a tomato band and the title. */
+.shelf .cloth {
+  display: grid;
+  align-content: center;
+  width: 6.25rem;
+  height: 10rem;
+  padding: var(--space-3);
+  border: 1px solid var(--field-rule);
+  border-bottom: 0;
+  border-radius: 0.15rem 0.35rem 0 0;
+  background:
+    linear-gradient(var(--accent), var(--accent)) left 0 top 14% / 100% 0.35rem no-repeat,
+    var(--bg-raised);
+  font-weight: 700;
+  font-size: var(--step--1);
+  line-height: 1.25;
+  overflow: hidden;
+}
+
+.shelf .cloth span {
+  overflow-wrap: anywhere;
+}
+
+.shelf cite {
+  padding-inline: 0.75rem;
+  font-style: italic;
+  font-size: var(--step--1);
+  line-height: 1.35;
+  text-decoration: underline;
+  text-decoration-color: var(--field-rule);
+  text-underline-offset: 0.15em;
+}
+
+.shelf a:hover cite {
+  text-decoration-color: var(--accent);
+}
+
+.shelf a:focus-visible {
+  outline-offset: 4px;
+}
+
+/* ---------------------------------------------------------------------------------
+   A few of their recipes: the search's rows, photo on the right. */
+.rows {
+  display: grid;
+  gap: var(--space-6) var(--space-12);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+@media (min-width: 60rem) {
+  .rows {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.rows .row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 7rem 1fr;
+  gap: var(--space-4);
+  align-items: start;
+}
+
+.rows .photo {
+  grid-row: 1;
+  grid-column: 1;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: 0.35rem;
+  background: var(--line);
+}
+
+.rows .photo.video {
+  aspect-ratio: 16 / 9;
+}
+
+.rows .photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.rows .no-photo {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  font-size: var(--step--1);
+  color: var(--ink-muted);
+}
+
+.rows .text {
+  grid-row: 1;
+  grid-column: 2;
+}
+
+.rows h3 {
+  margin: 0 0 var(--space-1);
+  font-size: var(--step-0);
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.rows h3 a {
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.rows h3 a::after {
+  content: '';
+  position: absolute;
+  inset: -0.25rem;
+}
+
+.rows h3 a:focus-visible {
+  outline: none;
+}
+
+.rows h3 a:focus-visible::after {
+  outline: 3px solid var(--accent-ink);
+  outline-offset: 2px;
+  border-radius: 0.4rem;
+}
+
+.rows .row:hover h3 a {
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+}
+
+.rows .meta {
+  margin: 0;
+  color: var(--ink-muted);
+  font-size: var(--step--1);
+}
+
+.all,
+.more {
+  margin: var(--space-8) 0 0;
+}
+
+.more {
+  margin-top: var(--space-12);
+}
+
+/* ---------------------------------------------------------------------------------
+   The list of everyone. */
+.filter {
+  margin: var(--space-8) 0 0;
+}
+
+.filter label {
+  display: block;
+  margin-bottom: var(--space-2);
+  font-weight: 700;
+}
+
+.filter input {
+  width: min(100%, 24rem);
+  min-height: 44px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--field-rule);
+  border-radius: 0.5rem;
+  background: var(--bg-raised);
+  color: var(--ink);
+  font: inherit;
+}
+
+.found {
+  min-height: 1.5em;
+  margin: var(--space-2) 0 0;
+  color: var(--ink-muted);
+  font-size: var(--step--1);
+}
+
+.group h2 {
+  margin-top: var(--space-8);
+}
+
+.list {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  border-top: 1px solid var(--line);
+}
+
+@media (min-width: 48rem) {
+  .list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+    column-gap: var(--space-8);
+  }
+}
+
+.list li {
+  display: grid;
+  align-content: start;
+  gap: 0.15rem;
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.list li[hidden],
+.group[hidden] {
+  display: none;
+}
+
+.list a {
+  justify-self: start;
+  padding-block: 0.15rem;
+  color: var(--ink);
+  font-weight: 700;
+  text-decoration-color: var(--field-rule);
+}
+
+.list a:hover {
+  text-decoration-color: var(--accent);
+}
+
+.list .has,
+.list .hint {
+  font-size: var(--step--1);
+  line-height: 1.45;
+  font-variant-numeric: tabular-nums;
+}
+
+.list .has {
+  color: var(--ink-muted);
+}
+
+.list .hint {
+  color: var(--ink);
+}
+
+.note {
+  max-width: 38em;
+  margin: var(--space-12) 0 0;
+  color: var(--ink-muted);
+  line-height: 1.55;
+}

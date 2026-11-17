@@ -96,7 +96,7 @@ function createServer(origin: string) {
     {
       title: 'Sources and cuisines',
       description:
-        'Who is in the recipe index: each creator with their site, how many recipes and videos, and ways to support them (cookbooks, memberships, Patreon). Also the cuisines that can be filtered on, and sites that are not indexed but can be searched directly.',
+        'Who is in the recipe index: each creator with their site, how many recipes and videos, ways to support them (memberships and Patreon, cookbooks and shops, then free ways to follow, each marked join, buy or follow) and their page on Findish. Also the cuisines that can be filtered on, and sites that are not indexed but can be searched directly.',
       inputSchema: z.object({}),
       annotations: READ_ONLY,
     },

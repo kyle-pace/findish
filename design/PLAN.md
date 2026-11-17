@@ -98,3 +98,35 @@ Kyle wanted people to be able to search for a cuisine, or an ingredient, as the 
 - A cuisine is a suggestion like a creator or an ingredient, and becomes a tag with a basil outline (between an ingredient's fill and a creator's tomato ring).
 - When the search is exactly one cuisine, one quiet line under the count: "Explore Thai cuisine on World cuisine". Nothing else. (It was a strip with a Wikipedia sentence for cuisines and ingredients until November 16; the sentences were dictionary definitions, so Kyle cut it to the link.)
 - It's a show/hide ("About Thai cuisine"), so anyone who'd rather not see notes can close it to one quiet line; it stays closed on later searches in that browser.
+
+## Creator pages (November 16, 2026)
+
+Findish is heading toward a hundred creators, and backing them is half its point, so each one gets a page (`/creators/<id>/`) and there's a list of all of them (`/creators/`). Built at build time from the index (`src/lib/creators.ts`); no script on a creator page beyond the shared click tracking.
+
+**Who it's for:** someone who just cooked a good recipe and wonders who made it and how to give something back. The page answers in that order: who they are, how to back them, a few of their recipes.
+
+**The one bold thing: the bookshelf.** Their cookbooks stand on a tomato rule like books on a shelf, covers at the same height and different widths, titles under them. A book Open Library has no cover for is drawn as a plain cloth cover (raised color, a tomato band, the title set in it), so a missing cover still looks like a book. Covers are fetched once by `npm run covers` and served from `public/covers/`, never hotlinked.
+
+**Ways to back them, most helpful first,** each group only when it has something: Join (pays them directly), Buy (books, shops), Follow (free). The group comes from the link's address (`scripts/support.mjs`), so nobody tags 100 creators by hand.
+
+```
+Findish
+
+The Woks of Life
+1,372 recipes and 217 videos, mostly Chinese.
+[Search their recipes]   thewoksoflife.com
+
+How to back them
+Buy      ┃▌The Woks  ▌┃                       Their books go through Bookshop.org…
+━━━━━━━━━┻━━━━━━━━━━━━┻━━━━━━━━━━ (tomato shelf)
+Follow   YouTube
+
+A few of their recipes
+[photo] Mapo Tofu                     [photo] Scallion Pancakes
+        40 minutes, Chinese                   …
+Search all 1,372 of their recipes
+```
+
+**The list** (`/creators/`): a filter box, then creators grouped under their main cuisine (the one half or more of their recipes are), biggest groups first and "Many cuisines" last. Each is a ruled line, not a card: their name, what Findish has from them, and a short hint like "Patreon and 2 cookbooks". Columns on wide screens.
+
+Checked against the defaults: no cards, pills, eyebrows or dots; group names are real headings; the only color is the tomato shelf and links.

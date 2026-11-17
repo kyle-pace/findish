@@ -14,6 +14,7 @@ export const SITE = {
   footer: [
     { href: '/', label: 'Search' },
     { href: '/about/', label: 'About' },
+    { href: '/creators/', label: 'Creators' },
     { href: '/assistants/', label: 'For AI assistants' },
     { href: '/privacy/', label: 'Privacy' },
     { href: 'https://kylepace.dev/accessibility/', label: 'Accessibility' },

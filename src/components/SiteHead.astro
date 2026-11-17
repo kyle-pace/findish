@@ -2,9 +2,12 @@
 // The wordmark at the top of every page but the search itself, linking back to it.
 // Findish has no top bar of buttons (Kyle, 2026-11-16); this and the footer are the way around.
 import Wordmark from './Wordmark.astro';
+
+// `wide` lines it up with the wider creator pages (src/styles/creators.css) instead of the reading column.
+const { wide = false } = Astro.props as { wide?: boolean };
 ---
 
-<div class="site-head">
+<div class:list={["site-head", { wide }]}>
   <a href="/"><Wordmark /></a>
 </div>
 
@@ -16,6 +19,10 @@ import Wordmark from './Wordmark.astro';
     padding-top: var(--space-6);
     font-size: var(--step-2);
     line-height: 1.1;
+  }
+
+  .site-head.wide {
+    width: min(100% - 2 * var(--gutter), 64rem);
   }
 
   .site-head a {

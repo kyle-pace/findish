@@ -13,6 +13,7 @@ import { load, match } from '../vendor/kitchen-catalog/catalog.mjs';
 import { readSources } from '../crawler/lib/sources.mjs';
 import { COURSES, courseOf } from './course.mjs';
 import { isNotRecipe } from './not-recipes.mjs';
+import { KINDS, supportKind } from './support.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const out = join(root, 'public/index.json');
@@ -246,14 +247,28 @@ const paused = sources.recipes
   .filter((s) => s.paused || !srcList.some((x) => x.id === s.id))
   .map((s) => ({ id: s.id, name: s.name, site: s.site, why: s.paused ? 'paused' : 'not indexed yet' }));
 
-// Ways to support each creator (each source's support in KitchenCatalog, hand-maintained).
-// Books become Bookshop.org links by ISBN, which sends the sale to the author and an indie shop.
+// Ways to support each creator (each source's support in KitchenCatalog, hand-maintained),
+// most helpful first: join (pay them directly), buy (books, shops), follow (free). The group
+// comes from each link's address (scripts/support.mjs). Books become Bookshop.org links by
+// ISBN, which sends the sale to the author and an indie shop; `cover` (and its size) is set
+// when npm run covers has saved one to public/covers/.
+const coversFile = join(root, 'public/covers/covers.json');
+const covers = existsSync(coversFile) ? JSON.parse(readFileSync(coversFile, 'utf8')) : {};
 const support = Object.fromEntries(
-  Object.entries(sources.support)
-    .map(([id, v]) => [
-      id,
-      [...(v.links || []), ...(v.books || []).map((b) => ({ label: b.title, url: `https://bookshop.org/book/${b.isbn}`, book: true }))],
-    ]),
+  Object.entries(sources.support).map(([id, v]) => [
+    id,
+    [
+      ...(v.links || []).map((l) => ({ label: l.label, url: l.url, kind: supportKind(l) })),
+      ...(v.books || []).map((b) => ({
+        label: b.title,
+        url: `https://bookshop.org/book/${b.isbn}`,
+        kind: 'buy',
+        book: true,
+        isbn: b.isbn,
+        ...(covers[b.isbn] ? { cover: `/covers/${b.isbn}.webp`, coverWidth: covers[b.isbn][0], coverHeight: covers[b.isbn][1] } : {}),
+      })),
+    ].sort((a, b) => KINDS.indexOf(a.kind) - KINDS.indexOf(b.kind)),
+  ]),
 );
 
 const index = {

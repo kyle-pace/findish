@@ -114,6 +114,7 @@ test('list_sources joins a site with its channel and lists support links', () =>
   assert.equal(woks.recipes, 3);
   assert.equal(woks.videos, 1);
   assert.equal(woks.support[0].label, 'Book: The Woks of Life');
+  assert.equal(woks.page, 'https://findish.now/creators/woks/');
   assert.ok(s.creators.some((c) => c.name === 'J. Kenji López-Alt' && c.videos === 1));
   assert.deepEqual(s.not_indexed_but_searchable, ['Serious Eats']);
 });

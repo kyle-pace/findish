@@ -19,6 +19,7 @@ type RecipeRow = [number, string, string, number | null, string, number[], numbe
 // [channel index, title, video id, published date, ingredient positions, course from the title]
 type VideoRow = [number, string, string, string, number[], string?];
 type Channel = { id: string; name: string; channel: string; site: string; count: number };
+type SupportLink = { label: string; url: string; kind: 'join' | 'buy' | 'follow'; book?: boolean; isbn?: string; cover?: string; coverWidth?: number; coverHeight?: number };
 type Index = {
   built: string;
   crawled: string;
@@ -26,7 +27,7 @@ type Index = {
   paused: { id: string; name: string; site: string; why: string }[];
   videos: { sources: Channel[]; rows: VideoRow[] };
   /** Ways to support each creator, by creator id (from KitchenCatalog's recipe sources). */
-  support: Record<string, { label: string; url: string; book?: boolean }[]>;
+  support: Record<string, SupportLink[]>;
   linkOnly: { name: string; search: string }[];
   cuisines: [string, number][];
   /** [id, label, recipes], in menu order (scripts/course.mjs). */
@@ -861,9 +862,24 @@ function noteFor(): string | null {
   return state.cuisine;
 }
 
+/** When the search narrows to one creator: a quiet line to their page, with ways to back them. */
+function creatorNote(): string {
+  if (state.sites.size !== 1 || state.picked >= 0) return '';
+  const id = [...state.sites][0];
+  const c = creatorById.get(id);
+  if (!c) return '';
+  const backs = (data.support[id] || []).some((l) => l.kind !== 'follow');
+  return `<a href="/creators/${esc(id.replace(/-yt$/, ''))}/" data-creator-page="${esc(id)}" data-from="results">${backs ? `About ${esc(c.name)} and how to back them` : `About ${esc(c.name)}`}</a>`;
+}
+
 function renderNote() {
   const box = $('note');
   const cuisine = noteFor();
+  const creator = creatorNote();
+  if (creator) {
+    box.innerHTML = creator;
+    return void (box.hidden = false);
+  }
   if (!cuisine) return void (box.hidden = true);
   if (!notes) {
     box.hidden = true;
@@ -896,16 +912,21 @@ function renderAlso() {
   also.innerHTML = `Not here? Search ${orList(links)} for “${esc(term)}”.`;
 }
 
-/** "Support them: Patreon, YouTube, or their books Hot Thai Kitchen and Sabai." */
+/**
+ * Under a creator's first recipe on the page: "Support them: Patreon or their books Hot Thai
+ * Kitchen and Sabai. More ways". Links are already sorted most helpful first (join, buy, follow);
+ * the free ones stay on their page, which the last link opens.
+ */
 function supportLine(id: string, from = 'results'): string {
-  const all = data.support[id] || [];
-  if (!all.length) return '';
-  const a = (l: { label: string; url: string; book?: boolean }) =>
-    `<a href="${esc(l.url)}" data-support="${esc(id)}" data-kind="${l.book ? 'book' : 'link'}" data-from="${from}">${l.book ? `<cite>${esc(l.label)}</cite>` : esc(l.label)}</a>`;
+  const all = (data.support[id] || []).filter((l) => l.kind !== 'follow');
+  const page = `<a href="/creators/${esc(id.replace(/-yt$/, ''))}/" data-creator-page="${esc(id)}" data-from="${from}">${all.length ? 'More ways' : 'About them'}</a>`;
+  if (!all.length) return creatorById.get(id) && from !== 'results' ? `<p class="support">${page}.</p>` : '';
+  const a = (l: SupportLink) =>
+    `<a href="${esc(l.url)}" data-support="${esc(id)}" data-kind="${l.book ? 'book' : l.kind === 'buy' ? 'shop' : l.kind}" data-from="${from}">${l.book ? `<cite>${esc(l.label)}</cite>` : esc(l.label)}</a>`;
   const links = all.filter((l) => !l.book).map(a);
   const books = all.filter((l) => l.book).map(a);
   const bookPart = books.length ? `${books.length === 1 ? 'their book' : 'their books'} ${andList(books)}` : '';
-  return `<p class="support">Support them: ${orList([...links, bookPart].filter(Boolean))}.</p>`;
+  return `<p class="support">Support them: ${orList([...links, bookPart].filter(Boolean))}. ${page}.</p>`;
 }
 
 // ---------------------------------------------------------------------------------------
@@ -1097,7 +1118,7 @@ function buildStart() {
     $('fresh').innerHTML = keepPunct(`New this week: ${andList(names)}.${all}`);
   }
   $('creators').innerHTML = keepPunct(
-    `Or start with a creator, like ${orList(who)}. <a href="/about/#who">See all ${creators.length}</a>.`,
+    `Or start with a creator, like ${orList(who)}. <a href="/creators/">See all ${creators.length}</a>.`,
   );
 }
 
@@ -1509,6 +1530,8 @@ app.addEventListener('click', (e) => {
     track('Opened World Cuisine', { note_kind: el.dataset.note, note_id: el.dataset.noteId, link: el.dataset.noteLink });
   } else if (el.dataset.srcId) {
     openedRecipe(el.dataset.srcId, Number(el.dataset.pos || 0), el.dataset.from || 'results', el.dataset.key);
+  } else if (el.dataset.creatorPage) {
+    track('Opened Creator Page', { source: el.dataset.creatorPage, opened_from: el.dataset.from || 'results' });
   } else if (el.dataset.support) {
     track('Opened Support Link', { source: el.dataset.support, link_kind: el.dataset.kind || 'link', opened_from: el.dataset.from || 'results' });
   } else if (el.dataset.other) {

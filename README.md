@@ -42,7 +42,11 @@ npm run preview   # builds, then runs it the way Cloudflare will
 | Links to World cuisine (the line above a one-cuisine search) | `vendor/world-cuisine/notes.json` from World cuisine (refresh with `npm run sync-world-cuisine`), sentence rules in `scripts/world-cuisine.mjs` |
 | Page shell (back link, footer line, analytics) | `LabLayout` from [kp-design](https://github.com/kyle-pace/kp-design), with Findish's own settings in `src/lib/site.ts` |
 | Its own look (colors) | `src/styles/theme.css` |
-| Share card | `design/og.html`, rendered to `public/og.png` |
+| Creator pages (`/creators/` and `/creators/<id>/`) | `src/pages/creators/`, built from `src/lib/creators.ts`; styles in `src/styles/creators.css` |
+| Sorting support links into join, buy and follow | `scripts/support.mjs` (tests in `scripts/support.test.mjs`) |
+| Cookbook covers | `public/covers/`, fetched from Open Library by `npm run covers` (run it after `npm run sync-catalog` adds books, and commit the covers) |
+| Sitemap | `src/pages/sitemap.xml.ts` (pages in `PAGES`, plus every creator page) |
+| Share cards | `design/og*.html`, rendered to `public/og*.png` |
 | Outside hosts (recipe photos) | `.agents/allowed-hosts.txt` |
 
 It's its own Cloudflare Worker, `recipe-search`, with findish.now as its Custom Domain in `wrangler.jsonc`. Cloudflare Workers Builds deploys `main` (build `npm run build`, deploy `npx wrangler deploy`), so each Monday's crawl ships a fresh index on its own.
@@ -54,7 +58,7 @@ The same index is searchable by AI assistants over MCP (Model Context Protocol, 
 | Tool | What it answers |
 | --- | --- |
 | `search_recipes` | Recipes by dish name, by ingredients to cook with, or both; plus without, vegetarian or vegan, course, cuisine, time and creator. Results are names and links to the original, never the method. |
-| `list_sources` | Who is indexed, ways to support them, and the cuisines and courses to filter on. |
+| `list_sources` | Who is indexed, ways to support them (marked join, buy or follow), each creator's page, and the cuisines and courses to filter on. |
 
 | What | Where |
 | --- | --- |

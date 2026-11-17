@@ -1,0 +1,81 @@
+---
+// Every creator in Findish, grouped by the cuisine most of their recipes are, with a filter
+// box. Each links to their own page (/creators/<id>/). Added 2026-11-16, when the About
+// page's list of creators was heading toward a hundred; see design/PLAN.md, "Creator pages".
+import LabLayout from 'kp-design/layouts/LabLayout.astro';
+import { SITE } from '../../lib/site';
+import SiteHead from '../../components/SiteHead.astro';
+import { CREATORS, byCuisine, linkOnly, n, andList, pagePath, supportHint, totals } from '../../lib/creators';
+import '../../styles/theme.css';
+import '../../styles/creators.css';
+
+const groups = byCuisine();
+const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+---
+
+<LabLayout
+  favicon="/favicon-v3.svg"
+  site={SITE}
+  bar={false}
+  lab={{ name: 'the search', href: '/' }}
+  about="/about/"
+  title="Creators: the people behind Findish’s recipes"
+  description={`All ${CREATORS.length} creators whose recipes and videos Findish searches, grouped by cuisine, each with ways to back them: memberships, cookbooks and more.`}
+  image="/og-creators.png"
+  imageAlt="Findish creators: the people behind the recipes, and how to back them."
+  themeColor={{ light: '#fbf5ec', dark: '#1d1714' }}
+>
+  <SiteHead wide />
+
+  <article class="creators-page" data-page="creators">
+    <h1>Creators</h1>
+    <p class="lede">
+      {n(totals.recipes, 'recipe')} and {n(totals.videos, 'video')} from {n(CREATORS.length, 'creator')}. Their recipes are free because they put
+      in the work; each page has their ways to back them.
+    </p>
+
+    <div class="filter">
+      <label for="find">Find a creator</label>
+      <input id="find" type="search" autocomplete="off" spellcheck="false" aria-describedby="found" />
+      <p id="found" class="found" aria-live="polite"></p>
+    </div>
+
+    {
+      groups.map(([cuisine, list]) => (
+        <section class="group" aria-labelledby={`g-${slug(cuisine)}`} data-group>
+          <h2 id={`g-${slug(cuisine)}`}>{cuisine}</h2>
+          <ul class="list">
+            {list.map((c) => {
+              const has = [c.recipes ? n(c.recipes, 'recipe') : '', c.videos ? n(c.videos, 'video') : ''].filter(Boolean);
+              const hint = supportHint(c);
+              return (
+                <li data-name={`${c.name} ${c.host} ${cuisine}`.toLowerCase()}>
+                  <a href={pagePath(c.id)} data-creator-page={c.id}>
+                    {c.name}
+                  </a>
+                  <span class="has">
+                    {has.length ? andList(has) : c.paused === 'new' ? 'Recipes arrive with the next weekly update' : 'Recipes on hold'}
+                  </span>
+                  {hint && <span class="hint">Back them: {hint}</span>}
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      ))
+    }
+
+    {
+      linkOnly.length > 0 && (
+        <p class="note">
+          {linkOnly.map((l) => l.name).join(' and ')} {linkOnly.length === 1 ? 'is' : 'are'} offered as a link to {linkOnly.length === 1 ? 'its' : 'their'} own
+          search instead, since {linkOnly.length === 1 ? 'its owner doesn’t' : 'their owners don’t'} allow automated collection.
+        </p>
+      )
+    }
+  </article>
+
+  <script>
+    import '../../scripts/creators';
+  </script>
+</LabLayout>

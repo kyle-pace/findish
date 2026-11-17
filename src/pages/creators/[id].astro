@@ -1,0 +1,220 @@
+---
+// One creator's page: who they are, how to back them (join, buy, follow, most helpful first)
+// and a few of their recipes. Built at build time for every creator in the index
+// (src/lib/creators.ts). Added 2026-11-16; see design/PLAN.md, "Creator pages".
+import LabLayout from 'kp-design/layouts/LabLayout.astro';
+import { SITE } from '../../lib/site';
+import SiteHead from '../../components/SiteHead.astro';
+import { CREATORS, andList, fmtTime, n, slugOf, type Creator } from '../../lib/creators';
+import '../../styles/theme.css';
+import '../../styles/creators.css';
+
+export function getStaticPaths() {
+  return CREATORS.map((c) => ({ params: { id: slugOf(c.id) }, props: { c } }));
+}
+
+const { c } = Astro.props as { c: Creator };
+const has = [c.recipes ? n(c.recipes, 'recipe') : '', c.videos ? n(c.videos, 'video') : ''].filter(Boolean);
+const lede = `${has.length ? andList(has) : 'Nothing yet'}${c.cuisine ? `, mostly ${c.cuisine}` : ''}.`;
+const search = `/?site=${encodeURIComponent(c.id)}`;
+const books = c.buy.filter((l) => l.book);
+const shops = c.buy.filter((l) => !l.book);
+const backs = c.join.length + c.buy.length + c.follow.length > 0;
+const description = `${c.name} on Findish: ${lede.replace(/\.$/, '')}. Ways to back them${
+  c.join.length || books.length ? `, like ${andList([...c.join.map((l) => l.label), ...(books.length ? [books.length === 1 ? 'their cookbook' : 'their cookbooks'] : [])])}` : ''
+}, and a few of their recipes.`;
+---
+
+<LabLayout
+  favicon="/favicon-v3.svg"
+  site={SITE}
+  bar={false}
+  lab={{ name: 'the search', href: '/' }}
+  about="/about/"
+  title={`${c.name}: recipes and ways to back them`}
+  description={description}
+  image="/og-creators.png"
+  imageAlt="Findish creators: the people behind the recipes, and how to back them."
+  themeColor={{ light: '#fbf5ec', dark: '#1d1714' }}
+>
+  <SiteHead wide />
+
+  <article class="creator" data-page="creator" data-creator={c.id}>
+    <header class="who">
+      <h1>{c.name}</h1>
+      <p class="lede">{lede}</p>
+      {
+        c.paused === 'blocked' && (
+          <p class="paused">Their recipes are on hold here while their site keeps the weekly program out. Their own site has every one of them.</p>
+        )
+      }
+      {c.paused === 'new' && <p class="paused">Their recipes arrive with the next weekly update.</p>}
+      <p class="go-row">
+        {(c.recipes > 0 || c.videos > 0) && (
+          <a class="go-link" href={search} data-search-creator={c.id}>
+            Search their {c.recipes ? 'recipes' : 'videos'}
+          </a>
+        )}
+        <a href={c.url} data-support={c.id} data-kind="site">{c.host}</a>
+      </p>
+    </header>
+
+    <section class="back" aria-labelledby="back">
+      <h2 id="back">How to back them</h2>
+      {
+        !backs && (
+          <p class="why">
+            Nothing listed yet. Cooking from <a href={c.url} data-support={c.id} data-kind="site">their own site</a> is still the best thanks: it’s
+            how they earn from their recipes.
+          </p>
+        )
+      }
+      {
+        c.join.length > 0 && (
+          <div class="way">
+            <h3>Join</h3>
+            <p class="why">Pays them directly, which helps most.</p>
+            <ul class="links big">
+              {c.join.map((l) => (
+                <li>
+                  <a href={l.url} data-support={c.id} data-kind="join">
+                    {l.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )
+      }
+      {
+        c.buy.length > 0 && (
+          <div class="way">
+            <h3>Buy</h3>
+            {books.length > 0 && (
+              <>
+                <p class="why">Book links go to Bookshop.org, which pays the author and an independent bookstore.</p>
+                <ul class="shelf">
+                  {books.map((b) => (
+                    <li>
+                      <a href={b.url} data-support={c.id} data-kind="book">
+                        <span class="slot">
+                          {b.cover ? (
+                            <img src={b.cover} alt="" width={b.coverWidth || 200} height={b.coverHeight || 300} loading="lazy" decoding="async" />
+                          ) : (
+                            <span class="cloth" aria-hidden="true">
+                              <span>{b.label}</span>
+                            </span>
+                          )}
+                        </span>
+                        <cite>{b.label}</cite>
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+            {shops.length > 0 && (
+              <ul class="links">
+                {shops.map((l) => (
+                  <li>
+                    <a href={l.url} data-support={c.id} data-kind="shop">
+                      {l.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )
+      }
+      {
+        c.follow.length > 0 && (
+          <div class="way">
+            <h3>Follow</h3>
+            <p class="why">Free, and it still counts.</p>
+            <ul class="links">
+              {c.follow.map((l) => (
+                <li>
+                  <a href={l.url} data-support={c.id} data-kind="follow">
+                    {l.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )
+      }
+    </section>
+
+    {
+      c.picks.length > 0 && (
+        <section class="picks" aria-labelledby="picks">
+          <h2 id="picks">A few of their recipes</h2>
+          <ol class="rows">
+            {c.picks.map((p, k) => (
+              <li>
+                <article class="row">
+                  <div class="text">
+                    <h3>
+                      <a href={p.url} data-src-id={c.id} data-key={p.key} data-pos={k + 1}>
+                        {p.name}
+                      </a>
+                    </h3>
+                    <p class="meta">{[p.minutes ? fmtTime(p.minutes) : '', p.cuisine].filter(Boolean).join(', ') || c.host}</p>
+                  </div>
+                  <div class="photo">
+                    {p.img ? (
+                      <img src={p.img} alt="" width="320" height="240" loading="lazy" decoding="async" referrerpolicy="no-referrer" />
+                    ) : (
+                      <span class="no-photo">No photo</span>
+                    )}
+                  </div>
+                </article>
+              </li>
+            ))}
+          </ol>
+          {c.recipes > c.picks.length && (
+            <p class="all">
+              <a href={search} data-search-creator={c.id}>
+                Search all {n(c.recipes, 'recipe')} from {c.name}
+              </a>
+            </p>
+          )}
+        </section>
+      )
+    }
+
+    {
+      c.videoPicks.length > 0 && (
+        <section class="picks" aria-labelledby="videos">
+          <h2 id="videos">Their newest videos</h2>
+          <ol class="rows">
+            {c.videoPicks.map((v, k) => (
+              <li>
+                <article class="row">
+                  <div class="text">
+                    <h3>
+                      <a href={`https://www.youtube.com/watch?v=${v.id}`} data-src-id="youtube" data-pos={k + 1}>
+                        {v.name}
+                      </a>
+                    </h3>
+                    <p class="meta">Video on YouTube</p>
+                  </div>
+                  <div class="photo video">
+                    <img src={`https://i.ytimg.com/vi/${v.id}/mqdefault.jpg`} alt="" width="320" height="180" loading="lazy" decoding="async" referrerpolicy="no-referrer" />
+                  </div>
+                </article>
+              </li>
+            ))}
+          </ol>
+        </section>
+      )
+    }
+
+    <p class="more"><a href="/creators/">All creators</a></p>
+  </article>
+
+  <script>
+    import '../../scripts/creators';
+  </script>
+</LabLayout>

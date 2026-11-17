@@ -1,4 +1,7 @@
-// Builds the search index the page loads: public/index.json.
+// Builds the search index: public/index.json, and the same index packed smaller for the
+// page (src/lib/index-format.mjs): public/i/recipes.<hash>.json and public/i/videos.<hash>.json,
+// named after what's in them so browsers can keep them for good, with their names in
+// public/index-files.json for the page (src/pages/index.astro) to point at.
 // Reads what the crawler kept (data/<id>.json) and matches every ingredient line to a
 // KitchenCatalog id (vendor/kitchen-catalog), so "scallions" and "green onion" find the
 // same recipes. Runs before every build (npm run build), so each weekly crawl that
@@ -6,7 +9,11 @@
 //
 //   node scripts/build-index.mjs            # writes the index
 //   node scripts/build-index.mjs --report   # also lists the most common unmatched lines
-import { readFileSync, writeFileSync, mkdirSync, existsSync, copyFileSync } from 'node:fs';
+//   node scripts/build-index.mjs --allow-drop   # build even with far fewer recipes than the
+//                                               # last crawl counted (scripts/index-floor.mjs)
+import { createHash } from 'node:crypto';
+import { readFileSync, writeFileSync, mkdirSync, existsSync, copyFileSync, rmSync } from 'node:fs';
+import { brotliCompressSync, constants as zlib } from 'node:zlib';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { load, match } from '../vendor/kitchen-catalog/catalog.mjs';
@@ -16,6 +23,8 @@ import { COURSES, courseOf } from './course.mjs';
 import { cuisineOf } from './cuisine.mjs';
 import { ALL, GROUPS, VEGETARIAN, itemFlags, titleFlags, wordFlags } from './diet.mjs';
 import { isNotRecipe } from './not-recipes.mjs';
+import { pack } from '../src/lib/index-format.mjs';
+import { floorProblems } from './index-floor.mjs';
 import { KINDS, supportKind } from './support.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -182,6 +191,7 @@ const PLACEHOLDER_SHARED = 5;
 // has that cuisine: a video has no cuisine of its own, so a cuisine search goes by the channel.
 const videos = [];
 const channels = [];
+const videoRows = {}; // per channel, every row in its data file (Shorts too), for the floor check
 const creatorCuisine = new Map();
 for (const s of JSON.parse(readFileSync(SOURCES_FILE, 'utf8')).sources) {
   const c = cuisineOf(String(s.cuisines?.[0] || '').replace(/ cuisine$/i, ''), '', '');
@@ -191,6 +201,7 @@ for (const v of sources.videos || []) {
   const file = join(root, 'data', `${v.id}.json`);
   const rows = existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : [];
   const ci = channels.length;
+  videoRows[v.id] = rows.length;
   const cuisine = creatorCuisine.get(v.id) || '';
   channels.push({ id: v.id, name: v.name, channel: v.channel, site: v.site || '', count: rows.filter((r) => !r.sh).length, ...(cuisineCount.get(cuisine) >= 5 ? { cuisine } : {}) });
   for (const row of rows) {
@@ -294,8 +305,45 @@ const index = {
   recipes,
 };
 
+// Far fewer recipes or videos than the last crawl counted means something broke (a data
+// file missing or cut short, a site dropped from the list): stop here, so the site keeps
+// the index it has instead of quietly shipping a thin one.
+{
+  const problems = floorProblems({
+    status,
+    // Every site that's crawled, with 0 for one whose data file is missing or empty.
+    recipes: Object.fromEntries(sources.recipes.filter((s) => !s.paused).map((s) => [s.id, srcList.find((x) => x.id === s.id)?.count || 0])),
+    videos: videoRows,
+  });
+  if (problems.length) {
+    console.error(`index: not built. Compared with the last crawl (data/status.json):\n  ${problems.join('\n  ')}`);
+    if (!process.argv.includes('--allow-drop') && !process.env.ALLOW_INDEX_DROP) {
+      console.error('If the drop is real, build once with: node scripts/build-index.mjs --allow-drop');
+      process.exit(1);
+    }
+    console.error('--allow-drop: building anyway.');
+  }
+}
+
 mkdirSync(dirname(out), { recursive: true });
 const json = JSON.stringify(index);
+
+// The page's copy: the same index in two smaller files named after their contents, and the
+// few things that change daily (index-files.json), which the home page carries itself.
+const packed = pack(index);
+const pageDir = join(dirname(out), 'i');
+rmSync(pageDir, { recursive: true, force: true });
+mkdirSync(pageDir);
+const files = { ...packed.extra };
+const sizes = [];
+for (const kind of ['recipes', 'videos']) {
+  const text = JSON.stringify(packed[kind]);
+  const name = `${kind}.${createHash('sha256').update(text).digest('hex').slice(0, 12)}.json`;
+  writeFileSync(join(pageDir, name), text);
+  files[kind] = `/i/${name}`;
+  sizes.push(`${kind} ${Math.round(text.length / 1024)} KB (${Math.round(brotliCompressSync(text, { params: { [zlib.BROTLI_PARAM_QUALITY]: 5 } }).length / 1024)} KB compressed)`);
+}
+writeFileSync(join(dirname(out), 'index-files.json'), JSON.stringify(files));
 
 // The "Explore Thai cuisine on World cuisine" line above results when a search is one cuisine
 // (vendor/world-cuisine/notes.json, from World cuisine; refresh with npm run sync-world-cuisine).
@@ -322,6 +370,7 @@ console.log(
   `index: ${recipes.length} recipes from ${srcList.length} sites, ${videos.length} videos, ${ing.length} ingredients, ` +
     `${cuisines.length} cuisines, ${courses.length} courses, ${fresh.length} new this week; ${Math.round((matched / lines) * 100)}% of ingredient lines matched; ${Math.round(json.length / 1024)} KB`,
 );
+console.log(`for the page: ${sizes.join(', ')}`);
 if (report) {
   console.log('Most common unmatched lines:');
   for (const [k, n] of [...unmatched].sort((a, b) => b[1] - a[1]).slice(0, 60)) console.log(String(n).padStart(4), k);

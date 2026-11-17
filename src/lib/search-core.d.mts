@@ -116,6 +116,8 @@ export function words(text: string): string[];
 export function fold(text: string): string;
 export function isFiller(word: string): boolean;
 export function prepare(index: unknown): Ready;
+export function prepareSteps(index: unknown, every?: number): Generator<number, Ready, void>;
+export function addVideos(ready: Ready, rows: unknown[][]): void;
 export function ingredientFor(ready: Ready, phrase: string, mainName?: boolean): number | null;
 export function groupFor(ready: Ready, phrase: string): number | null;
 export function ingredientsIn(ready: Ready, phrase: string, mainName?: boolean): { found: number[]; rest: string };

@@ -1,7 +1,8 @@
 ---
 // Findish: one search across the recipe sites Kyle trusts, from our own index
 // (public/index.json, built from data/ by scripts/build-index.mjs).
-// src/scripts/search.ts loads the index and searches it in the browser.
+// src/scripts/search.ts loads the index (packed smaller, in two files under /i/) and
+// searches it in the browser.
 //
 // One search box, centered like a search engine's home page; after a search it moves up
 // and results fill the page. Ingredients and creators picked from the suggestions become
@@ -11,6 +12,7 @@
 import LabLayout from 'kp-design/layouts/LabLayout.astro';
 import { SITE } from '../lib/site';
 import Wordmark from '../components/Wordmark.astro';
+import indexFiles from '../../public/index-files.json';
 import '../styles/theme.css';
 // The totals under the name are worked out at build time, so the line is there from the
 // first paint and nothing moves when the index arrives (search.ts writes the same words).
@@ -56,7 +58,11 @@ const FILTERS = [
     potentialAction: { '@type': 'SearchAction', target: 'https://findish.now/?q={search_term_string}', 'query-input': 'required name=search_term_string' },
     publisher: { '@type': 'Person', '@id': 'https://kylepace.net/#kyle', name: 'Kyle Pace', url: 'https://kylepace.net/' },
   })} />
-  <link slot="head" rel="preload" href="/index.json" as="fetch" crossorigin="anonymous" />
+  <!-- The index, packed for the page: the recipes file is asked for straight away, and its
+       name (with the videos file's, and the few things that change daily) is here for
+       src/scripts/index-load.ts. scripts/build-index.mjs writes them. -->
+  <link slot="head" rel="preload" href={indexFiles.recipes} as="fetch" crossorigin="anonymous" />
+  <script slot="head" type="application/json" id="index-files" set:html={JSON.stringify(indexFiles)} />
   <link slot="head" rel="manifest" href="/manifest.webmanifest" />
   <script slot="head" is:inline>
     // The About section used to live at #about; it's its own page now.

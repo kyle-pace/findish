@@ -39,7 +39,9 @@ npm run preview   # builds, then runs it the way Cloudflare will
 | The page's script: the box, tags, suggestions, filters, URL state | `src/scripts/search.ts` |
 | The search itself (words, typo fixing, understanding a sentence, ranking, videos), shared by the page, the MCP server and Ask | `src/lib/search-core.mjs`; tests in `src/lib/search-core.test.mjs`, and a ranking fixture of everyday dish searches in `src/lib/ranking.test.mjs` |
 | What a recipe has in it that people leave out (vegetarian, vegan, no dairy, no nuts…) and which cuisine it's filed under, both worked out when the index is built | `scripts/diet.mjs`, `scripts/cuisine.mjs` (tests beside them) |
-| The index (generated, not committed) | `public/index.json`, from `scripts/build-index.mjs` |
+| The index (generated, not committed) | `public/index.json`, from `scripts/build-index.mjs`: the full index, read by the MCP server, Ask, the build-time pages and Grocery Deals |
+| The index as the page loads it (generated, not committed) | `public/i/recipes.<hash>.json` (about 290 KB compressed) then `public/i/videos.<hash>.json` (about 170 KB), packed by `src/lib/index-format.mjs`, cached for good (`/i/*` in `public/_headers`), named in `public/index-files.json`, loaded by `src/scripts/index-load.ts`; `src/lib/index-format.test.mjs` checks searches come out identical |
+| The floor that stops a build with far fewer recipes than the last crawl counted | `scripts/index-floor.mjs` (tests beside it); `--allow-drop` when the drop is real |
 | Ingredient matching and the source list | `vendor/kitchen-catalog/` (refresh with `npm run sync-catalog`), read through `crawler/lib/sources.mjs` |
 | Links to World cuisine (the line above a one-cuisine search) | `vendor/world-cuisine/notes.json` from World cuisine (refresh with `npm run sync-world-cuisine`), sentence rules in `scripts/world-cuisine.mjs` |
 | Page shell (back link, footer line, analytics) | `LabLayout` from [kp-design](https://github.com/kyle-pace/kp-design), with Findish's own settings in `src/lib/site.ts` |

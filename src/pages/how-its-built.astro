@@ -50,7 +50,7 @@ const creators: number = index.sources.length;
       <figure tabindex="0" role="region" aria-label="Diagram: From recipe sites to search results. On narrow screens it scrolls sideways.">
         <svg class="diagram" viewBox="0 0 950 200" role="img" aria-labelledby="pipe-title pipe-desc">
           <title id="pipe-title">From recipe sites to search results</title>
-          <desc id="pipe-desc">A weekly crawler reads recipe sites, a few newsletters through their RSS feeds, and YouTube through its API. A build step turns what it keeps into one index file. Three things read that index: the search page in your browser, an MCP server for AI assistants, and the Grocery Deals app’s list lookup.</desc>
+          <desc id="pipe-desc">A weekly crawler reads recipe sites, a few newsletters through their RSS feeds, and YouTube through its API. A build step turns what it keeps into one index, written in full and also packed small for the search page. Three things read that index: the search page in your browser, an MCP server for AI assistants, and the Grocery Deals app’s list lookup.</desc>
           <defs>
             <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
               <path d="M0 0 L10 5 L0 10 z" class="ink-fill"></path>
@@ -71,7 +71,7 @@ const creators: number = index.sources.length;
           <path d="M640 90 C665 90 665 43 688 43" class="link" marker-end="url(#arrow)"></path>
           <path d="M640 100 L688 103" class="link" marker-end="url(#arrow)"></path>
           <path d="M640 110 C665 110 665 163 688 163" class="link" marker-end="url(#arrow)"></path>
-          <text x="555" y="160" class="small">index.json, one file</text>
+          <text x="555" y="160" class="small">one index, packed small for the page</text>
         </svg>
       </figure>
       <ol class="steps">
@@ -86,16 +86,20 @@ const creators: number = index.sources.length;
           ingredient lines with amounts and a sign it's a recipe. Videos come from the official YouTube Data API.
         </li>
         <li>
-          <strong>One index file.</strong> <code>scripts/build-index.mjs</code> packs it all into <code>index.json</code>, matching every
+          <strong>One index.</strong> <code>scripts/build-index.mjs</code> packs it all into <code>index.json</code>, matching every
           ingredient line to KitchenCatalog, the grocery list the food projects share, so "scallions" and "green onions" are one thing.
           It also sorts each recipe into a course (<code>scripts/course.mjs</code>): sites label courses about 185 ways, so their
           labels fold into nine plain ones, a clear dish name decides when there's no label, and anything unclear stays unlabeled
           rather than guessed. Each recipe also keeps the day the crawler first found it, which is how "New this week" knows what's new.
+          If the index comes out with far fewer recipes than the last crawl counted, the build stops and the site keeps the one it has.
         </li>
         <li>
-          <strong>No search server.</strong> The index is a few hundred kilobytes, so the browser downloads it once and searches it
-          locally. The same file feeds the MCP server (<code>src/pages/mcp.ts</code>) and the Grocery Deals lookup
-          (<code>api/with.ts</code>), the only parts that run on the server.
+          <strong>No search server.</strong> The browser downloads the index and searches it locally. Its copy is packed smaller
+          (<code>src/lib/index-format.mjs</code>) and comes in two files: the recipes first, about 290 kilobytes as sent, so
+          search works about two and a half seconds into a slow phone connection, then the videos, about 170 kilobytes. Each
+          file is named after what's in it, so your browser keeps it and downloads it again only after a crawl changes it.
+          Unpacked, it's exactly <code>index.json</code>, which feeds the MCP server (<code>src/pages/mcp.ts</code>) and the
+          Grocery Deals lookup (<code>api/with.ts</code>), the only parts that run on the server.
         </li>
       </ol>
     </section>

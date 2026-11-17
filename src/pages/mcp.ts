@@ -53,10 +53,19 @@ const SEARCH_OUTPUT = z.looseObject({
     .optional(),
   videos: z.array(z.looseObject({ title: z.string(), url: z.string(), channel: z.string().optional(), on: z.string().optional(), published: z.string().optional() })).optional(),
   cooking_with: z.array(z.string()).optional().describe('The ingredients the search understood.'),
-  understood: z.unknown().optional().describe('How the words were read: what became a filter.'),
-  corrected: z.unknown().optional().describe('Spellings that were fixed.'),
-  leaving_out: z.unknown().optional().describe('What is really being left out for `without` and `diet`.'),
-  relaxed: z.unknown().optional().describe('What was loosened because the full search found nothing.'),
+  understood: z.looseObject({ query: z.string().optional() }).optional().describe('What was taken out of `query` and searched as a filter instead, with the words that were left.'),
+  corrected: z.array(z.looseObject({ from: z.string(), to: z.string() })).optional().describe('Spellings that were fixed.'),
+  leaving_out: z.array(z.string()).optional().describe('What is really being left out for `without`, by name; a word in quotes could only be left out by recipe name.'),
+  relaxed: z
+    .looseObject({
+      dropped: z.string().optional().describe('The one thing dropped for the recipes listed here.'),
+      total_recipes: z.number().optional(),
+      recipes: z.array(z.looseObject({ name: z.string(), url: z.string() })).optional(),
+      counts: z.record(z.string(), z.number()).optional().describe('How many recipes each single change would find.'),
+    })
+    .optional()
+    .describe('Only when nothing matched everything: what dropping one thing would find. What is being left out is never dropped.'),
+  total_videos: z.number().optional().describe('How many videos match, when only videos were asked for.'),
   notes: z.array(z.string()).optional().describe('Plain notes about this answer. Read them.'),
   error: z.string().optional().describe('Set when an argument matched nothing; the lists of what exists come with it.'),
   cuisines: z.array(z.string()).optional(),
@@ -105,7 +114,8 @@ function createServer(origin: string) {
         'What the index holds: names, links, ingredient names, total time, cuisine and course. What it does not hold: the method, amounts, servings, nutrition, ratings, spice level, equipment or difficulty, so it cannot filter on those; say so rather than guessing. ' +
         'Labels are sparse: about a quarter of recipes have no cuisine, an eighth no course and a twelfth no time, and filtering on one leaves those recipes out. If a filtered search finds little, try it again without the cuisine, course or time. ' +
         'Some creators (see list_sources: those with videos and no recipes) are YouTube channels only; their results are videos, which carry no ingredients, time or cuisine. ' +
-        'Vegetarian and vegan are best guesses from ingredient lists, and `without` only knows ingredients by name: for an allergy, tell the person to check the recipe. ' +
+        'Vegetarian, vegan and `without` (an ingredient by name, or a group: dairy, eggs, nuts, shellfish, pork, meat, seafood) are best guesses from recipe names and ingredient lists: for an allergy, tell the person to check the recipe. Gluten cannot be filtered. ' +
+        'Plain phrases in `query` ("quick vegetarian pad thai") are turned into filters; `understood` in the answer says which. When nothing matches, `relaxed` says what each single loosening would find. ' +
         'Always give the link so the person can read the recipe on the original site, and say which site it is from. Do not write out a recipe as if it came from these results.',
     },
   );
@@ -121,10 +131,10 @@ function createServer(origin: string) {
         'Matching YouTube videos from the same creators come along, labeled as YouTube; some creators have only videos. ' +
         'Read `notes` in the answer: it says what was understood, corrected, left out or loosened. There is no method, amount, serving size or nutrition here, so those cannot be searched.',
       inputSchema: z.object({
-        query: z.string().max(200).optional().describe("Words for the dish, for example 'mapo tofu' or 'noodle soup'. Not for ingredients you have: put those in `ingredients`."),
+        query: z.string().max(200).optional().describe("Words for the dish, for example 'mapo tofu' or 'noodle soup'. Spelling is fixed for you (`corrected` says how). Not for ingredients you have: put those in `ingredients`."),
         ingredients: strings.optional().describe("Things to cook with, one per item, by plain name: ['chicken thighs', 'bok choy', 'tofu']. A recipe must use at least one."),
-        without: strings.optional().describe("Ingredients to leave out, by name: ['pork', 'peanuts']. Only ingredients the index knows by name are left out reliably; check the answer's notes."),
-        diet: z.enum(['vegetarian', 'vegan']).optional().describe('Leave out recipes with meat or seafood (vegetarian), and also dairy, eggs and honey (vegan). A best guess from ingredient lists, not a guarantee.'),
+        without: strings.optional().describe("What to leave out: ingredients by name (['peanuts', 'mushrooms']) or a whole group: 'dairy', 'eggs', 'nuts', 'shellfish', 'pork', 'meat', 'seafood'. A best guess from names and ingredient lists, not an allergy check; `leaving_out` and `notes` in the answer say what was really left out. There is no gluten filter."),
+        diet: z.enum(['vegetarian', 'vegan']).optional().describe('Leave out recipes with meat or seafood (vegetarian), and also dairy, eggs and honey (vegan). A best guess from recipe names and ingredient lists, not a guarantee.'),
         cuisine: z.string().max(60).optional().describe("A cuisine as listed by list_sources, for example 'Chinese', 'Thai', 'Japanese'. Recipes with no cuisine label are left out."),
         course: z
           .enum(COURSES)

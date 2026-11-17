@@ -3,8 +3,9 @@
 // 2026-11-16, only shown at findish.now/?chat=1 for now.
 //
 // How it works: Claude gets two tools. `search_recipes` checks a search: the search is first
-// turned into the page's own address parameters (pageQuery), then that exact search is run
-// with the MCP search (src/mcp/search.mjs), so what Claude counts is what the page will show.
+// turned into the page's own address parameters (pageQuery), then those are read back the
+// way the page reads them (stateFor) and run through the same search the page runs
+// (src/lib/search-core.mjs), so what Claude counts is what the page will show.
 // `show_results` ends the turn: the search to show on the page plus a sentence or two.
 // Claude never writes recipe names or links itself; the page shows the results with its own
 // cards, so nothing is made up and no method is ever reproduced. guardReply() enforces that
@@ -14,7 +15,8 @@
 // This file has no network code: `callModel` is passed in (src/chat/anthropic.mjs in the
 // Worker, a fake in the tests).
 
-import { creatorFor, cuisineFor, ingredientFor, searchRecipes, words } from '../mcp/search.mjs';
+import { groupFor, ingredientFor, ingredientsIn, queryFor, search, searchVideos, words } from '../lib/search-core.mjs';
+import { creatorFor, cuisineFor } from '../mcp/search.mjs';
 
 export const LIMITS = {
   turns: 8, // messages kept from the conversation (four back-and-forths)
@@ -44,13 +46,12 @@ export function toolsFor(ready) {
   let tools = toolsByIndex.get(ready);
   if (tools) return tools;
   const { index } = ready;
-  const creators = [...ready.creators.values()]
-    .filter((c) => c.recipes || c.videos)
-    .map((c) => (c.recipes ? c.name : `${c.name} (videos only)`));
+  const creators = ready.creators.map((c) => (c.recipes ? c.name : `${c.name} (videos only)`));
+  const groups = ready.groups.map(([, name]) => name.toLowerCase());
   const search = {
     query: { type: 'string', description: "Words for a dish the person named, matched in recipe and video names: 'mapo tofu', 'fried rice'. Empty unless they named a dish. Never ingredients, cuisines or course words." },
     ingredients: { type: 'array', items: { type: 'string' }, maxItems: 8, description: "Things to cook with, one per item, by plain name: ['salmon', 'kimchi', 'onion']. A recipe must use at least one; more is better." },
-    without: { type: 'array', items: { type: 'string' }, maxItems: 8, description: "Ingredients to leave out: ['pork', 'peanuts']." },
+    without: { type: 'array', items: { type: 'string' }, maxItems: 8, description: `Ingredients to leave out, by name: ['peanuts', 'mushrooms']. Or a whole group${groups.length ? `, one of: ${groups.join(', ')}` : ''} ("no dairy" is ['dairy']). A best guess from names and ingredient lists.` },
     diet: { type: 'string', enum: ['vegetarian', 'vegan'], description: 'A best guess from ingredient lists.' },
     course: { type: 'string', enum: COURSES.filter((id) => (index.courses || []).some(([c]) => c === id)), description: "Which part of a meal. 'side' covers sides and salads; 'sauce' covers sauces and pantry staples. Recipes no site labels are left out when a course is set." },
     cuisine: { type: 'string', enum: index.cuisines.map(([c]) => c), description: 'A cuisine the index has. Many recipes have no cuisine and are left out when one is set.' },
@@ -91,7 +92,7 @@ Building the search:
 - course: course words go here, not in query. "A comforting soup" is course soup with an empty query; "dessert", "breakfast", "a side", "a salad" (side), "an appetizer" (starter), "a sauce", "a drink" and "bread" work the same way.
 - cuisine: a named cuisine ("korean", "thai food") goes here, never in query.
 - diet: "no meat" or "meatless" is vegetarian.
-- without: what to leave out. There is no dairy-free, gluten-free or nut-free filter, so name the usual ingredients instead ("no dairy" is ["milk", "cheese", "butter", "cream", "yogurt"]) and say it is a best guess.
+- without: what to leave out, by name. Whole groups can be left out with one word: "dairy", "eggs", "nuts", "shellfish", "pork", "meat", "seafood" ("no dairy" or "dairy-free" is ["dairy"]; don't list milk, cheese and butter yourself). Say it is a best guess, not an allergy check. There is no gluten-free filter: say so.
 - max_minutes: only when they ask for quick (30) or give a time.
 - creator: only when they ask for one, by the name in the creator list ("Pailin" is Hot Thai Kitchen, "Nagi" is RecipeTin Eats, "Deb" is Smitten Kitchen). Some creators are videos only: their results are YouTube videos, and you say so.
 - new_only: "what's new" or "anything new this week" is new_only true and nothing else, unless they ask for more.
@@ -102,7 +103,7 @@ Building the search:
 - The search can't filter by servings, nutrition, spice level, equipment (no oven, air fryer), difficulty or cost. Search for the rest and say plainly that you can't filter by that. If little is left ("something for a cold night", "a dish for 8"), pick the closest course instead of showing nothing.
 
 Checking it:
-- Check the search with search_recipes. It runs exactly what the page will show.
+- Check the search with search_recipes. It runs exactly what the page will show. When it finds nothing, relaxed.counts says how many each single loosening would find.
 - If it finds fewer than 3, loosen it once or twice, in this order: drop the time limit, then the least important ingredient, then the cuisine. Keep the course, and keep everything in without and diet: never loosen what the person asked to leave out. Say what you loosened.
 - Show the last search you checked, unchanged.
 
@@ -163,7 +164,7 @@ export function summarize(result) {
   const videos = result.total_videos ?? result.videos?.length ?? 0;
   if (videos) {
     out.videos = videos;
-    out.top_videos = result.videos.slice(0, 3).map((v) => `${v.title} (${v.channel}, YouTube)`);
+    out.top_videos = (result.videos || []).slice(0, 3).map((v) => `${v.title} (${v.channel}, YouTube)`);
   }
   for (const k of ['understood', 'corrected', 'leaving_out', 'relaxed']) if (result[k] != null) out[k] = result[k];
   // The "these sites are not indexed here" note is for assistants that can link out; Ask can't.
@@ -181,24 +182,33 @@ export function pageQuery(ready, s = {}) {
   const { index } = ready;
   const p = new URLSearchParams();
   const extra = [];
-  // `own`: only an ingredient's main name counts. Leaving out "cilantro" must not leave out
+  // To cook with: an ingredient by any of its names, or the longest one named inside a longer
+  // phrase ("boneless skinless chicken thighs"). To leave out (`out`): a whole group ("dairy"),
+  // or an ingredient by its own name only. Leaving out "cilantro" must not leave out
   // everything filed under Fresh herbs, which also goes by that name (the page's rule too).
-  const ids = (list, unknown, own = false) => {
+  const near = (phrase) => {
+    const exact = ingredientFor(ready, phrase);
+    if (exact != null) return exact;
+    const { found } = ingredientsIn(ready, phrase);
+    return found.length ? found.reduce((x, y) => (ready.ingNames[y][0].length >= ready.ingNames[x][0].length ? y : x)) : null;
+  };
+  const ids = (list, unknown, out = false) => {
     const found = [];
     for (const phrase of (Array.isArray(list) ? list : []).slice(0, 8)) {
       if (typeof phrase !== 'string') continue;
-      let pos = ingredientFor(ready, phrase);
-      if (own && pos != null && ready.ingNames[pos][0] !== words(phrase).join(' ')) pos = null;
+      const pos = out ? (groupFor(ready, phrase) ?? ingredientFor(ready, phrase, true)) : near(phrase);
       if (pos == null) unknown?.push(phrase);
-      else if (!found.includes(index.ing[pos][0])) found.push(index.ing[pos][0]);
+      else if (!found.includes(ready.ing[pos][0])) found.push(ready.ing[pos][0]);
     }
     return found;
   };
   const withIds = ids(s.ingredients, extra);
   const notWords = [];
   const withoutIds = ids(s.without, notWords, true);
-  const q = words([typeof s.query === 'string' ? s.query : '', ...extra].join(' ')).join(' ');
-  if (q) p.set('q', q.slice(0, 120));
+  // The words go to the page as typed (it fixes spelling and plurals itself), minus anything
+  // but letters, numbers and spaces.
+  const q = plainText([typeof s.query === 'string' ? s.query : '', ...extra].join(' '), 120).toLowerCase();
+  if (q) p.set('q', q);
   if (withIds.length) p.set('with', withIds.join(','));
   const creator = typeof s.creator === 'string' && creatorFor(ready, s.creator);
   if (creator) p.set('site', creator.id);
@@ -231,51 +241,115 @@ const plainText = (text, max) =>
 const ingIdsByIndex = new WeakMap();
 
 /**
- * The other direction: the page's address parameters back into a search (the arguments
- * search_recipes takes). Everything is checked against the index on the way, so this is also
- * how a search that came from outside (an earlier turn the page sends back) is made safe.
+ * Read the page's address parameters the way the page does (readUrl in src/scripts/search.ts)
+ * into what the search takes. Anything the index doesn't have is dropped, so this is also how
+ * a search that came from outside (an earlier turn the page sends back) is made safe.
  */
-export function searchArgs(ready, query) {
+export function stateFor(ready, query) {
   const { index } = ready;
   const p = new URLSearchParams(typeof query === 'string' ? query : '');
   let byId = ingIdsByIndex.get(ready);
-  if (!byId) ingIdsByIndex.set(ready, (byId = new Map(index.ing.map((g, pos) => [g[0], pos]))));
-  const names = (key) => [...new Set((p.get(key) || '').split(',').map((id) => byId.get(id)).filter((pos) => pos != null))].slice(0, 8).map((pos) => index.ing[pos][1]);
-  const a = {};
-  const q = words(p.get('q') || '').slice(0, 12).join(' ');
-  if (q) a.query = q;
-  const withNames = names('with');
-  if (withNames.length) a.ingredients = withNames;
-  const without = names('without');
-  if (without.length) a.without = without;
-  const not = (p.get('not') || '').split(',').flatMap((w) => words(w).slice(0, 1)).slice(0, 8);
-  if (not.length) a.not_words = not;
-  const diet = p.get('diet');
-  if (diet === 'vegetarian' || diet === 'vegan') a.diet = diet;
-  const course = p.get('course');
-  if ((index.courses || []).some(([id]) => id === course)) a.course = course;
-  const cuisine = index.cuisines.find(([c]) => c === p.get('cuisine'));
-  if (cuisine) a.cuisine = cuisine[0];
+  if (!byId) ingIdsByIndex.set(ready, (byId = new Map(ready.ing.map((g, pos) => [g[0], pos]))));
+  const positions = (key) => [...new Set((p.get(key) || '').split(',').map((id) => byId.get(id)).filter((pos) => pos != null))].slice(0, 8);
   const time = Math.round(Number(p.get('time')));
-  if (time > 0 && time <= 600) a.max_minutes = time;
-  const creator = ready.creators.get((p.get('site') || '').split(',')[0]);
-  if (creator) a.creator = creator.name;
-  if (p.get('new') === '1' && index.fresh?.length) a.new_only = true;
-  if (SHOW.includes(p.get('show'))) a.show = p.get('show');
-  const sidesFor = a.course === 'side' ? plainText(p.get('sidesFor') || '', 60) : '';
-  if (sidesFor) a.sides_for = sidesFor;
+  const diet = p.get('diet');
+  const course = p.get('course') || '';
+  const cuisine = p.get('cuisine') || '';
+  const show = p.get('show');
+  const f = {
+    q: plainText(p.get('q') || '', 120).toLowerCase(),
+    with: positions('with').filter((pos) => pos < ready.real), // groups are only ever left out
+    without: positions('without'),
+    notWords: (p.get('not') || '').split(',').flatMap((w) => words(w).slice(0, 1)).slice(0, 8),
+    sites: new Set((p.get('site') || '').split(',').filter((id) => ready.creatorById.has(id) && ready.creators.includes(ready.creatorById.get(id))).slice(0, 1)),
+    time: time > 0 && time <= 600 ? time : 0,
+    cuisine: index.cuisines.some(([c]) => c === cuisine) ? cuisine : '',
+    course: (index.courses || []).some(([id]) => id === course) ? course : '',
+    fresh: p.get('new') === '1' && Boolean(index.fresh?.length),
+    diet: diet === 'vegetarian' || diet === 'vegan' ? diet : '',
+    show: SHOW.includes(show) ? show : '',
+  };
+  f.sidesFor = f.course === 'side' ? plainText(p.get('sidesFor') || '', 60) : '';
+  return f;
+}
+
+/** The same search as the arguments search_recipes takes, by name: what Claude is shown of an earlier turn. */
+export function searchArgs(ready, query) {
+  const f = stateFor(ready, query);
+  const name = (pos) => ready.ing[pos][1];
+  const a = {};
+  if (f.q) a.query = f.q;
+  if (f.with.length) a.ingredients = f.with.map(name);
+  if (f.without.length) a.without = f.without.map(name);
+  if (f.notWords.length) a.not_words = f.notWords;
+  if (f.diet) a.diet = f.diet;
+  if (f.course) a.course = f.course;
+  if (f.cuisine) a.cuisine = f.cuisine;
+  if (f.time) a.max_minutes = f.time;
+  if (f.sites.size) a.creator = ready.creatorById.get([...f.sites][0]).name;
+  if (f.fresh) a.new_only = true;
+  if (f.show) a.show = f.show;
+  if (f.sidesFor) a.sides_for = f.sidesFor;
   return a;
 }
 
 /** A search from outside, kept only as far as the index knows it. */
 export const cleanQuery = (ready, query) => pageQuery(ready, searchArgs(ready, query));
 
-/** Run the search the page would show for these address parameters. */
+/**
+ * Run the search the page would show for these address parameters, with the page's own
+ * search (src/lib/search-core.mjs) and the same steps as its render(): every word, then most
+ * of the words if nothing has them all, and videos alongside. When it finds nothing, `relaxed`
+ * counts what each single loosening would find, in the order Ask loosens (the time limit,
+ * each ingredient, the cuisine); the course and what's being left out are never loosened.
+ */
 export function searchShown(ready, query, limit = 6) {
-  const { not_words: notWords, sides_for: _sidesFor, ...args } = searchArgs(ready, query);
-  // Words to keep out of names travel with the ingredients to leave out; the search sorts them.
-  if (notWords) args.without = [...(args.without || []), ...notWords];
-  return searchRecipes(ready, { ...args, limit });
+  const f = stateFor(ready, query);
+  const name = (pos) => ready.ing[pos][1];
+  const notes = [];
+  const blank = !f.q && !f.with.length && !f.without.length && !f.notWords.length && !f.sites.size && !f.time && !f.cuisine && !f.course && !f.fresh && !f.diet && !f.show;
+  if (blank) return { total_recipes: 0, total_videos: 0, recipes: [], videos: [] };
+
+  const Q = queryFor(ready, f);
+  const blocked = Boolean(f.diet || f.without.length || f.notWords.length);
+  let hits = f.show === 'videos' ? [] : search(ready, f, { top: limit + 20 });
+  if (!hits.length && f.show !== 'videos' && Q.words.length > 1) {
+    const hidden = blocked && search(ready, { ...f, diet: '', without: [], notWords: [] }, { count: true }) > 0;
+    if (!hidden) {
+      hits = search(ready, f, { loose: true, top: limit + 20 });
+      if (hits.length) notes.push('Nothing has every word, so these have most of them.');
+    }
+  }
+  const vids = f.show === 'recipes' ? [] : searchVideos(ready, f, { top: 40 });
+
+  const out = {
+    total_recipes: hits.length,
+    total_videos: vids.length,
+    recipes: hits.slice(0, limit).map((h) => ({ name: h.r.name, ...(f.with.length ? { uses: h.used.map(name) } : {}) })),
+    videos: vids.slice(0, limit).map((v) => ({ title: v[1], channel: ready.index.videos.sources[v[0]].name })),
+  };
+  if (Q.fixes.length) out.corrected = Q.fixes.map(([from, to]) => ({ from, to }));
+  if (Q.ignored.length) notes.push(`Nothing in the index has the word${Q.ignored.length > 1 ? 's' : ''} ${Q.ignored.join(', ')}, so ${Q.ignored.length > 1 ? 'they were' : 'it was'} ignored.`);
+  const leaving = [...f.without.map(name), ...f.notWords.map((w) => `"${w}" in the name`)];
+  if (leaving.length) out.leaving_out = leaving;
+  const creator = f.sites.size ? ready.creatorById.get([...f.sites][0]) : null;
+  if (creator && !creator.recipes) notes.push(`${creator.name} is here as YouTube videos only, so there are no written recipes to show.`);
+  if ((f.time || f.fresh) && f.show !== 'recipes' && (Q.words.length || creator)) notes.push('Videos have no cooking time or first-seen date, so none are shown with a time limit or new_only.');
+
+  if (!hits.length && !vids.length && f.show !== 'videos') {
+    const counts = {};
+    const tryIt = (label, change) => {
+      const n = search(ready, { ...f, ...change }, { count: true });
+      if (n) counts[label] = n;
+    };
+    if (f.time) tryIt('without max_minutes', { time: 0 });
+    if (f.with.length > 1) for (const pos of f.with) tryIt(`without ingredient ${name(pos)}`, { with: f.with.filter((x) => x !== pos) });
+    if (f.cuisine) tryIt('without cuisine', { cuisine: '' });
+    if (Object.keys(counts).length) out.relaxed = { counts };
+    else if (blocked && search(ready, { ...f, diet: '', without: [], notWords: [] }, { count: true })) notes.push('Recipes match, but every one uses something being left out.');
+  }
+  if (notes.length) out.notes = notes;
+  return out;
 }
 
 /** What was asked for that the page's search can't hold, so Claude hears about it. */
@@ -285,13 +359,13 @@ function dropped(ready, input, query) {
   const notes = [];
   if (typeof input?.creator === 'string' && input.creator.trim() && !p.get('site')) {
     notes.push(`No creator matches "${input.creator.slice(0, 60)}", so the search is not limited to one.`);
-    out.creators = [...ready.creators.values()].filter((c) => c.recipes || c.videos).map((c) => c.name);
+    out.creators = ready.creators.map((c) => c.name);
   }
   if (typeof input?.cuisine === 'string' && input.cuisine.trim() && !p.get('cuisine')) {
     notes.push(`No cuisine matches "${input.cuisine.slice(0, 60)}", so the search is not limited to one.`);
     out.cuisines = ready.index.cuisines.map(([c]) => c);
   }
-  const unknown = (Array.isArray(input?.ingredients) ? input.ingredients : []).filter((i) => typeof i === 'string' && ingredientFor(ready, i) == null);
+  const unknown = (Array.isArray(input?.ingredients) ? input.ingredients : []).filter((i) => typeof i === 'string' && ingredientFor(ready, i) == null && !ingredientsIn(ready, i).found.length);
   if (unknown.length) notes.push(`Not ingredients the index knows by that name: ${unknown.join(', ').slice(0, 120)}. They were searched as words in names instead.`);
   if (input?.new_only === true && !p.get('new')) notes.push('Nothing new was found this week, so this is not limited to new recipes.');
   if (notes.length) out.notes = notes;
@@ -394,7 +468,7 @@ export async function chat(ready, messages, callModel, { now = Date.now } = {}) 
       const query = pageQuery(ready, show.input);
       const shown = query ? searchShown(ready, query) : null;
       const recipes = shown?.total_recipes ?? 0;
-      const videos = shown?.total_videos ?? shown?.videos?.length ?? 0;
+      const videos = shown?.total_videos ?? 0;
       const reply = guardReply(show.input?.reply, {
         titles,
         allow: [...said, new URLSearchParams(query).get('q') || '', new URLSearchParams(query).get('sidesFor') || ''],

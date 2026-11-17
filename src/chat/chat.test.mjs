@@ -2,8 +2,9 @@
 // pretend Claude, so no request leaves the machine.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { prepare } from '../mcp/search.mjs';
-import { LIMITS, SYSTEM, chat, cleanMessages, cleanQuery, guardReply, pageQuery, searchArgs, searchShown, summarize, toolsFor } from './chat.mjs';
+import { prepare, searchRecipes } from '../mcp/search.mjs';
+import { search, searchVideos } from '../lib/search-core.mjs';
+import { LIMITS, SYSTEM, chat, cleanMessages, cleanQuery, guardReply, pageQuery, searchArgs, searchShown, stateFor, summarize, toolsFor } from './chat.mjs';
 import { MODEL, callClaude } from './anthropic.mjs';
 import { readJson, visitorKey } from './request.mjs';
 
@@ -41,6 +42,7 @@ const index = {
   courses: [['main', 'Mains', 1], ['side', 'Sides and salads', 1]],
   diet: { vegetarian: [0, 1], vegan: [0, 1] },
   fresh: [4],
+  groups: [['any-dairy', 'Dairy', 4, 'milk products']],
   ing,
   recipes: [
     [0, 'Mapo Tofu', '/mapo-tofu/', 30, 'Chinese', [0, 2, 3], [0, 2, 3], 'x.jpg', 'sichuan', 5],
@@ -147,6 +149,56 @@ test("leaving out an ingredient by one of a group's other names doesn't leave ou
   assert.equal(new URLSearchParams(pageQuery(ready, { ingredients: ['bean curd'] })).get('with'), 'tofu');
 });
 
+test('a whole group is left out with one word, the way the page holds it', () => {
+  const q = new URLSearchParams(pageQuery(ready, { ingredients: ['tofu'], without: ['dairy', 'Milk Products', 'pork'] }));
+  assert.equal(q.get('without'), 'any-dairy,pork');
+  assert.equal(q.get('not'), null);
+  // It reads back as a name Claude can send again, and comes out the same.
+  assert.deepEqual(searchArgs(ready, q.toString()).without, ['Dairy', 'Pork']);
+  assert.equal(cleanQuery(ready, q.toString()), q.toString());
+  // A group is never something to cook with.
+  assert.equal(pageQuery(ready, { ingredients: ['dairy'] }), 'q=dairy');
+  assert.deepEqual(stateFor(ready, 'with=any-dairy,tofu').with, [2]);
+  assert.match(toolsFor(ready)[0].input_schema.properties.without.description, /one of: dairy/);
+});
+
+test('an ingredient said the long way is still the ingredient', () => {
+  assert.equal(pageQuery(ready, { ingredients: ['boneless skinless pork belly', 'a block of tofu'] }), 'with=pork-belly%2Ctofu');
+});
+
+test("the check is the page's own search, step for step", () => {
+  for (const query of ['with=tofu,scallions', 'q=mapo+tofu', 'q=mapo+tofu&site=kenji', 'cuisine=Thai&course=side', 'with=pork&diet=vegetarian', 'q=noodles&show=videos', 'new=1', 'q=tofu&time=20&cuisine=Chinese']) {
+    const f = stateFor(ready, query);
+    const shown = searchShown(ready, query);
+    assert.equal(shown.total_recipes, f.show === 'videos' ? 0 : search(ready, f).length, query);
+    assert.equal(shown.total_videos, f.show === 'recipes' ? 0 : searchVideos(ready, f).length, query);
+  }
+  // Words are passed on as typed: the page (and so the check) fixes spelling itself.
+  const typo = searchShown(ready, pageQuery(ready, { query: 'mapo tufu' }));
+  assert.ok(typo.total_recipes >= 2);
+  assert.deepEqual(typo.corrected, [{ from: 'tufu', to: 'tofu' }]);
+  // Nothing asked for is nothing shown, not everything.
+  assert.equal(searchShown(ready, '').total_recipes, 0);
+});
+
+test('a search that finds nothing says what each loosening would find, never dropping what is left out', () => {
+  const none = searchShown(ready, pageQuery(ready, { ingredients: ['tofu', 'bok choy'], cuisine: 'Chinese', max_minutes: 5, without: ['pork'] }));
+  assert.equal(none.total_recipes, 0);
+  assert.deepEqual(none.relaxed.counts, { 'without max_minutes': 1 });
+  assert.deepEqual(none.leaving_out, ['Pork']);
+  assert.deepEqual(summarize(none).relaxed, none.relaxed);
+  const blocked = searchShown(ready, 'q=pork+belly&diet=vegetarian');
+  assert.equal(blocked.total_recipes, 0);
+  assert.equal(blocked.relaxed, undefined);
+  assert.match(blocked.notes.join(' '), /every one uses something being left out/);
+});
+
+test("Ask's search and the MCP search agree on a plain search", () => {
+  for (const args of [{ ingredients: ['tofu', 'scallions'] }, { query: 'mapo tofu' }, { cuisine: 'Thai', course: 'side' }, { ingredients: ['pork'], without: ['tofu'] }]) {
+    assert.equal(searchShown(ready, pageQuery(ready, args)).total_recipes, searchRecipes(ready, args).total_recipes, JSON.stringify(args));
+  }
+});
+
 test('nonsense in a search is dropped, not passed on', () => {
   assert.equal(pageQuery(ready, { course: 'brunch', cuisine: 'Martian', max_minutes: -5, diet: 'keto', ingredients: 'tofu' }), '');
   assert.equal(pageQuery(ready, {}), '');
@@ -198,14 +250,16 @@ test('Claude checks a search, then shows it', async () => {
 });
 
 test("Claude's check runs the search the page will show, not the one it typed", async () => {
-  // "saffron" isn't an ingredient here, so the page searches it as a word; so must the check.
+  // "saffron" isn't an ingredient here, so the page gets it as a word. Nothing has that word,
+  // and the page drops such a word when a tag carries the search; so must the check.
   const claude = fakeClaude(['search_recipes', { ingredients: ['tofu', 'saffron'], cuisine: 'Martian', creator: 'Nobody Real' }], ['show_results', { reply: 'ok', ingredients: ['tofu', 'saffron'] }]);
   const out = await chat(ready, ask('tofu and saffron'), claude.call);
   const result = toolResult(claude, 1);
-  assert.equal(result.total, 0); // no name has "saffron", exactly as on the page
-  assert.equal(result.total, searchShown(ready, out.query).total_recipes);
-  assert.equal(out.found, 0);
-  assert.match(result.notes.join(' '), /saffron/);
+  assert.equal(new URLSearchParams(out.query).get('q'), 'saffron');
+  assert.equal(result.total, 2); // the tofu recipes, exactly as on the page
+  assert.equal(result.total, search(ready, stateFor(ready, out.query)).length);
+  assert.equal(out.found, 2);
+  assert.match(result.notes.join(' '), /Nothing in the index has the word saffron/);
   // What it asked for that doesn't exist comes back with the lists of what does.
   assert.match(result.notes.join(' '), /No creator matches "Nobody Real"/);
   assert.deepEqual(result.cuisines, ['Chinese', 'Thai']);

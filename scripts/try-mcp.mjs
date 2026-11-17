@@ -66,9 +66,13 @@ show(await call('search_recipes', { query: 'mapo tofu', limit: 4 }, (d) => (d.re
 show(await call('search_recipes', { ingredients: ['chicken thighs', 'bok choy', 'tofu'], max_minutes: 45, videos: false, limit: 4 }, (d) => (d.recipes?.[0]?.uses?.length ? null : 'no ingredient matches')));
 show(await call('search_recipes', { query: 'noodles', diet: 'vegetarian', cuisine: 'thai', limit: 3 }, (d) => (d.recipes?.every((r) => r.cuisine === 'Thai') ? null : 'cuisine filter not applied')));
 await call('search_recipes', { query: 'soup', cuisine: 'martian' }, (d) => (d.error && d.cuisines?.length ? null : 'expected a helpful error'));
-// The newer arguments (show, sort, offset, new_only) must be accepted. Whether the answer
-// follows them is the search's job, checked in src/mcp/search.test.mjs.
-show(await call('search_recipes', { query: 'curry', show: 'recipes', sort: 'quickest', limit: 3, offset: 3 }, (d) => (d.recipes?.length ? null : 'no recipes')));
+// The newer arguments: show, sort, offset, new_only.
+show(await call('search_recipes', { query: 'curry', show: 'recipes', sort: 'quickest', limit: 3, offset: 3 }, (d) => (d.recipes?.length && !d.videos?.length ? null : 'expected recipes and no videos')));
+// What the answer says about itself, each in the shape the output schema promises.
+await call('search_recipes', { query: 'quick vegetarian pad tai', limit: 2 }, (d) => (d.understood?.diet === 'vegetarian' && d.corrected?.[0]?.to ? null : 'expected understood and corrected'));
+await call('search_recipes', { query: 'pasta', without: ['dairy', 'cilantro'], limit: 2 }, (d) => (d.leaving_out?.includes('Dairy') ? null : 'expected leaving_out to name Dairy'));
+await call('search_recipes', { ingredients: ['tofu'], cuisine: 'Thai', max_minutes: 1 }, (d) => (d.relaxed?.counts && d.relaxed.recipes?.length ? null : 'expected relaxed counts and recipes'));
+await call('search_recipes', { query: 'ramen', show: 'videos', limit: 2 }, (d) => (d.total_videos > 0 && d.videos?.length ? null : 'expected videos and total_videos'));
 await call('search_recipes', { new_only: true, limit: 3 }, (d) => (Array.isArray(d.recipes) ? null : 'no recipes list'));
 show(await call('search_recipes', { query: 'kimchi', creator: 'Maangchi', limit: 3 }, (d) => (d.videos?.length ? null : 'a videos-only creator should return videos')));
 const src = await call('list_sources', {}, (d) => (d.creators?.length ? null : 'no creators'));

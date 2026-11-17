@@ -1,271 +1,205 @@
-// The answers behind the MCP tools (src/pages/mcp.ts): plain functions over the
-// same index the search page loads (public/index.json, from
-// scripts/build-index.mjs). No network and no MCP here, so `npm test` can run them.
+// The answers behind the MCP tools (src/pages/mcp.ts), Ask (src/chat/chat.mjs) and the
+// list endpoint (src/pages/api/with.ts): plain functions over the same index the search
+// page loads (public/index.json, from scripts/build-index.mjs). No network and no MCP here,
+// so `npm test` can run them.
 //
-// The rules follow the page's own search (src/scripts/search.ts): words must be in a recipe's
-// name or keywords, ingredients are KitchenCatalog items ("pork" covers pork belly), results
-// that use more of your ingredients and need fewer others come first, and creators take turns.
-// It leaves out the page's typo fixing; assistants spell well enough.
+// The search itself is src/lib/search-core.mjs, the same code the page runs: the same words,
+// typo fixing, ranking, diet rules and videos. This file turns an assistant's arguments into
+// a search, and the hits into an answer that says what it understood and what it left out.
+import {
+  covers,
+  creatorFor as creatorIdFor,
+  cuisineFor as coreCuisineFor,
+  fold,
+  groupFor,
+  ingredientFor as coreIngredientFor,
+  ingredientsIn,
+  closeWords,
+  prepare as corePrepare,
+  queryFor,
+  search,
+  searchVideos,
+  understand,
+  words,
+} from '../lib/search-core.mjs';
 
+export { words };
 export const SITE = 'https://findish.now/';
 
-/** "Scallions, chopped!" -> ["scallion", "chopped"]: lowercase, no accents, singular words. */
-export function words(text) {
-  return String(text ?? '')
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .replace(/[’']/g, '')
-    .split(/[^a-z0-9]+/)
-    .filter(Boolean)
-    .map((w) =>
-      w.length <= 3 || /(ss|us|is)$/.test(w)
-        ? w
-        : w.endsWith('ies')
-          ? w.slice(0, -3) + 'y'
-          : /(oes|ches|shes|xes)$/.test(w)
-            ? w.slice(0, -2)
-            : w.endsWith('s')
-              ? w.slice(0, -1)
-              : w,
-    );
-}
+/** ["a, b", "c"] or "a, b; c" -> ["a", "b", "c"]: assistants send lists both ways. */
+const list = (v) =>
+  (Array.isArray(v) ? v : v ? [v] : [])
+    .flatMap((s) => String(s).split(/[,;\n]/))
+    .map((s) => s.trim())
+    .filter(Boolean);
 
-const list = (v) => (Array.isArray(v) ? v : v ? String(v).split(/[,;\n]/) : []).map((s) => String(s).trim()).filter(Boolean);
-
-/**
- * Get the index ready to search, once: each recipe's words, each ingredient's names, and
- * who the creators are (a site, a site and its YouTube channel, or a channel alone).
- */
+/** Get the index ready to search, once (see prepare in src/lib/search-core.mjs). */
 export function prepare(index) {
-  const ingNames = index.ing.map((g) => [g[1], ...g.slice(4)].map((n) => words(n).join(' ')));
-  const ingUsed = index.ing.map(() => 0);
-  const recipes = index.recipes.map((r) => {
-    for (const p of r[5]) ingUsed[p]++;
-    const title = words(r[1]);
-    return {
-      src: index.sources[r[0]],
-      name: r[1],
-      url: r[2].startsWith('http') ? r[2] : index.sources[r[0]].site + r[2],
-      min: r[3],
-      cuisine: r[4],
-      course: r[10] || '',
-      pos: new Set(r[5]),
-      own: r[6],
-      hasPhoto: Boolean(r[7]),
-      img: r[7] || null,
-      title,
-      titleText: ` ${title.join(' ')}`,
-      other: words(`${r[8]} ${index.sources[r[0]].name}`),
-      opens: r[9] || 0,
-    };
-  });
-
-  const creators = new Map();
-  for (const s of index.sources) creators.set(s.id, { id: s.id, name: s.name, site: s.site, recipes: s.count, videos: 0 });
-  const pausedSite = new Map((index.paused || []).map((p) => [p.id, p.site]));
-  const channelCreator = index.videos.sources.map((c) => {
-    const id = c.site || c.id;
-    // A paused site (Just One Cookbook) has no recipes in the index but still has a site,
-    // which apps like Henwood use to tell whose page is open.
-    const known = creators.get(id) ?? { id, name: c.name, site: pausedSite.get(id) || '', recipes: 0, videos: 0 };
-    known.videos += c.count;
-    known.youtube = c.channel;
-    creators.set(id, known);
-    return id;
-  });
-
-  return { index, recipes, ingNames, ingUsed, creators, channelCreator, videoWords: null };
+  const ready = corePrepare(index);
+  // By id, for the callers that list creators (list_sources) or look one up.
+  ready.creatorMap = new Map(ready.creators.map((c) => [c.id, c]));
+  return ready;
 }
 
 /** The ingredient a phrase names exactly (any of its names, singular or plural), or null. */
 export function ingredientFor(ready, phrase) {
-  const want = words(phrase).join(' ');
-  if (!want) return null;
-  const { ingNames, ingUsed } = ready;
-  let found = null;
-  for (let p = 0; p < ingNames.length; p++) {
-    if (!ingUsed[p]) continue;
-    if (ingNames[p][0] === want) return p; // its main name wins over another item's other name
-    if (found == null && ingNames[p].includes(want)) found = p;
-  }
-  return found;
+  return coreIngredientFor(ready, phrase);
 }
 
+/**
+ * The ingredient a looser phrase means: "2 eggs", "a head of broccoli", "boneless skinless
+ * chicken thighs" (the longest name inside it, the last one when there are several), or a
+ * misspelt one ("brocoli"). Returns { p, fixed } or null.
+ */
+function ingredientNear(ready, phrase) {
+  const exact = coreIngredientFor(ready, phrase);
+  if (exact != null) return { p: exact };
+  const { found } = ingredientsIn(ready, phrase);
+  if (found.length) {
+    // The longest name wins; among equals the last, which is usually the thing itself.
+    const best = found.reduce((a, b) => (ready.ingNames[b][0].length >= ready.ingNames[a][0].length ? b : a));
+    return { p: best };
+  }
+  const typed = fold(phrase).split(/[^a-z0-9]+/).filter(Boolean);
+  if (!typed.length || typed.length > 4) return null;
+  // One word spelt wrong: try the closest words that are part of an ingredient's name.
+  for (let n = 0; n < typed.length; n++) {
+    for (const v of closeWords(ready, words(typed[n])[0] || '', { min: 1 })) {
+      if (!ready.ingWord.has(v)) continue;
+      const { found: fixed } = ingredientsIn(ready, typed.map((w, k) => (k === n ? v : w)).join(' '));
+      if (fixed.length) return { p: fixed.at(-1), fixed: [typed[n], v] };
+    }
+  }
+  return null;
+}
+
+/**
+ * The creator a phrase means: an id, a full name, the name without "the", another name for
+ * them ("Pailin", "Kenji"), whole words from their name ("woks"), or their site's address.
+ * Three letters at least, so "a" isn't Hot Thai Kitchen.
+ */
 export function creatorFor(ready, phrase) {
-  const want = words(phrase).join(' ');
-  if (!want) return null;
-  const all = [...ready.creators.values()];
-  const name = (c) => words(c.name).join(' ');
+  const id = creatorIdFor(ready, phrase);
+  if (id) return ready.creatorById.get(id);
+  const want = words(phrase);
+  const text = want.join(' ');
+  if (text.length < 3) return null;
+  const all = ready.creators;
+  const inside = (ws, part) => part.length <= ws.length && ws.some((_, i) => part.every((w, k) => ws[i + k] === w));
   return (
-    all.find((c) => c.id === phrase || name(c) === want) ??
-    all.find((c) => name(c).includes(want) || want.includes(name(c))) ??
-    all.find((c) => c.site && want.replace(/ /g, '').includes(words(new URL(c.site).hostname.replace(/^www\./, '').split('.')[0]).join(''))) ??
+    all.find((c) => inside(c.words, want) || c.aliases.some((a) => inside(a, want))) ??
+    all.find((c) => inside(want, c.words.filter((w) => w !== 'the')) || c.aliases.some((a) => a.join(' ').length >= 4 && inside(want, a))) ??
+    all.find((c) => c.site && text.replace(/ /g, '').includes(words(new URL(c.site).hostname.replace(/^www\./, '').split('.')[0]).join(''))) ??
     null
   );
 }
 
 export function cuisineFor(ready, wanted) {
-  const want = words(wanted).join(' ');
-  const hit = ready.index.cuisines.find(([c]) => words(c).join(' ') === want);
-  return hit ? hit[0] : null;
-}
-
-/** How well a recipe's words match the query words; 0 means it doesn't. */
-function textScore(r, q, loose) {
-  if (!q.length) return 1;
-  let score = 0;
-  let missed = 0;
-  for (const [n, t] of q.entries()) {
-    const last = n === q.length - 1;
-    const hit = (w) => w === t || (last && t.length > 1 && w.startsWith(t));
-    if (r.title.some(hit)) score += r.title.includes(t) ? 8 : 6;
-    else if (r.other.some(hit)) score += 3;
-    else if (!loose) return 0;
-    else missed++;
-  }
-  if (loose && (missed === q.length || missed > Math.floor(q.length / 2))) return 0;
-  if (q.length > 1 && r.titleText.includes(` ${q.join(' ')}`)) score += 10;
-  return score - missed * 100;
-}
-
-const popBonus = (r) => Math.min(4, Math.log2(1 + r.opens));
-
-/** Take turns between creators among results that are about as good as each other. */
-function mix(hits, byIngredients) {
-  const out = [];
-  const tierOf = (h) => (byIngredients ? h.used.length : 0);
-  for (let i = 0; i < hits.length; ) {
-    let j = i;
-    while (j < hits.length && tierOf(hits[j]) === tierOf(hits[i])) j++;
-    const pool = hits.slice(i, j);
-    const recent = [];
-    // Only the front of the list is ever returned, so stop mixing once it's long enough.
-    while (pool.length && out.length < 80) {
-      const top = pool[0];
-      const close = (h) => (byIngredients ? h.missing <= top.missing + 1 : h.score >= top.score - 2);
-      let pick = 0;
-      for (let k = 0; k < Math.min(pool.length, 300) && close(pool[k]); k++) {
-        if (!recent.includes(pool[k].r.src.id)) {
-          pick = k;
-          break;
-        }
-      }
-      const [h] = pool.splice(pick, 1);
-      out.push(h);
-      recent.push(h.r.src.id);
-      if (recent.length > 3) recent.shift();
-    }
-    if (out.length >= 80) break;
-    i = j;
-  }
-  return out;
-}
-
-function findRecipes(ready, f, loose) {
-  const { index } = ready;
-  const covers = (p) => f.with.includes(p) || index.ing[p][3].some((parent) => f.with.includes(parent));
-  const hits = [];
-  for (const r of ready.recipes) {
-    if (f.creator && r.src.id !== f.creator.id) continue;
-    if (f.maxMinutes && (r.min == null || r.min > f.maxMinutes)) continue;
-    if (f.cuisine && r.cuisine !== f.cuisine) continue;
-    if (f.course && r.course !== f.course) continue;
-    if (f.out.size && [...r.pos].some((p) => f.out.has(p))) continue;
-    if (f.notWords.length && f.notWords.some((w) => r.title.includes(w))) continue;
-    const t = textScore(r, f.q, loose);
-    if (!t) continue;
-    let used = [];
-    let missing = 0;
-    if (f.with.length) {
-      used = f.with.filter((p) => r.pos.has(p));
-      if (!used.length) continue;
-      missing = r.own.filter((p) => !covers(p)).length;
-    }
-    hits.push({ r, score: t + popBonus(r), used, missing });
-  }
-  const sorted = f.q.length || f.with.length;
-  hits.sort(
-    (a, b) =>
-      b.used.length - a.used.length ||
-      (f.with.length ? a.missing - b.missing : 0) ||
-      b.score - a.score ||
-      Number(b.r.hasPhoto) - Number(a.r.hasPhoto) ||
-      (sorted ? (a.r.min ?? 999) - (b.r.min ?? 999) : a.r.name.localeCompare(b.r.name)),
-  );
-  return { total: hits.length, hits: mix(hits, f.with.length > 0) };
-}
-
-/** Videos whose title (or channel) has every word, newest first, channels taking turns. */
-function findVideos(ready, f, limit) {
-  const { index } = ready;
-  if (!f.q.length && !f.creator) return [];
-  ready.videoWords ??= index.videos.rows.map((v) => words(v[1]));
-  const chanWords = index.videos.sources.map((c) => words(c.name));
-  const byChannel = new Map();
-  index.videos.rows.forEach((v, n) => {
-    if (f.creator && ready.channelCreator[v[0]] !== f.creator.id) return;
-    if (f.out.size && v[4].some((p) => f.out.has(p))) return;
-    const t = ready.videoWords[n];
-    if (f.notWords.length && f.notWords.some((w) => t.includes(w))) return;
-    if (f.with.length && !v[4].some((p) => f.with.includes(p))) return;
-    if (f.q.length && !f.q.every((w, k) => [...t, ...chanWords[v[0]]].some((x) => x === w || (k === f.q.length - 1 && x.startsWith(w))))) return;
-    byChannel.set(v[0], [...(byChannel.get(v[0]) || []), v]);
-  });
-  const queues = [...byChannel.values()].map((q) => q.sort((a, b) => String(b[3]).localeCompare(String(a[3]))));
-  const out = [];
-  for (let round = 0; out.length < limit && queues.some((q) => q.length > round); round++) {
-    for (const q of queues) if (q[round] && out.length < limit) out.push(q[round]);
-  }
-  return out.map((v) => ({
-    title: v[1],
-    url: `https://www.youtube.com/watch?v=${v[2]}`,
-    channel: index.videos.sources[v[0]].name,
-    on: 'YouTube',
-    ...(v[3] ? { published: String(v[3]).slice(0, 10) } : {}),
-  }));
+  return coreCuisineFor(ready, wanted);
 }
 
 const fmtTime = (m) => (m < 60 ? `${m} min` : `${Math.floor(m / 60)} hr${m % 60 ? ` ${m % 60} min` : ''}`);
+const shuffle = (a) => {
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+};
 
 /**
  * Search the index. Everything is optional:
- *   query        words for the dish, matched in recipe names and keywords ("mapo tofu")
+ *   query        words for the dish ("mapo tofu"). Plain phrases in it are understood too:
+ *                "quick", "under 30 minutes", "vegetarian", "no pork", "thai food", "desserts",
+ *                "from Kenji", "with tofu and eggs"; `understood` says what was taken from it.
  *   ingredients  things to cook with; a recipe must use at least one, more is better
- *   without      ingredients to leave out
- *   diet         "vegetarian" or "vegan" (a best guess from ingredient lists)
+ *   without      ingredients to leave out, or dairy, eggs, nuts, shellfish, pork, meat, seafood
+ *   diet         "vegetarian" or "vegan" (a best guess from names and ingredient lists)
  *   course       main, side, soup, starter, breakfast, dessert, bread, sauce or drink
- *   cuisine, max_minutes, creator, limit, videos
+ *   cuisine, max_minutes, creator
+ *   new_only     only recipes the latest weekly crawl found
+ *   show         "both" (default), "recipes" or "videos"   (`videos: false` still means "recipes")
+ *   sort         "best" (default), "quickest", "newest" or "random"
+ *   limit        1 to 30, default 10;   offset: skip this many, for the next page
+ *
+ * The answer keeps its old fields (total_recipes, recipes, videos, cooking_with, notes,
+ * crawled, source) and adds, only when there is something to say:
+ *   understood   what was taken out of `query` and searched as a filter instead
+ *   corrected    spellings that were fixed: [{ from, to }]
+ *   leaving_out  what the search left out, by name
+ *   relaxed      when nothing matched everything: how many recipes each single change would
+ *                find, and the recipes for the gentlest one. Exclusions and diet are never relaxed.
  */
 export function searchRecipes(ready, opts = {}) {
   const { index } = ready;
   const notes = [];
-  const limit = Math.min(Math.max(Number(opts.limit) || 10, 1), 30);
-  const name = (p) => index.ing[p][1];
+  const limit = Math.min(Math.max(Math.round(Number(opts.limit)) || 10, 1), 30);
+  const offset = Math.min(Math.max(Math.round(Number(opts.offset)) || 0, 0), 5000);
+  const name = (p) => ready.ing[p][1];
+  const corrected = [];
+  const understood = {};
 
-  const f = { q: words(opts.query), with: [], out: new Set(), notWords: [], creator: null, cuisine: '', course: '', maxMinutes: Number(opts.max_minutes) || 0 };
+  const f = { q: '', with: [], without: [], notWords: [], sites: new Set(), time: 0, cuisine: '', course: '', fresh: false, diet: '', show: '' };
+
+  // The words: phrases an assistant passes through from the person ("quick vegetarian pad
+  // thai") become filters, unless that filter was given as its own argument.
+  const u = understand(ready, String(opts.query ?? '').slice(0, 300));
+  f.q = u.q;
+  if (u.time && !opts.max_minutes) understood.max_minutes = f.time = u.time;
+  if (u.diet && !opts.diet) understood.diet = f.diet = u.diet;
+  if (u.cuisine && !opts.cuisine) understood.cuisine = f.cuisine = u.cuisine;
+  if (u.course && !opts.course) understood.course = f.course = u.course;
+  if (u.show && !opts.show) understood.show = f.show = u.show;
+  if (u.sites.length && !opts.creator) {
+    f.sites.add(u.sites[0]);
+    understood.creator = ready.creatorById.get(u.sites[0]).name;
+  }
+  if (u.with.length) understood.ingredients = u.with.map(name);
+  f.with.push(...u.with);
+  if (u.without.length || u.notWords.length) understood.without = [...u.without.map(name), ...u.notWords];
+  f.without.push(...u.without);
+  f.notWords.push(...u.notWords);
+  if (Object.keys(understood).length) understood.query = f.q;
 
   const unknown = [];
   for (const phrase of list(opts.ingredients)) {
-    const p = ingredientFor(ready, phrase);
-    if (p == null) unknown.push(phrase);
-    else if (!f.with.includes(p)) f.with.push(p);
+    const hit = ingredientNear(ready, phrase);
+    if (!hit) unknown.push(phrase);
+    else {
+      if (hit.fixed) corrected.push({ from: hit.fixed[0], to: hit.fixed[1] });
+      if (!f.with.includes(hit.p)) f.with.push(hit.p);
+    }
   }
   if (unknown.length) {
     // Not a catalog ingredient: look for it in recipe names instead, when nothing else was asked for.
-    if (!f.with.length && !f.q.length) f.q = words(unknown.join(' '));
-    notes.push(`Not ingredients this index knows by that name: ${unknown.join(', ')}.${f.with.length || words(opts.query).length ? ' They were left out of the search.' : ' Searched recipe names for them instead.'}`);
+    const alone = !f.with.length && !f.q;
+    if (alone) f.q = unknown.join(' ');
+    notes.push(`Not ingredients this index knows by that name: ${unknown.join(', ')}. ${alone ? 'Searched recipe names for them instead.' : 'They were left out of the search.'}`);
   }
 
+  // Leaving things out. A group ("dairy") or an ingredient by its own name is left out by
+  // what recipes use. Anything else can only be left out by recipe name, and the answer says so.
+  const byName = [];
   for (const phrase of list(opts.without)) {
-    const p = ingredientFor(ready, phrase);
-    if (p == null) f.notWords.push(...words(phrase).slice(0, 1));
-    else f.out.add(p);
+    const p = groupFor(ready, phrase) ?? coreIngredientFor(ready, phrase, true);
+    if (p != null) {
+      if (!f.without.includes(p)) f.without.push(p);
+      continue;
+    }
+    if (/^meats?$/i.test(phrase)) {
+      f.diet ||= 'vegetarian';
+      continue;
+    }
+    const kind = coreIngredientFor(ready, phrase);
+    const w = words(phrase)[0];
+    if (w) f.notWords.push(w);
+    byName.push(kind != null ? `${phrase} (filed under ${name(kind)} here, so it can't be told apart)` : phrase);
   }
-  if (opts.diet === 'vegetarian' || opts.diet === 'vegan') {
-    for (const p of index.diet?.[opts.diet] || []) f.out.add(p);
-    notes.push(`${opts.diet === 'vegan' ? 'Vegan' : 'Vegetarian'} is a best guess from ingredient lists; check the recipe.`);
-  }
+  if (byName.length)
+    notes.push(`Could not check ingredient lists for: ${byName.join('; ')}. Recipes with the word in their name were left out; others may still use it, so check the recipe.`);
+  if (opts.diet === 'vegetarian' || opts.diet === 'vegan') f.diet = opts.diet;
+  if (f.diet) notes.push(`${f.diet === 'vegan' ? 'Vegan' : 'Vegetarian'} is a best guess from recipe names and ingredient lists; check the recipe.`);
+  if (f.without.some((p) => p >= ready.real)) notes.push('Leaving out a whole group (dairy, eggs, nuts, shellfish, pork) is a best guess from recipe names and ingredient lists, not an allergy check.');
 
   if (opts.cuisine) {
     f.cuisine = cuisineFor(ready, opts.cuisine);
@@ -276,49 +210,143 @@ export function searchRecipes(ready, opts = {}) {
     const c = (index.courses || []).find(([id, label]) => id === want || label.toLowerCase() === want || id + 's' === want);
     if (!c) return { error: `No course matches "${opts.course}".`, courses: (index.courses || []).map(([id]) => id) };
     f.course = c[0];
-    notes.push('Courses come from how each site files its recipes, or a plain dish name; recipes no site labels are left out when a course is asked for.');
   }
+  if (f.course) notes.push('Courses come from how each site files its recipes, or a plain dish name; recipes no site labels are left out when a course is asked for.');
   if (opts.creator) {
-    f.creator = creatorFor(ready, opts.creator);
-    if (!f.creator) return { error: `No creator matches "${opts.creator}".`, creators: [...ready.creators.values()].map((c) => c.name) };
+    const c = creatorFor(ready, opts.creator);
+    if (!c) return { error: `No creator matches "${opts.creator}".`, creators: ready.creators.map((c) => c.name) };
+    f.sites = new Set([c.id]);
   }
+  if (Number(opts.max_minutes) > 0) f.time = Number(opts.max_minutes);
+  if (opts.new_only) f.fresh = true;
+  if (opts.show === 'recipes' || opts.show === 'videos') f.show = opts.show;
+  else if (opts.videos === false && !f.show) f.show = 'recipes';
+  const sort = ['quickest', 'newest', 'random'].includes(opts.sort) ? opts.sort : 'best';
 
-  let found = findRecipes(ready, f, false);
-  if (!found.total && f.q.length > 1) {
-    found = findRecipes(ready, f, true);
-    if (found.total) notes.push('Nothing has every word, so these have most of them.');
-  }
+  const creator = f.sites.size ? ready.creatorById.get([...f.sites][0]) : null;
+  if (creator && !creator.recipes) notes.push(`${creator.name} is in the index as YouTube videos only, so there are no recipes to list.`);
 
-  const recipes = found.hits.slice(0, limit).map((h) => {
+  const Q = queryFor(ready, f);
+  for (const [from, to] of Q.fixes) corrected.push({ from, to });
+  if (Q.ignored.length) notes.push(`Nothing in the index has the word${Q.ignored.length > 1 ? 's' : ''} ${Q.ignored.join(', ')}, so ${Q.ignored.length > 1 ? 'they were' : 'it was'} ignored.`);
+
+  const order = (hits) => {
+    if (sort === 'quickest') return [...hits].sort((a, b) => (a.r.min ?? 1e9) - (b.r.min ?? 1e9));
+    if (sort === 'newest') return [...hits].sort((a, b) => (a.r.added < b.r.added ? 1 : a.r.added > b.r.added ? -1 : 0));
+    if (sort === 'random') return shuffle([...hits]);
+    return hits;
+  };
+  const row = (h, ff) => {
     const out = { name: h.r.name, url: h.r.url, from: h.r.src.name };
     if (h.r.min) out.time = fmtTime(h.r.min);
     if (h.r.cuisine) out.cuisine = h.r.cuisine;
     if (h.r.course) out.course = h.r.course;
-    if (f.with.length) {
+    if (h.r.isNew) out.new = true;
+    if (ff.with.length) {
       out.uses = h.used.map(name);
-      const covers = (p) => f.with.includes(p) || index.ing[p][3].some((parent) => f.with.includes(parent));
-      const need = h.r.own.filter((p) => !covers(p)).map(name);
+      const need = h.r.own.filter((p) => !covers(ready, ff.with, p)).map(name);
       out.also_needs = need.length > 12 ? [...need.slice(0, 12), `and ${need.length - 12} more`] : need;
     }
     return out;
-  });
+  };
+  const top = sort === 'best' ? offset + limit + 20 : Infinity;
 
-  // Videos have no cuisine or time in the index, so they only come along when neither is asked for.
-  const wantVideos = opts.videos !== false && !f.cuisine && !f.maxMinutes && !f.course;
-  const videos = wantVideos ? findVideos(ready, f, Math.min(5, limit)) : [];
+  let hits = f.show === 'videos' ? [] : search(ready, f, { top });
+  const vids = f.show === 'recipes' ? [] : searchVideos(ready, f, { top: 40 });
+  const blocked = Boolean(f.diet || f.without.length || f.notWords.length);
 
-  if (found.total > recipes.length) notes.push(`Showing ${recipes.length} of ${found.total} recipes. Add words, ingredients or filters to narrow it, or raise limit (up to 30).`);
-  if (!found.total && !videos.length) {
+  // Nothing matches all of it. Say which single change would find something, and show the
+  // gentlest one's recipes. What's being left out (diet, without) is never dropped.
+  const tries = [];
+  if (!hits.length && !vids.length && f.show !== 'videos') {
+    const tryIt = (dropped, label, change) => {
+      const ff = { ...f, sites: new Set(f.sites), ...change };
+      const n = search(ready, ff, { count: true });
+      if (n) tries.push({ dropped, label, total_recipes: n, ff });
+    };
+    if (f.time) tryIt('max_minutes', 'without the time limit', { time: 0 });
+    if (f.fresh) tryIt('new_only', 'not only new recipes', { fresh: false });
+    if (f.with.length > 1) for (const p of f.with) tryIt(`ingredient: ${name(p)}`, `without ${name(p)}`, { with: f.with.filter((x) => x !== p) });
+    if (f.cuisine) tryIt('cuisine', 'in any cuisine', { cuisine: '' });
+    if (f.sites.size) tryIt('creator', 'from any creator', { sites: new Set() });
+    if (f.course) tryIt('course', 'in any course', { course: '' });
+    if (f.q && f.with.length) tryIt('query', 'any dish with those ingredients', { q: '' });
+    if (f.with.length === 1 && f.q) tryIt(`ingredient: ${name(f.with[0])}`, `without ${name(f.with[0])}`, { with: [] });
+    const filters = Number(!!f.time) + Number(f.fresh) + Number(!!f.cuisine) + Number(!!f.sites.size) + Number(!!f.course);
+    if (!tries.length && filters > 1) tryIt('all filters', 'with no time, cuisine, creator, course or new-only filter', { time: 0, fresh: false, cuisine: '', sites: new Set(), course: '' });
+    // Still nothing, and nothing is in the way but the words: show what has most of them.
+    const others = blocked && search(ready, { ...f, diet: '', without: [], notWords: [], time: 0, fresh: false, cuisine: '', sites: new Set(), course: '' }, { count: true });
+    if (!tries.length && !others && Q.words.length > 1) {
+      hits = search(ready, f, { loose: true, top });
+      if (hits.length) notes.push('Nothing has every word, so these have most of them.');
+    }
+  }
+  const total = hits.length;
+  const recipes = order(hits).slice(offset, offset + limit).map((h) => row(h, f));
+
+  const vLimit = f.show === 'videos' ? limit : Math.min(5, limit);
+  const videos = vids.slice(f.show === 'videos' ? offset : 0).slice(0, vLimit).map((v) => ({
+    title: v[1],
+    url: `https://www.youtube.com/watch?v=${v[2]}`,
+    channel: index.videos.sources[v[0]].name,
+    on: 'YouTube',
+    ...(v[3] ? { published: String(v[3]).slice(0, 10) } : {}),
+  }));
+  if (f.show !== 'recipes' && (f.time || f.fresh) && (Q.words.length || creator)) notes.push('Videos have no cooking time or first-seen date in the index, so none are listed with a time limit or new_only.');
+
+  if (total > offset + recipes.length) notes.push(`Showing ${offset + 1} to ${offset + recipes.length} of ${total} recipes. Pass offset ${offset + recipes.length} for more, or add words, ingredients or filters to narrow it.`);
+
+  const leaving = [...f.without.map(name), ...f.notWords.map((w) => `"${w}" in the name`)];
+  const extras = {
+    ...(Object.keys(understood).length ? { understood } : {}),
+    ...(corrected.length ? { corrected } : {}),
+    ...(leaving.length ? { leaving_out: leaving } : {}),
+  };
+
+  if (!total && !videos.length) {
     const q = encodeURIComponent(String(opts.query || list(opts.ingredients).join(' ')));
-    const also = (index.linkOnly || []).map((l) => ({ name: l.name, search: l.search.replace('{q}', q) }));
-    if (q && also.length) return { total_recipes: 0, recipes: [], notes: [...notes, 'Nothing in the index. These sites are not indexed here but can be searched directly.'], also_search: also, source: SITE };
+    const also = q ? (index.linkOnly || []).map((l) => ({ name: l.name, search: l.search.replace('{q}', q) })) : [];
+    if (tries.length) {
+      const best = tries[0];
+      notes.push(`Nothing matches all of that. ${tries.map((t) => `${t.label[0].toUpperCase()}${t.label.slice(1)}: ${t.total_recipes}`).join('. ')}.${blocked ? ' What is being left out was kept.' : ''}`);
+      return {
+        total_recipes: 0,
+        recipes: [],
+        relaxed: {
+          dropped: best.dropped,
+          total_recipes: best.total_recipes,
+          recipes: search(ready, best.ff, { top: limit + 20 }).slice(0, limit).map((h) => row(h, best.ff)),
+          counts: Object.fromEntries(tries.map((t) => [t.dropped, t.total_recipes])),
+        },
+        ...extras,
+        notes,
+        crawled: index.crawled,
+        source: SITE,
+      };
+    }
+    const why = Q.none
+      ? 'There are no words to search in that query.'
+      : blocked && search(ready, { ...f, diet: '', without: [], notWords: [], time: 0, fresh: false, cuisine: '', sites: new Set(), course: '' }, { count: true })
+        ? 'Recipes match, but every one uses something being left out.'
+        : 'Nothing in the index matches.';
+    return {
+      total_recipes: 0,
+      recipes: [],
+      ...extras,
+      notes: [...notes, also.length && !Q.none ? `${why} These sites are not indexed here but can be searched directly.` : why],
+      ...(also.length && !Q.none ? { also_search: also } : {}),
+      crawled: index.crawled,
+      source: SITE,
+    };
   }
 
   return {
-    total_recipes: found.total,
+    total_recipes: total,
     recipes,
     ...(videos.length ? { videos } : {}),
+    ...(f.show === 'videos' ? { total_videos: vids.length } : {}),
     ...(f.with.length ? { cooking_with: f.with.map(name) } : {}),
+    ...extras,
     ...(notes.length ? { notes } : {}),
     crawled: index.crawled,
     source: SITE,
@@ -330,7 +358,7 @@ export function listSources(ready) {
   const { index } = ready;
   return {
     about: 'One search across recipe sites Kyle Pace trusts, from a small index of names, links, ingredient names, times and cuisines. It never holds the method: every result links to the original recipe.',
-    creators: [...ready.creators.values()].map((c) => ({
+    creators: ready.everyone.map((c) => ({
       name: c.name,
       ...(c.site ? { site: c.site } : {}),
       ...(c.recipes ? { recipes: c.recipes } : {}),
@@ -368,14 +396,12 @@ export function recipesWith(ready, opts = {}) {
   const { index } = ready;
   const ids = [...new Set((Array.isArray(opts.with) ? opts.with : []).map(String))].filter((id) => ID.test(id)).slice(0, 25);
   const pos = new Map(index.ing.map((g, p) => [g[0], p]));
-  const f = { q: [], with: ids.filter((id) => pos.has(id)).map((id) => pos.get(id)), out: new Set(), notWords: [], creator: null, cuisine: '', maxMinutes: 0 };
+  const f = { q: '', with: ids.filter((id) => pos.has(id)).map((id) => pos.get(id)), without: [], notWords: [], sites: new Set(), diet: '' };
   if (f.with.length < 2) return { total: 0, recipes: [], known: f.with.map((p) => index.ing[p][0]) };
-  if (opts.diet === 'vegetarian' || opts.diet === 'vegan') for (const p of index.diet?.[opts.diet] || []) f.out.add(p);
+  if (opts.diet === 'vegetarian' || opts.diet === 'vegan') f.diet = opts.diet;
   const meat = new Set(index.diet?.vegetarian || []);
   const limit = Math.min(Math.max(Number(opts.limit) || 12, 1), 24);
-  const found = findRecipes(ready, f, false);
-  const hits = found.hits.filter((h) => h.used.length >= 2);
-  const covers = (p) => f.with.includes(p) || index.ing[p][3].some((parent) => f.with.includes(parent));
+  const hits = search(ready, f, { top: 80 }).filter((h) => h.used.length >= 2);
   return {
     total: hits.length,
     recipes: hits.slice(0, limit).map((h) => ({
@@ -383,10 +409,11 @@ export function recipesWith(ready, opts = {}) {
       url: h.r.url,
       site: h.r.src.name,
       minutes: h.r.min ?? null,
-      image: h.r.img,
-      veg: ![...h.r.pos].some((p) => meat.has(p)),
+      image: h.r.img || null,
+      // No meat or fish in its name or its ingredient lines, matched or not (scripts/diet.mjs).
+      veg: !(h.r.flags & 3) && ![...h.r.pos].some((p) => meat.has(p)),
       uses: h.used.map((p) => index.ing[p][1]),
-      also_needs: h.r.own.filter((p) => !covers(p)).length,
+      also_needs: h.r.own.filter((p) => !covers(ready, f.with, p)).length,
     })),
     known: f.with.map((p) => index.ing[p][0]),
     crawled: index.crawled,

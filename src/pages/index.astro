@@ -501,6 +501,33 @@ const FILTERS = [
     display: none;
   }
 
+  /* Phones: give the home page room to breathe. The idea lines get a narrower measure so
+     they break into short, centered lines instead of running edge to edge, and the footer
+     centers under them on two rows of links. Search drops out of it here (you're on it).
+     It sits just above the display settings button rather than beside it, so the links
+     get the full width instead of wrapping into a narrow column. */
+  @media (max-width: 40rem) {
+    [data-mode='home'] .start p {
+      max-width: 21rem;
+    }
+
+    :global(body:has(#page[data-mode='home']) > .lab-foot) {
+      justify-content: center;
+      gap: var(--space-1) var(--space-4);
+      padding: var(--space-3) var(--gutter) calc(var(--space-3) + 3.25rem);
+      text-align: center;
+    }
+
+    :global(body:has(#page[data-mode='home']) > .lab-foot ul) {
+      justify-content: center;
+      gap: var(--space-1) var(--space-4);
+    }
+
+    :global(body:has(#page[data-mode='home']) > .lab-foot li:has(> a[href='/'])) {
+      display: none;
+    }
+  }
+
   [data-mode='home'] .filter-zone,
   [data-mode='home'] .note,
   [data-mode='home'] .status:empty,

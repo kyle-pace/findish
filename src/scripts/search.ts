@@ -1097,7 +1097,7 @@ function buildStart() {
   // Totals, not names: the list of creators is under the box and on the About page.
   $('from').textContent = `${plural(data.recipes.length, 'recipe')} and ${plural(data.videos.rows.length, 'video')} from ${creators.length} creators. Every one opens on its creator’s own site.`;
   // Every line is a fresh draw on each visit: four dishes, five of the 18 most-used
-  // ingredients, two creators and three of the week's new recipes.
+  // ingredients and two creators. New this week moved to the footer (Kyle, 2026-11-16).
   const tries: string[] = [];
   for (const t of pickSome(TRY, TRY.length)) {
     if (tries.length === TRY_SHOWN) break;
@@ -1108,15 +1108,6 @@ function buildStart() {
   $('popular').innerHTML = keepPunct(`Or start with what you have: ${orList(pop)}.`);
   // Two creators, not all of them: the full list (with ways to support each) is on About.
   const who = pickSome(creators, 2).map((c) => `<button type="button" data-creator="${esc(c.id)}">${esc(c.name)}</button>`);
-  // New this week: a few by name, straight to the recipe, and a way to see them all.
-  const fresh = (data.fresh || []).map((i) => recipes[i]);
-  $('fresh').hidden = !fresh.length;
-  if (fresh.length) {
-    const names = pickSome(fresh, 3)
-      .map((r, n) => `<a href="${esc(r.url)}" data-src-id="${esc(r.src.id)}" data-pos="${n + 1}" data-key="${esc(r.key)}" data-from="new">${esc(r.name)}</a>`);
-    const all = fresh.length > names.length ? ` <button type="button" data-fresh="1">See all ${fresh.length}</button>.` : '';
-    $('fresh').innerHTML = keepPunct(`New this week: ${andList(names)}.${all}`);
-  }
   $('creators').innerHTML = keepPunct(
     `Or start with a creator, like ${orList(who)}. <a href="/creators/">See all ${creators.length}</a>.`,
   );

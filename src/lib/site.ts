@@ -13,6 +13,7 @@ export const SITE = {
   // around, and back to Kyle's other work, is this footer.
   footer: [
     { href: '/', label: 'Search' },
+    { href: '/?new=1', label: 'New this week' },
     { href: '/about/', label: 'About' },
     { href: '/creators/', label: 'Creators' },
     { href: '/assistants/', label: 'For AI assistants' },

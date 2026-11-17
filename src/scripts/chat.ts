@@ -24,11 +24,9 @@ const searchForm = document.getElementById('search-form')!;
 const statusEl = document.getElementById('status')!;
 const qInput = document.getElementById('q') as HTMLInputElement;
 
-// Said under the box, before anything is sent.
-const hint = document.createElement('p');
-hint.className = 'ask-hint';
-hint.innerHTML = 'You can also ask in your own words. Questions go to Claude, Anthropic’s AI, to turn into a search, and aren’t kept. <a href="/privacy/#ask">Privacy</a>';
-searchForm.append(hint);
+// No hint under the box for now (Kyle, 2026-11-16: the home page was getting cluttered).
+// While Ask is hidden behind ?chat=1 the answer line carries the privacy note; a line
+// before anything is sent comes back before Ask goes public.
 qInput.placeholder = 'A dish, ingredient or question';
 const qHint = document.getElementById('q-hint');
 if (qHint) qHint.textContent += ' You can also type a question and press Enter to ask.';
@@ -40,7 +38,8 @@ line.hidden = true;
 line.innerHTML = `
   <p class="ask-asked"></p>
   <p class="ask-reply" role="status" aria-live="polite"></p>
-  <p class="ask-actions"><button type="button" class="ask-plain">Search my words instead</button></p>`;
+  <p class="ask-actions"><button type="button" class="ask-plain">Search my words instead</button></p>
+  <p class="ask-about">Answered by Claude, Anthropic’s AI. What you ask isn’t kept. <a href="/privacy/#ask">Privacy</a></p>`;
 statusEl.before(line);
 const asked = line.querySelector<HTMLElement>('.ask-asked')!;
 const replyEl = line.querySelector<HTMLElement>('.ask-reply')!;

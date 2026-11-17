@@ -79,9 +79,9 @@ Atkinson Hyperlegible Next only. The name is the one large thing on the home pag
 Results are rows (photo left), one column on phones, two on wide screens. Meta lines are plain sentences ("25 minutes, Chinese, from The Woks of Life"), never middle dots. No pills, eyebrows or badges.
 
 
-## The home page on a phone (November 16, 2026)
+## Where the home page sits (November 16, 2026)
 
-On a phone the ideas under the box make the column taller than the screen, so centering does nothing. Under 40rem the home page starts the name a sixth of the way down (`16svh`), so the box lands near the middle, within thumb reach, and the ideas follow below.
+The name and box sit a little above the middle of the window, like a search engine's front page, and the ideas follow under them. The space above is `clamp(2rem, 30svh - 7rem, 18rem)`, so it grows with the window's height: the box's middle lands at 41 to 48 percent of the height from a small phone to a 1920 by 1080 monitor (measured November 16). It used to be centered with flexbox, which pushed the name off the top once the ideas made the column taller than the window.
 
 ## A Mobbin pass (November 16, 2026)
 

@@ -207,23 +207,17 @@ import '../styles/theme.css';
     margin-top: var(--space-6);
   }
 
+  /* Home: the name and box sit a little above the middle of the window, the way a search
+     engine's front page does, and the ideas follow under them. The space above grows with
+     the window's height, so a short laptop screen and a tall monitor both look balanced.
+     (Centering with justify-content broke once the ideas made the column taller than the
+     window: it pushed the name off the top.) */
   [data-mode='home'] .app {
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    min-height: calc(100svh - 14rem);
-    padding-bottom: 6vh;
-  }
-
-  /* On a phone the ideas under the box make the column taller than the screen, so
-     centering does nothing and the name and box sit at the very top. Start them a
-     sixth of the way down instead, so the box lands near the middle, within thumb
-     reach, and the ideas follow below. */
-  @media (max-width: 40rem) {
-    [data-mode='home'] .app {
-      justify-content: flex-start;
-      padding-top: clamp(var(--space-8), 16svh, 9rem);
-    }
+    min-height: calc(100svh - 12rem);
+    padding-top: clamp(var(--space-8), 30svh - 7rem, 18rem);
+    padding-bottom: var(--space-12);
   }
 
   [data-mode='home'] .top,
@@ -259,7 +253,7 @@ import '../styles/theme.css';
   }
 
   [data-mode='home'] .start {
-    margin-top: clamp(var(--space-12), 8vh, var(--space-24));
+    margin-top: clamp(var(--space-8), 6svh, var(--space-16));
   }
 
   [data-mode='home'] .filters,

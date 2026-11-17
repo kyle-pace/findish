@@ -100,6 +100,14 @@ const page = $('page');
 const app = $('app');
 const form = $<HTMLFormElement>('search-form');
 const qInput = $<HTMLInputElement>('q');
+// The full hint gets cut off in a phone's box, so phones get a shorter one that still
+// names cuisines and ingredients, the ways in people miss most.
+const phone = window.matchMedia('(max-width: 40rem)');
+const placeholder = () => (phone.matches ? 'Dish, ingredient or cuisine' : 'A dish, ingredient, cuisine or creator');
+if (qInput.placeholder !== 'and…') qInput.placeholder = placeholder();
+phone.addEventListener('change', () => {
+  if (qInput.placeholder !== 'and…') qInput.placeholder = placeholder();
+});
 const statusEl = $('status');
 const resultsEl = $<HTMLOListElement>('results');
 const moreBtn = $<HTMLButtonElement>('more');
@@ -787,7 +795,7 @@ function renderTags() {
   ].join('');
   const any = state.sites.size || state.with.length || state.without.length || state.notWords.length || state.diet || state.fresh || state.cuisine;
   $('box').toggleAttribute('data-tags', !!any);
-  qInput.placeholder = any ? 'and…' : 'A dish, ingredient, cuisine or creator';
+  qInput.placeholder = any ? 'and…' : placeholder();
 }
 
 function renderEmpty() {

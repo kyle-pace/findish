@@ -57,12 +57,13 @@ The same index is searchable by AI assistants over MCP (Model Context Protocol, 
 
 | Tool | What it answers |
 | --- | --- |
-| `search_recipes` | Recipes by dish name, by ingredients to cook with, or both; plus without, vegetarian or vegan, course, cuisine, time and creator. Results are names and links to the original, never the method. |
+| `search_recipes` | Recipes by dish name, by ingredients to cook with, or both; plus without, vegetarian or vegan, course, cuisine, time, creator, new this week only, recipes or videos only, an order and paging. Results are names and links to the original, never the method. |
 | `list_sources` | Who is indexed, ways to support them (marked join, buy or follow), each creator's page, and the cuisines and courses to filter on. |
 
 | What | Where |
 | --- | --- |
-| The endpoint (the only server-run part of the site) | `src/pages/mcp.ts` |
+| The endpoint | `src/pages/mcp.ts` (also three ready-made prompts: `cook_with`, `find_dish`, `whats_new`) |
+| The one place the server reads the index (shared with Ask and the list lookup) | `src/mcp/load-index.ts` |
 | The search rules, as plain functions | `src/mcp/search.mjs`, tests in `src/mcp/search.test.mjs` (`npm test`) |
 | The server's address, the Claude link and the page paths | `src/lib/assistants.ts` |
 | Try every tool with the official MCP client | `npm run preview`, then `npm run try-mcp` (add the live address to check a deploy) |
@@ -76,6 +77,8 @@ At [findish.now/?chat=1](https://findish.now/?chat=1) only: type a question in t
 | What | Where |
 | --- | --- |
 | The logic and its tests | `src/chat/chat.mjs`, `src/chat/chat.test.mjs` |
+| Guards on what a request may send | `src/chat/request.mjs` |
+| Test questions and their scorer | `scripts/ask-questions.json`, `node scripts/ask-eval.mjs` (run it on the live site after every deploy that touches Ask) |
 | The one file that calls Anthropic | `src/chat/anthropic.mjs` (key: the Worker secret `ANTHROPIC_API_KEY`) |
 | The endpoint | `src/pages/api/chat.ts`, rate limits in `wrangler.jsonc` |
 | Telling a question from a search | `looksLikeAsk()` in `src/scripts/search.ts` |

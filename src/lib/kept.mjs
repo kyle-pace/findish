@@ -2,7 +2,7 @@
 // searches (as the address's query string), recipes opened lately and recipes saved for
 // later (as recipe keys like "woks:/mapo-tofu/"). These are the pure parts, apart from the
 // DOM and from localStorage itself, so `npm test` can run them. src/scripts/search.ts reads
-// and writes the lists; nothing here is ever sent anywhere.
+// and writes the lists (creator and browse pages add to "opened" through rememberOpened); nothing here is ever sent anywhere.
 
 export const KEEP = {
   recent: { key: 'findish-recent-searches', max: 8 },
@@ -26,6 +26,22 @@ export function readList(text, max = 50) {
 export function putFirst(list, item, max = 50) {
   if (!item) return list;
   return [item, ...list.filter((x) => x !== item)].slice(0, max);
+}
+
+/**
+ * A recipe was opened: its key goes to the front of the device's "recently opened" list.
+ * Used by every page that links to recipes (the search, creator pages, browse pages), so
+ * they all write the one list the same way. `storage` is localStorage; when it's missing,
+ * full or blocked (private mode), nothing is kept and nothing breaks. Returns the list.
+ */
+export function rememberOpened(key, storage) {
+  try {
+    const list = putFirst(readList(storage.getItem(KEEP.opened.key), KEEP.opened.max), String(key || ''), KEEP.opened.max);
+    if (key) storage.setItem(KEEP.opened.key, JSON.stringify(list));
+    return list;
+  } catch {
+    return [];
+  }
 }
 
 /** The list without `item`. */

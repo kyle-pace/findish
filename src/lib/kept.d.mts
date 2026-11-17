@@ -1,6 +1,7 @@
 export const KEEP: Record<'recent' | 'opened' | 'saved', { key: string; max: number }>;
 export function readList(text: string | null | undefined, max?: number): string[];
 export function putFirst(list: string[], item: string, max?: number): string[];
+export function rememberOpened(key: string | undefined, storage: Pick<Storage, 'getItem' | 'setItem'> | undefined): string[];
 export function dropFrom(list: string[], item: string): string[];
 export function recentKey(search: unknown): string;
 export function rememberSearch(list: string[], search: unknown, opts?: { refines?: string; max?: number }): string[];

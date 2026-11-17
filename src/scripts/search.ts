@@ -31,7 +31,7 @@ import * as core from '../lib/search-core.mjs';
 import type { Creator, Hit, Ready, Recipe, Understood } from '../lib/search-core.mjs';
 import { looksLikeAsk, words } from '../lib/search-core.mjs';
 import { cleanQ, completions, coverLabel, dishName, goesToAsk, ignoredSentence, linkOnlyTyped, narrowFacets, soleQuery, sortHits, tagOrder, titleFor } from '../lib/page-state.mjs';
-import { KEEP, dropFrom, keysFromHash, listHash, putFirst, readList, recentKey, rememberSearch, searchLabel } from '../lib/kept.mjs';
+import { KEEP, dropFrom, keysFromHash, listHash, putFirst, readList, recentKey, rememberOpened, rememberSearch, searchLabel } from '../lib/kept.mjs';
 import { relatedDishes } from '../lib/related.mjs';
 import { loadIndex } from './index-load.ts';
 
@@ -327,6 +327,15 @@ function countWith(over: Partial<typeof state>): number {
 // saved recipes. localStorage only; a browser that refuses it just doesn't keep them.
 
 type Kept = keyof typeof KEEP;
+/** localStorage, or nothing where a browser blocks it (reading the property itself can throw). */
+const storage = () => {
+  try {
+    return localStorage;
+  } catch {
+    return undefined;
+  }
+};
+
 const stored = {
   /** Each list as last read, so drawing 24 rows doesn't read storage 24 times. */
   cache: {} as Partial<Record<Kept, string[]>>,
@@ -1645,7 +1654,10 @@ function searched() {
 
 function openedRecipe(source: string, position: number, from: string, key = '') {
   // Kept on this device, for "Recently opened" under the empty box.
-  if (key) stored.write('opened', putFirst(stored.read('opened'), key, KEEP.opened.max));
+  if (key) {
+    rememberOpened(key, storage());
+    delete stored.cache.opened;
+  }
   // recipe_key ("woks:/mapo-tofu/") is what the daily popularity count adds up.
   track('Opened Recipe', {
     source,

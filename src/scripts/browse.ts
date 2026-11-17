@@ -4,6 +4,16 @@
 //   Opened Creator Page   source, opened_from: browse
 //   Opened Browse Page    browse_kind, browse_page, opened_from: browse (the list of them all) or the kind of page it was on
 import { track } from 'kp-design/analytics';
+import { rememberOpened } from '../lib/kept.mjs';
+
+/** Kept on this device only, for "Recently opened" under the search box (src/lib/kept.mjs). Never sent. */
+const opened = (key?: string) => {
+  try {
+    rememberOpened(key, localStorage);
+  } catch {
+    // Storage is blocked: nothing is kept.
+  }
+};
 
 const page = document.querySelector<HTMLElement>('[data-page="browse"]');
 const kind = page?.dataset.browseKind || 'browse';
@@ -13,7 +23,8 @@ document.addEventListener('click', (e) => {
   const a = (e.target as HTMLElement).closest<HTMLAnchorElement>('a');
   if (!a) return;
   const d = a.dataset;
-  if (d.srcId)
+  if (d.srcId) {
+    opened(d.key);
     track('Opened Recipe', {
       source: d.srcId,
       position: Number(d.pos || 0),
@@ -21,7 +32,7 @@ document.addEventListener('click', (e) => {
       ingredient_count: 0,
       ...(d.key ? { recipe_key: d.key } : {}),
     });
-  else if ('fullSearch' in d) track('Opened Full Search', { browse_kind: kind, browse_page: slug });
+  } else if ('fullSearch' in d) track('Opened Full Search', { browse_kind: kind, browse_page: slug });
   else if (d.creatorPage) track('Opened Creator Page', { source: d.creatorPage, opened_from: 'browse' });
   else if (d.browseKind && d.browsePage) track('Opened Browse Page', { browse_kind: d.browseKind, browse_page: d.browsePage, opened_from: kind });
 });

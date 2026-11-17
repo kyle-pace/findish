@@ -31,6 +31,8 @@ const FILTERS = [
   ['cuisine', 'Cuisine'],
   ['site', 'Creators'],
   ['time', 'Ready in'],
+  ['diet', 'Diet'],
+  ['order', 'Order'],
 ];
 ---
 
@@ -73,7 +75,7 @@ const FILTERS = [
     <script is:inline>
       // A link to a search is laid out as results from the first paint (the box at the top,
       // the filters under it), so nothing jumps when the recipes arrive. search.ts takes over.
-      if (/[?&](q|with|site|time|cuisine|course|new|show|without|not|diet|pick)=[^&]/.test(location.search))
+      if (/[?&](q|with|site|time|cuisine|course|new|show|without|not|diet|pick|saved)=[^&]/.test(location.search) || /^#list=./.test(location.hash))
         document.getElementById('page').dataset.mode = 'results';
     </script>
     <div class="app" id="app" data-state="loading">
@@ -117,6 +119,8 @@ const FILTERS = [
               var plain = function (id) {
                 return id.replace(/[-_]/g, ' ');
               };
+              if (/^#list=./.test(location.hash)) add('diet', 'shared list');
+              else if (p.get('saved') === '1') add('diet', 'saved');
               ids('site').forEach(function (id) {
                 if (names[id]) add('creator', 'from ' + names[id]);
               });
@@ -160,9 +164,12 @@ const FILTERS = [
           </button>
           <div class="panel" id="q-panel" hidden data-amp-mask>
             <div class="list" id="q-list" role="listbox" aria-label="Suggestions"></div>
+            <!-- Under the empty box: recent searches, recipes opened lately and saved recipes,
+                 all kept on this device only (search.ts, src/lib/kept.mjs). -->
+            <div class="kept" id="q-kept" hidden></div>
           </div>
         </div>
-        <p id="q-hint" class="visually-hidden">Suggestions appear as you type. Pick an ingredient, cuisine or creator to add it to your search. Backspace in an empty box removes the last one.</p>
+        <p id="q-hint" class="visually-hidden">Suggestions appear as you type. Pick an ingredient, cuisine or creator to add it to your search. Backspace in an empty box removes the last one. While the box is empty, your recent searches and saved recipes are listed under it; they are kept on this device only.</p>
         <p class="visually-hidden" id="announce" role="status" aria-live="polite"></p>
         <p class="home-actions"><button class="lucky" type="button" id="lucky">Pick one at random</button></p>
       </form>
@@ -173,8 +180,14 @@ const FILTERS = [
         <button class="filter" type="button" popovertarget="f-cuisine" id="f-cuisine-btn">Cuisine: <span id="f-cuisine-value">any</span></button>
         <button class="filter" type="button" popovertarget="f-site" id="f-site-btn">Creator: <span id="f-site-value">any</span></button>
         <button class="filter" type="button" popovertarget="f-time" id="f-time-btn">Time: <span id="f-time-value">any</span></button>
-        <button class="lucky" type="button" id="lucky-results">Pick one at random</button>
-        <button class="clear-all" type="button" id="clear-all" hidden>Start over</button>
+        <button class="filter" type="button" popovertarget="f-diet" id="f-diet-btn">Diet: <span id="f-diet-value">any</span></button>
+        <button class="filter" type="button" popovertarget="f-order" id="f-order-btn">Order: <span id="f-order-value">best match</span></button>
+        <!-- The three things to do with a search stay together when the row wraps. -->
+        <span class="acts">
+          <button class="lucky" type="button" id="lucky-results">Pick one at random</button>
+          <button class="lucky" type="button" id="share">Share this search</button>
+          <button class="clear-all" type="button" id="clear-all" hidden>Start over</button>
+        </span>
       </div>
 
       {FILTERS.map(([id, label]) => (
@@ -185,6 +198,9 @@ const FILTERS = [
       ))}
 
       <p class="status" id="status" role="status" aria-live="polite" tabindex="-1" data-amp-mask>Loading the recipes…</p>
+
+      <!-- "Narrow it: Chinese (8), 30 minutes or less (5)." Words, not chips; only when they'd narrow something. -->
+      <p class="narrow" id="narrow" hidden></p>
 
       <p class="note" id="note" hidden></p>
 
@@ -197,6 +213,9 @@ const FILTERS = [
       <h2 class="visually-hidden" id="results-title">Recipes</h2>
       <ol class="results" id="results" aria-labelledby="results-title"></ol>
       <button class="more" type="button" id="more" hidden>Show more</button>
+
+      <!-- "Related: kung pao chicken, dan dan noodles." after a dish search's results. -->
+      <p class="related" id="related" hidden></p>
 
       <section class="videos" id="videos" aria-labelledby="videos-title" hidden>
         <h2 id="videos-title">On YouTube</h2>
@@ -213,6 +232,18 @@ const FILTERS = [
         <p id="try"></p>
         <p id="popular"></p>
         <p id="creators"></p>
+        <p id="kept-line" hidden></p>
+        <script is:inline>
+          // Someone with saved recipes sees the way back to them from the first paint, so the
+          // lines above don't move when the recipes arrive. Read from this device only.
+          try {
+            if (JSON.parse(localStorage.getItem('findish-saved') || '[]').length) {
+              var kept = document.getElementById('kept-line');
+              kept.textContent = 'Or go back to your saved recipes.';
+              kept.hidden = false;
+            }
+          } catch (e) {}
+        </script>
       </section>
 
       <p class="also" id="also" hidden></p>
@@ -399,7 +430,8 @@ const FILTERS = [
   }
 
   @media (max-height: 620px) and (max-width: 40rem), (max-height: 540px) {
-    [data-mode='home'] .start #creators {
+    [data-mode='home'] .start #creators,
+    [data-mode='home'] .start #kept-line {
       display: none;
     }
   }
@@ -679,6 +711,9 @@ const FILTERS = [
   .more,
   .status :global(button),
   .empty :global(button),
+  .narrow :global(button),
+  .related :global(button),
+  .kept :global(p button),
   .start :global(button) {
     min-height: 2.75rem;
     padding: 0;
@@ -702,9 +737,132 @@ const FILTERS = [
 
   .start :global(button),
   .empty :global(button),
+  .narrow :global(button),
+  .related :global(button),
   .status :global(button) {
     min-height: 0;
     padding-block: 0.4rem;
+  }
+
+  .narrow :global(button:hover),
+  .related :global(button:hover),
+  .kept :global(:is(a, p button):hover) {
+    text-decoration-color: currentColor;
+  }
+
+  /* "Narrow it" under the count and "Related" after the results: one quiet sentence each,
+     the choices underlined like every other action. Each choice stays with its count. */
+  .narrow,
+  .related {
+    max-width: 44rem;
+    font-size: var(--step--1);
+    line-height: 1.9;
+    color: var(--ink-muted);
+  }
+
+  .narrow {
+    margin: calc(-1 * var(--space-3)) 0 var(--space-4);
+  }
+
+  .related {
+    margin: var(--space-8) 0 0;
+  }
+
+  .related :global(.keep) {
+    display: inline-block;
+    max-width: 100%;
+  }
+
+  .narrow :global(.n) {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Under the empty box: what's kept on this device. Headed lists of plain links; each
+     recent search has a × to take it off, sized for a finger. */
+  .kept {
+    padding: var(--space-1) var(--space-3) var(--space-2);
+  }
+
+  .kept :global(section + section),
+  .kept :global(section + p) {
+    margin-top: var(--space-2);
+    padding-top: var(--space-2);
+    border-top: 1px solid var(--line);
+  }
+
+  .kept :global(h2) {
+    margin: var(--space-2) 0 0;
+    font-size: var(--step--1);
+    font-weight: 700;
+    line-height: 1.4;
+  }
+
+  .kept :global(ul) {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .kept :global(li) {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: 2.75rem;
+  }
+
+  .kept :global(a) {
+    flex: 1;
+    min-width: 0;
+    padding-block: 0.5rem;
+    color: var(--ink);
+    text-decoration-color: var(--field-rule);
+    text-decoration-thickness: 0.08em;
+    text-underline-offset: 0.2em;
+    overflow-wrap: break-word;
+  }
+
+  .kept :global(p button) {
+    text-align: left;
+  }
+
+  .kept :global(.opt-meta) {
+    flex: none;
+    max-width: 45%;
+    text-align: right;
+  }
+
+  .kept :global(.forget) {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 0;
+    border-radius: 0.35rem;
+    background: none;
+    color: var(--ink-muted);
+    font: inherit;
+    font-size: 1.25em;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .kept :global(.forget:hover) {
+    color: var(--chili);
+    background: var(--line);
+  }
+
+  .kept :global(p) {
+    margin: 0;
+    font-size: var(--step--1);
+  }
+
+  .kept :global(p.kept-saved) {
+    display: flex;
+    align-items: center;
+    min-height: 2.75rem;
+    font-size: inherit;
   }
 
   /* Idea links and buttons sit the same on a wrapped line; the line height keeps them 24px tall. */
@@ -737,8 +895,11 @@ const FILTERS = [
     text-underline-offset: 0.2em;
   }
 
+  /* A word and the comma after it stay together. As a block of its own, so a name too long
+     for a small screen at large text wraps inside instead of pushing the page wide. */
   .start :global(.keep) {
-    white-space: nowrap;
+    display: inline-block;
+    max-width: 100%;
   }
 
   /* ---------------------------------------------------------------------------------
@@ -752,8 +913,12 @@ const FILTERS = [
     font-size: var(--step--1);
   }
 
-  /* "Pick one at random" and "Start over" sit at the far end. */
-  .filters .lucky {
+  /* "Pick one at random", "Share this search" and "Start over" sit at the far end, and
+     move to the next line together when the filters need the room. */
+  .filters .acts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 var(--space-4);
     margin-left: auto;
   }
 
@@ -773,12 +938,14 @@ const FILTERS = [
       mask-image: linear-gradient(to right, #000 calc(100% - 2.5rem), transparent);
     }
 
-    .filters > * {
+    .filters > *,
+    .filters .acts > * {
       flex: none;
     }
 
-    .filters .lucky {
-      margin-left: 0;
+    /* On a phone they are three more words in the one scrolling line. */
+    .filters .acts {
+      display: contents;
     }
   }
 
@@ -1068,42 +1235,42 @@ const FILTERS = [
     grid-column: 2;
   }
 
-  :global(.row h3) {
+  :global(.row :is(h3, h4)) {
     margin: 0 0 var(--space-1);
     font-size: var(--step-0);
     font-weight: 600;
     line-height: 1.3;
   }
 
-  :global(.row h3 a) {
+  :global(.row :is(h3, h4) a) {
     color: var(--ink);
     text-decoration: none;
     overflow-wrap: anywhere;
   }
 
   /* A recipe you've already opened: quieter, like the line under it. */
-  :global(.row h3 a:visited) {
+  :global(.row :is(h3, h4) a:visited) {
     color: var(--ink-muted);
   }
 
   /* The whole row is the link's hit area; the name stays the accessible name. */
-  :global(.row h3 a::after) {
+  :global(.row :is(h3, h4) a::after) {
     content: '';
     position: absolute;
     inset: -0.25rem;
   }
 
-  :global(.row h3 a:focus-visible) {
+  :global(.row :is(h3, h4) a:focus-visible) {
     outline: none;
   }
 
-  :global(.row h3 a:focus-visible::after) {
+  :global(.row :is(h3, h4) a:focus-visible::after) {
     outline: 3px solid var(--accent-ink);
     outline-offset: 2px;
     border-radius: 0.4rem;
   }
 
-  :global(.row:hover h3 a) {
+  :global(.row:hover :is(h3, h4) a) {
     text-decoration: underline;
     text-decoration-color: var(--accent);
     text-underline-offset: 0.15em;
@@ -1119,6 +1286,76 @@ const FILTERS = [
   :global(.row .uses) {
     margin-top: var(--space-1);
     color: var(--ink);
+  }
+
+  /* The creator's name in the line under a recipe opens their page. Like "Save" beside it,
+     it's lifted above the row's stretched recipe link so it can be pressed on its own. */
+  :global(.row .meta a),
+  :global(.row .save) {
+    position: relative;
+    z-index: 1;
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-color: var(--field-rule);
+    text-decoration-thickness: 0.08em;
+    text-underline-offset: 0.2em;
+  }
+
+  :global(.row .meta a:hover),
+  :global(.row .save:hover) {
+    color: var(--ink);
+    text-decoration-color: currentColor;
+  }
+
+  /* "Save" keeps a recipe on this device: a quiet word at the end of the line. Once saved
+     it reads "Saved", in ink with a tomato underline, like a filter that's set. */
+  :global(.row .save) {
+    min-height: 1.5rem;
+    margin-left: 0.15em;
+    padding: 0.2rem 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    cursor: pointer;
+  }
+
+  :global(.row .save[aria-pressed='true']) {
+    color: var(--ink);
+    font-weight: 600;
+    text-decoration-color: var(--accent-ink);
+    text-decoration-thickness: 0.12em;
+  }
+
+  :global(.picked .save) {
+    color: var(--ink);
+  }
+
+  /* Ingredient results under headings: "Uses all 3", "Uses 2 of 3". A heading runs the
+     full width, with a rule over every one but the first. */
+  .results :global(li.group) {
+    grid-column: 1 / -1;
+    margin-bottom: calc(-1 * var(--space-4));
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--line);
+  }
+
+  .results :global(li.group:first-child) {
+    padding-top: 0;
+    border-top: 0;
+  }
+
+  .results :global(li.group h3) {
+    margin: 0;
+    font-size: var(--step-0);
+    font-weight: 700;
+    line-height: 1.3;
+  }
+
+  .results :global(li.group h3 span) {
+    margin-left: 0.4em;
+    font-size: var(--step--1);
+    font-weight: 400;
+    color: var(--ink-muted);
   }
 
   .more {
@@ -1153,7 +1390,7 @@ const FILTERS = [
     grid-template-columns: minmax(8rem, 12rem) 1fr;
   }
 
-  .picked :global(.row h3) {
+  .picked :global(.row :is(h3, h4)) {
     font-size: var(--step-1);
   }
 

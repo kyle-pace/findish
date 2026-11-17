@@ -3,7 +3,8 @@
 // (built from data/ if it isn't there), with checks loose enough to survive a weekly crawl.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { closeWords, creatorFor, creatorMatches, ingredientFor, looksLikeAsk, prepare, queryWords, search, searchVideos, stem, understand, words } from './search-core.mjs';
+import { closeWords, creatorFor, creatorMatches, ingredientFor, looksLikeAsk, prepare, queryWords, search, searchVideos, stem, understand, viaIngredient, words, queryFor } from './search-core.mjs';
+import { soleQuery } from './page-state.mjs';
 import { realIndex } from './test-index.mjs';
 
 const index = realIndex();
@@ -343,4 +344,38 @@ test('a question goes to Ask; a dish name that starts like one does not', () => 
   for (const t of ['what can I make with fish and kimchi', 'something quick and vegetarian for dinner', 'how do I make dumplings', 'make it vegetarian please', 'any ideas for leftover rice tonight?', 'i have chicken thighs and rice for dinner'])
     assert.ok(looksLikeAsk(t), t);
   for (const t of ["my mom's chicken soup", 'red braised pork belly', 'any day dal', 'mapo tofu', 'more cheese pizza', 'my best pork dumplings']) assert.ok(!looksLikeAsk(t), t);
+});
+
+// --- links and rows ------------------------------------------------------------------
+
+test('a link with only ?q= finds what typing the sentence finds (the SearchAction hands out such links)', () => {
+  const link = '?q=quick+vegetarian+dinner+without+mushrooms';
+  // What the page does with a fresh link: read the sentence, then search.
+  const u = understand(ready, soleQuery(link));
+  assert.equal(u.diet, 'vegetarian');
+  assert.equal(u.time, 30);
+  assert.ok(u.without.length + u.notWords.length > 0, 'mushrooms are left out');
+  const typed = find({ q: u.q, diet: u.diet, time: u.time, without: u.without, notWords: u.notWords, with: u.with }, { count: true });
+  // Before the fix the link searched the raw words: no diet, no time limit, mushrooms wanted.
+  const raw = find({ q: 'quick vegetarian dinner without mushrooms' });
+  assert.ok(typed > 50, `the sentence finds plenty (${typed})`);
+  assert.ok(!raw.length || raw.some((h) => /mushroom/i.test(h.r.name)), 'the raw words look for mushrooms');
+  assert.notEqual(typed, raw.length);
+  // A link the page wrote itself keeps q as plain words.
+  assert.equal(soleQuery('?q=dinner&diet=vegetarian&time=30'), '');
+});
+
+test('a word that only matched an ingredient is named: "Uses chicken thighs"', () => {
+  const f = { ...blank(), q: 'chicken thighs' };
+  const terms = queryFor(ready, f).terms;
+  const hits = find(f);
+  const named = hits.filter((h) => /chicken/i.test(h.r.name) && /thigh/i.test(h.r.name));
+  for (const h of named.slice(0, 5)) assert.deepEqual(viaIngredient(ready, h.r, terms), [], h.r.name);
+  const quiet = hits.filter((h) => !/thigh/i.test(h.r.name) && viaIngredient(ready, h.r, terms).length);
+  assert.ok(quiet.length > 0, 'some recipes only use them');
+  for (const h of quiet.slice(0, 10)) {
+    const ps = viaIngredient(ready, h.r, terms);
+    for (const p of ps) assert.ok(h.r.pos.has(p), `${h.r.name} uses ${ready.ing[p][1]}`);
+  }
+  assert.deepEqual(viaIngredient(ready, hits[0].r, []), []);
 });

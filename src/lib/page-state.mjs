@@ -1,6 +1,8 @@
 // Small, pure pieces of the search page (src/scripts/search.ts and src/scripts/chat.ts),
 // kept apart from the DOM so `npm test` can run them: the order tags sit in, the words that
-// go in the address, the tab's title, and when Enter may send what's typed to Ask.
+// go in the address, the tab's title, when Enter may send what's typed to Ask, the order
+// results are put in, the "Narrow it" line, and the search box's completions. (What the
+// page keeps on the device is in kept.mjs.)
 
 /** What's typed, ready for the address: spaces tidied, and no punctuation left on the end ("mapo tofu." -> "mapo tofu"). */
 export function cleanQ(text) {
@@ -104,4 +106,92 @@ export function askKey(search) {
 /** What Ask is sent: each question as typed, each earlier answer as only the search the page showed for it. */
 export function askMessages(turns) {
   return turns.map((t) => (t.role === 'user' ? { role: 'user', content: t.content } : { role: 'assistant', showed: t.showed || '' }));
+}
+
+/**
+ * The words of a link like /?q=quick+vegetarian+dinner (what the site's SearchAction hands
+ * out), when `q` is the only thing the address searches for: those are read as a typed
+ * sentence, so the link finds what typing it would. '' when the address also holds tags or
+ * filters (then `q` is just the words, as the page itself wrote it). Ask's switch and
+ * campaign tags don't count as part of the search.
+ */
+export function soleQuery(search) {
+  const p = new URLSearchParams(String(search ?? '').replace(/^\?/, ''));
+  let q = '';
+  for (const [k, v] of p) {
+    if (k === 'q') q = v;
+    else if (k !== 'chat' && !k.startsWith('utm_') && v) return '';
+  }
+  return cleanQ(q);
+}
+
+/**
+ * Results in the order asked for. '' leaves the search's own order (best match). 'quickest':
+ * shortest time first, recipes that give no time last. 'newest': found most recently first.
+ * Equal ones keep the search's order.
+ */
+export function sortHits(hits, order) {
+  if (order === 'quickest') return [...hits].sort((a, b) => (a.r.min ?? 1e9) - (b.r.min ?? 1e9));
+  if (order === 'newest') return [...hits].sort((a, b) => (a.r.added < b.r.added ? 1 : a.r.added > b.r.added ? -1 : 0));
+  return hits;
+}
+
+/** "Uses all 3", "Uses 2 of 3": the heading over ingredient results that use `used` of the `total` ingredients picked. */
+export function coverLabel(used, total) {
+  return used >= total ? `Uses ${total === 2 ? 'both' : `all ${total}`}` : `Uses ${used} of ${total}`;
+}
+
+/**
+ * Ways to narrow the results on the page, from the results themselves: up to three
+ * cuisines, "30 minutes or less" (or an hour), and vegetarian. `rows` is each result's
+ * { cuisine, min }; `set` says which filters are already chosen; `vegetarian` is how many
+ * a vegetarian search would keep. A way that keeps everything or nothing isn't offered,
+ * and a short list gets none.
+ */
+export function narrowFacets(rows, { set = {}, vegetarian = 0, least = 6 } = {}) {
+  const total = rows.length;
+  if (total < least) return [];
+  const out = [];
+  const useful = (n) => n > 0 && n < total;
+  if (!set.cuisine) {
+    const by = new Map();
+    for (const r of rows) if (r.cuisine) by.set(r.cuisine, (by.get(r.cuisine) || 0) + 1);
+    const top = [...by.entries()].filter(([, n]) => useful(n)).sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : 1));
+    for (const [c, n] of top.slice(0, 3)) out.push({ kind: 'cuisine', value: c, label: c, n });
+  }
+  if (!set.time) {
+    for (const t of [30, 60]) {
+      const n = rows.filter((r) => r.min != null && r.min <= t).length;
+      if (!useful(n)) continue;
+      out.push({ kind: 'time', value: String(t), label: t === 60 ? '1 hour or less' : `${t} minutes or less`, n });
+      break;
+    }
+  }
+  if (!set.diet && useful(vegetarian)) out.push({ kind: 'diet', value: 'vegetarian', label: 'vegetarian', n: vegetarian });
+  return out;
+}
+
+/**
+ * Dish phrases that finish what's being typed ("map" -> "mapo tofu"), from the index's list
+ * (most common first). Ones that start with it come before ones where a later word does.
+ * `at` is where the typed part sits in the phrase, for marking it.
+ */
+export function completions(phrases, text, max = 3) {
+  const typed = String(text ?? '')
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .trimStart();
+  if (typed.trim().length < 2) return [];
+  const starts = [];
+  const inside = [];
+  for (const phrase of phrases || []) {
+    if (phrase === typed.trim()) continue;
+    if (phrase.startsWith(typed)) starts.push({ phrase, at: 0 });
+    else {
+      const at = phrase.indexOf(` ${typed}`);
+      if (at >= 0) inside.push({ phrase, at: at + 1 });
+    }
+    if (starts.length >= max) break;
+  }
+  return [...starts, ...inside].slice(0, max).map((c) => ({ ...c, length: typed.trimEnd().length }));
 }

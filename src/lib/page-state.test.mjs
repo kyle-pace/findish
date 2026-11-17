@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { cleanQ, tagOrder, titleFor, dishName, ignoredSentence, linkOnlyTyped, goesToAsk, askKey, askMessages } from './page-state.mjs';
+import { cleanQ, tagOrder, titleFor, dishName, ignoredSentence, linkOnlyTyped, goesToAsk, askKey, askMessages, soleQuery, sortHits, coverLabel, narrowFacets, completions } from './page-state.mjs';
 
 test('punctuation on the end of a search is not kept in the address', () => {
   assert.equal(cleanQ('mapo tofu.'), 'mapo tofu');
@@ -85,4 +85,69 @@ test('earlier answers go back to Ask as the search shown, never as text', () => 
     { role: 'assistant', showed: 'with=tofu&course=soup' },
     { role: 'user', content: 'make it vegetarian' },
   ]);
+});
+
+test('a link with only ?q= is read as a typed sentence; one with tags or filters is not', () => {
+  assert.equal(soleQuery('?q=quick+vegetarian+dinner+without+mushrooms'), 'quick vegetarian dinner without mushrooms');
+  assert.equal(soleQuery('?q=mapo+tofu.&chat=1&utm_source=newsletter'), 'mapo tofu');
+  assert.equal(soleQuery('?q=dinner&diet=vegetarian'), '', 'the page wrote this one: q is just the words');
+  assert.equal(soleQuery('?q=tofu&site=woks'), '');
+  assert.equal(soleQuery('?q=tofu&pick=woks%3A%2Fx%2F'), '');
+  assert.equal(soleQuery('?with=tofu'), '');
+  assert.equal(soleQuery(''), '');
+  assert.equal(soleQuery('?q=tofu&time='), 'tofu', 'an empty parameter is not a filter');
+});
+
+test('order: quickest puts recipes with no time last, newest goes by the day found, and ties keep their place', () => {
+  const hit = (name, min, added) => ({ r: { name, min, added } });
+  const hits = [hit('a', 40, '2026-11-01'), hit('b', null, '2026-11-10'), hit('c', 15, ''), hit('d', 40, '2026-11-10')];
+  assert.deepEqual(sortHits(hits, 'quickest').map((h) => h.r.name), ['c', 'a', 'd', 'b']);
+  assert.deepEqual(sortHits(hits, 'newest').map((h) => h.r.name), ['b', 'd', 'a', 'c']);
+  assert.equal(sortHits(hits, ''), hits, 'best match is the search\'s own order');
+  assert.deepEqual(hits.map((h) => h.r.name), ['a', 'b', 'c', 'd'], 'the list handed in is not changed');
+});
+
+test('ingredient results are headed by how many of the picked ingredients they use', () => {
+  assert.equal(coverLabel(3, 3), 'Uses all 3');
+  assert.equal(coverLabel(2, 3), 'Uses 2 of 3');
+  assert.equal(coverLabel(1, 3), 'Uses 1 of 3');
+  assert.equal(coverLabel(2, 2), 'Uses both');
+  assert.equal(coverLabel(1, 2), 'Uses 1 of 2');
+});
+
+test('"Narrow it" offers cuisines, a time and vegetarian from the results, and only ones that narrow', () => {
+  const rows = [
+    ...Array(8).fill({ cuisine: 'Chinese', min: 20 }),
+    ...Array(2).fill({ cuisine: 'Japanese', min: 45 }),
+    { cuisine: '', min: null },
+  ];
+  const said = (f) => f.map((x) => `${x.label} (${x.n})`);
+  assert.deepEqual(said(narrowFacets(rows, { vegetarian: 1 })), ['Chinese (8)', 'Japanese (2)', '30 minutes or less (8)', 'vegetarian (1)']);
+  // What's already chosen isn't offered again.
+  assert.deepEqual(said(narrowFacets(rows, { set: { cuisine: 'Chinese', time: 30 }, vegetarian: 1 })), ['vegetarian (1)']);
+  assert.deepEqual(said(narrowFacets(rows, { set: { diet: 'vegan' }, vegetarian: 1 })), ['Chinese (8)', 'Japanese (2)', '30 minutes or less (8)']);
+  // Everything is Chinese and quick: neither would narrow anything.
+  assert.deepEqual(narrowFacets(Array(9).fill({ cuisine: 'Chinese', min: 20 }), { vegetarian: 9 }), []);
+  // Nothing under 30 minutes: an hour is offered instead.
+  assert.deepEqual(said(narrowFacets([...Array(5).fill({ cuisine: '', min: 50 }), ...Array(5).fill({ cuisine: '', min: 90 })])), ['1 hour or less (5)']);
+  // A short list needs no narrowing.
+  assert.deepEqual(narrowFacets(rows.slice(6), { vegetarian: 1 }), []);
+  // At most three cuisines, biggest first.
+  const many = ['A', 'A', 'A', 'B', 'B', 'C', 'D', 'E'].map((cuisine) => ({ cuisine, min: null }));
+  assert.deepEqual(narrowFacets(many).map((f) => f.value), ['A', 'B', 'C']);
+});
+
+test('completions finish what is typed, starts first, and mark where the typed part sits', () => {
+  const phrases = ['fried rice', 'mapo tofu', 'egg fried rice', 'fried chicken', 'tofu soup', 'french toast'];
+  assert.deepEqual(completions(phrases, 'fri').map((c) => c.phrase), ['fried rice', 'fried chicken', 'egg fried rice']);
+  assert.deepEqual(completions(phrases, 'Tofu'), [
+    { phrase: 'tofu soup', at: 0, length: 4 },
+    { phrase: 'mapo tofu', at: 5, length: 4 },
+  ]);
+  assert.deepEqual(completions(phrases, 'f'), [], 'one letter is too little to go on');
+  assert.deepEqual(completions(phrases, 'mapo tofu'), [], 'nothing to finish');
+  assert.deepEqual(completions(phrases, 'fried  ri').map((c) => c.phrase), ['fried rice', 'egg fried rice']);
+  assert.deepEqual(completions(phrases, 'fr', 2).map((c) => c.phrase), ['fried rice', 'fried chicken']);
+  assert.deepEqual(completions(undefined, 'fr'), []);
+  assert.deepEqual(completions(phrases, 'ofu'), [], 'only the start of a word matches');
 });

@@ -82,6 +82,8 @@ export type Query = {
   ignored: string[];
   /** Something was typed, but none of it is a word. */
   none: boolean;
+  /** The words as the search matches them (for viaIngredient). */
+  terms: unknown[];
 };
 
 export type SearchOptions = {
@@ -130,6 +132,7 @@ export function queryFor(ready: Ready, f: Filters, opts?: SearchOptions): Query;
 export function understand(ready: Ready, text: string, opts?: { list?: boolean }): Understood;
 export function blankUnderstood(q?: string): Understood;
 export function looksLikeAsk(text: string): boolean;
+export function viaIngredient(ready: Ready, r: Recipe, terms: unknown[]): number[];
 export function covers(ready: Ready, chosen: number[], p: number): boolean;
 export function search(ready: Ready, f: Filters, opts: SearchOptions & { count: true }): number;
 export function search(ready: Ready, f: Filters, opts?: SearchOptions): Hit[];

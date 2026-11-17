@@ -849,6 +849,21 @@ function textScore(ready, r, terms, loose = false) {
   return { score: score - missed, named: named > 0, whole };
 }
 
+/**
+ * The ingredients of `r` that a query word matched when nothing else about the recipe did
+ * (not its name, keywords or cuisine), for the page's "Uses chicken thighs" line. `terms`
+ * is queryFor()'s `terms`.
+ */
+export function viaIngredient(ready, r, terms) {
+  const out = [];
+  for (const t of terms || []) {
+    if (!t.ing || wordScore(ready, r, t) !== 2) continue;
+    const p = t.ing.find((x) => r.own.includes(x)) ?? t.ing.find((x) => r.pos.has(x));
+    if (p != null && !out.includes(p)) out.push(p);
+  }
+  return out;
+}
+
 /** Whether an ingredient you're using covers a recipe's ingredient: pork covers pork belly. */
 export function covers(ready, chosen, p) {
   return chosen.includes(p) || ready.ing[p][3].some((parent) => chosen.includes(parent));

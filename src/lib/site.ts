@@ -14,6 +14,7 @@ export const SITE = {
   footer: [
     { href: '/', label: 'Search' },
     { href: '/?new=1', label: 'New this week' },
+    { href: '/?saved=1', label: 'Saved' },
     { href: '/about/', label: 'About' },
     { href: '/browse/', label: 'Browse' },
     { href: '/creators/', label: 'Creators' },

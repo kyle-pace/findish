@@ -26,6 +26,7 @@ import { isNotRecipe } from './not-recipes.mjs';
 import { pack } from '../src/lib/index-format.mjs';
 import { floorProblems } from './index-floor.mjs';
 import { KINDS, supportKind } from './support.mjs';
+import { dishPhrases } from './phrases.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const out = join(root, 'public/index.json');
@@ -301,6 +302,9 @@ const index = {
   diet,
   // Things to leave out that aren't one ingredient: [id, name, flag, ...other names] (scripts/diet.mjs).
   groups: GROUPS,
+  // Common dish phrases from recipe names, most common first, for the search box's
+  // completions and the "Related:" line (scripts/phrases.mjs).
+  phrases: dishPhrases(recipes.map((r) => r[1])),
   ing,
   recipes,
 };

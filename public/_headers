@@ -1,0 +1,19 @@
+# Security headers for every page and file Cloudflare serves from this folder (added
+# 2026-11-17). They don't reach /mcp or /api/*, which the Worker answers itself. The build
+# adds the long cache rule for /_astro/* below these.
+#
+# The Content-Security-Policy is the safe half only: nobody may frame the site, change
+# its base address, post its forms elsewhere or embed plugins. It does not limit scripts,
+# images or connections yet: the pages use inline scripts, photos come from every recipe
+# site, and Cloudflare adds its own script, so that half needs Kyle's decisions first
+# (see AGENTS.md, "Security headers").
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Strict-Transport-Security: max-age=31536000
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), browsing-topics=()
+  X-Frame-Options: DENY
+  Content-Security-Policy: base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'
+
+/manifest.webmanifest
+  Content-Type: application/manifest+json

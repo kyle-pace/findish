@@ -98,6 +98,8 @@ const STOP = new Set(
     .map(norm),
 );
 export const isFiller = (w) => STOP.has(w);
+// The state an ingredient is in, in its name: "fresh coriander", "coriander leaves", "sesame seeds".
+const FORM = new Set('fresh dried ground whole raw frozen baby leaf seed'.split(' ').map(norm));
 
 // Asking for a sauce or a drink by name: then they aren't moved down the list.
 const SAUCY = new Set(
@@ -203,15 +205,26 @@ export function* prepareSteps(index, every = Infinity) {
   }
   // A site's own name finds its recipes too, a long way down the list.
   const srcWords = new Map(index.sources.map((s) => [s.id, words(s.name)]));
-  // Ingredient names are words too ("scallion" finds recipes that use scallions).
+  // Ingredient names are words too ("scallion" finds recipes that use scallions), when the
+  // search has the whole name: "green onion" finds what uses green onions, but "salad" alone
+  // doesn't find them for being called "salad onions" somewhere, and "chicken" doesn't find
+  // chicken broth concentrate. (Chicken thighs still count as chicken: a recipe lists its
+  // ingredients' parents.) ingWord: word -> [position, the name's words][]. An ingredient's
+  // other names count only when they read as a name ("scallions", "spring onions"), not as
+  // a note ("chicken for stir fry").
   const ingWord = new Map();
   ingNames.forEach((names, p) => {
     if (!ingUsed[p]) return;
-    for (const w of new Set(names.join(' ').split(' '))) {
-      if (!w) continue;
-      (ingWord.get(w) || ingWord.set(w, []).get(w)).push(p);
-      count(w, ingUsed[p]);
-    }
+    const seen = new Set();
+    names.forEach((name, k) => {
+      const ws = name.split(' ').filter(Boolean);
+      for (const w of ws) if (!seen.has(w)) seen.add(w), count(w, ingUsed[p]);
+      if (!ws.length || (k > 0 && ws.some((w) => STOP.has(w)))) return;
+      // Words that say what state it's in aren't needed: "coriander" is "fresh coriander".
+      const named = [...new Set(ws.filter((w) => !STOP.has(w)))];
+      const need = named.filter((w) => !FORM.has(w));
+      for (const w of named) (ingWord.get(w) || ingWord.set(w, []).get(w)).push([p, need.length ? need : named]);
+    });
   });
 
   const creators = [];
@@ -422,11 +435,22 @@ export function closeWords(ready, w, { min = 2, real = false } = {}) {
 }
 
 /** How a query word is matched: as a whole word, or also as the start of one (still being typed). */
-const term = (ready, w, prefix = false) => ({ w, prefix: prefix && w.length > 1, raw: unspaced(w), ing: ready.ingWord.get(w) || null });
+/**
+ * How a query word is matched: as a whole word, or also as the start of one (still being
+ * typed). `all` is every word of the search: an ingredient counts for a word only when the
+ * search has all the words of one of its names (see ingWord in prepareSteps).
+ */
+const term = (ready, w, prefix = false, all = [w]) => {
+  let ing = null;
+  for (const [p, need] of ready.ingWord.get(w) || []) {
+    if (need.every((x) => all.includes(x)) && !(ing ||= []).includes(p)) ing.push(p);
+  }
+  return { w, prefix: prefix && w.length > 1, raw: unspaced(w), ing };
+};
 
 /** How many recipes and videos have every one of these words (in the name only, with `titles`). */
 function countAll(ready, ws, titles = false) {
-  const ts = ws.map((w) => term(ready, w));
+  const ts = ws.map((w) => term(ready, w, false, ws));
   let n = 0;
   for (const r of ready.recipes) if (ts.every((t) => wordScore(ready, r, t, titles) > 0)) n++;
   for (const v of ready.videos) if (ts.every((t) => v.title.includes(t.w) || (t.raw && v.raw.includes(t.w)))) n++;
@@ -555,7 +579,7 @@ export function queryWords(ready, text, { exact = false, typing = false, lenient
 
   const result = {
     words: ws,
-    terms: ws.map((w, n) => term(ready, w, prefixed.has(w) || (typing && n === ws.length - 1))),
+    terms: ws.map((w, n) => term(ready, w, prefixed.has(w) || (typing && n === ws.length - 1), ws)),
     fixes,
     ignored,
     // Something was typed, but nothing in it is a word ("!!!"): that finds nothing, not everything.
@@ -894,7 +918,7 @@ function wordScore(ready, r, t, titles = false) {
  * the name being exactly the words (+6). `named` says whether any word was in the name.
  */
 function textScore(ready, r, terms, loose = false) {
-  if (!terms.length) return { score: 1, named: false, whole: false };
+  if (!terms.length) return { score: 1, named: false, whole: false, all: true };
   let score = 0;
   let missed = 0;
   let misses = 0;
@@ -928,7 +952,7 @@ function textScore(ready, r, terms, loose = false) {
     whole = inCore === terms.length && r.core.length === inCore;
     if (whole) score += 6;
   }
-  return { score: score - missed, named: named > 0, whole };
+  return { score: score - missed, named: named > 0, whole, all: named === terms.length };
 }
 
 /**
@@ -1056,7 +1080,9 @@ export function search(ready, f, opts = {}) {
       if (one && r.own.length <= 2) score -= 3;
       if (r.course === 'main' && !f.course) score += 1;
     }
-    hits.push({ r, score, used, missing });
+    // `named`: every word is in the recipe's name (not just an ingredient or a keyword), for
+    // orders that set the score aside (quickest, newest) to keep the dish itself on top.
+    hits.push({ r, score, used, missing, named: t.all });
   }
   if (opts.count) return n;
   const byUse = !terms.length && chosen.length > 1;

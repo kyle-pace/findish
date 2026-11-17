@@ -144,8 +144,11 @@ export function soleQuery(search) {
  * Equal ones keep the search's order.
  */
 export function sortHits(hits, order) {
-  if (order === 'quickest') return [...hits].sort((a, b) => (a.r.min ?? 1e9) - (b.r.min ?? 1e9));
-  if (order === 'newest') return [...hits].sort((a, b) => (a.r.added < b.r.added ? 1 : a.r.added > b.r.added ? -1 : 0));
+  // Recipes with the words in their name come first, then the ones found by an ingredient
+  // or a keyword: the quickest "dumplings" is a dumpling, not a bento that uses wrappers.
+  const named = (a, b) => Number(b.named !== false) - Number(a.named !== false);
+  if (order === 'quickest') return [...hits].sort((a, b) => named(a, b) || (a.r.min ?? 1e9) - (b.r.min ?? 1e9));
+  if (order === 'newest') return [...hits].sort((a, b) => named(a, b) || (a.r.added < b.r.added ? 1 : a.r.added > b.r.added ? -1 : 0));
   return hits;
 }
 

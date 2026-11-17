@@ -4,7 +4,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { closeWords, creatorFor, creatorMatches, ingredientFor, looksLikeAsk, prepare, queryWords, search, searchVideos, stem, understand, viaIngredient, words, queryFor } from './search-core.mjs';
-import { soleQuery } from './page-state.mjs';
+import { soleQuery, sortHits } from './page-state.mjs';
 import { realIndex } from './test-index.mjs';
 import { SLOW_SENTENCES } from './slow-sentences.mjs';
 
@@ -131,7 +131,7 @@ test('a real word one letter off is fixed when the search would find almost noth
   const q = queryWords(ready, 'pad tai');
   assert.deepEqual(q.words, ['pad', 'thai']);
   assert.deepEqual(q.fixes, [['tai', 'thai']]);
-  assert.ok(find({ q: 'pad tai' }).length > 50);
+  assert.ok(find({ q: 'pad tai' }).length > 30);
   assert.deepEqual(queryWords(ready, 'pad tai', { exact: true }).words, ['pad', 'tai'], '"search for exactly this" turns it off');
 });
 
@@ -437,4 +437,37 @@ test('"veggie" means vegetarian, but not beside meat, and "veggie burger" keeps 
   assert.equal(burger.q, 'veggie burger');
   assert.equal(said('quick veggie dinner').diet, 'vegetarian');
   assert.equal(said('vegan chicken').diet, 'vegan');
+});
+
+test('a word finds an ingredient only by its whole name, not a word of one of its other names', () => {
+  const uses = (q, id) => find({ q }).filter((h) => !h.named && h.r.pos.has(ing(id))).length;
+  // "salad onions" is another name for green onions; "salad" alone isn't asking for them.
+  const salad = find({ q: 'salad' });
+  assert.ok(salad.length < 600, `salad: ${salad.length}`);
+  assert.ok(salad.filter((h) => h.named).length > salad.length * 0.7);
+  assert.ok(find({ q: 'stir fry' }).length < 400);
+  assert.ok(find({ q: 'bun' }).length < 100);
+  assert.ok(!names(find({ q: 'tacos' }), 200).some((n) => /char siu/i.test(n)));
+  // Chicken broth concentrate isn't chicken; chicken thighs are.
+  const chicken = find({ q: 'chicken' });
+  assert.ok(chicken.length < 1000, `chicken: ${chicken.length}`);
+  assert.ok(chicken.some((h) => !h.named && h.r.pos.has(ing('chicken-thighs'))));
+  // The whole name still finds what uses it, by any of its names, and in any state.
+  for (const q of ['scallions', 'green onion', 'spring onions', 'coriander', 'fish sauce', 'pak choi', 'aubergine']) assert.ok(find({ q }).length > 50, q);
+  assert.ok(uses('scallions', 'green-onion') > 500);
+  assert.ok(uses('fish sauce', 'fish-sauce') > 100);
+});
+
+test('the quickest and the newest keep recipes named for the search above ones that only use it', () => {
+  for (const q of ['dumplings', 'curry', 'chicken', 'salad']) {
+    for (const order of ['quickest', 'newest']) {
+      const sorted = sortHits(find({ q }), order);
+      const firstOther = sorted.findIndex((h) => !h.named);
+      assert.ok(firstOther === -1 || sorted.slice(firstOther).every((h) => !h.named), `${q} ${order}`);
+      const top = sorted.slice(0, 8);
+      for (const h of top) assert.ok(words(h.r.name).some((w) => words(q).includes(w)), `${q} ${order}: ${h.r.name}`);
+    }
+  }
+  const quick = sortHits(find({ q: 'dumplings' }), 'quickest').filter((h) => h.named);
+  for (let i = 1; i < quick.length; i++) assert.ok((quick[i - 1].r.min ?? 1e9) <= (quick[i].r.min ?? 1e9));
 });

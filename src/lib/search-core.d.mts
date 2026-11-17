@@ -43,7 +43,7 @@ export type Recipe = {
   other: string[];
 };
 
-export type Hit = { r: Recipe; score: number; used: number[]; missing: number };
+export type Hit = { r: Recipe; score: number; used: number[]; missing: number; /** Every word of the search is in the recipe's name. */ named?: boolean };
 
 export type Understood = {
   q: string;

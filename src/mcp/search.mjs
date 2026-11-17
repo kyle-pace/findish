@@ -23,6 +23,8 @@ import {
   words,
 } from '../lib/search-core.mjs';
 
+import { sortHits } from '../lib/page-state.mjs';
+
 export { words };
 export const SITE = 'https://findish.now/';
 
@@ -231,8 +233,8 @@ export function searchRecipes(ready, opts = {}) {
   if (Q.ignored.length) notes.push(`Nothing in the index has the word${Q.ignored.length > 1 ? 's' : ''} ${Q.ignored.join(', ')}, so ${Q.ignored.length > 1 ? 'they were' : 'it was'} ignored.`);
 
   const order = (hits) => {
-    if (sort === 'quickest') return [...hits].sort((a, b) => (a.r.min ?? 1e9) - (b.r.min ?? 1e9));
-    if (sort === 'newest') return [...hits].sort((a, b) => (a.r.added < b.r.added ? 1 : a.r.added > b.r.added ? -1 : 0));
+    // The same order as the page (page-state's sortHits): recipes named for the words first.
+    if (sort === 'quickest' || sort === 'newest') return sortHits(hits, sort);
     if (sort === 'random') return shuffle([...hits]);
     return hits;
   };

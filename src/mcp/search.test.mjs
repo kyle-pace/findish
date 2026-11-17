@@ -326,3 +326,10 @@ test('a 200-character query made to be slow comes back in well under 50 ms', asy
     assert.ok(took < 50, `${took.toFixed(0)} ms for ${JSON.stringify(query.slice(0, 40))}…`);
   }
 });
+
+test('quickest puts recipes named for the words before ones that only use them', () => {
+  // "pork" is in one name; the 20-minute Pad See Ew only uses it.
+  const r = searchRecipes(ready, { query: 'pork', sort: 'quickest' });
+  assert.equal(r.recipes[0].name, 'Red Braised Pork Belly');
+  assert.ok(names(r).includes('Pad See Ew'));
+});

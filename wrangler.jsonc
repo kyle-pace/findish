@@ -11,11 +11,13 @@
   // moved from Porkbun on 2026-11-16). The old kylepace.dev/recipe-search/ addresses are
   // forwarded here by the hub (kyle-pace/kylepace.dev, public/_redirects).
   // Rate limits for Ask (src/pages/api/chat.ts), so the chat can't run up a bill: 6 messages
-  // a minute per visitor and 60 a minute for everyone together. Over either, the reply is a
-  // plain search instead. The Anthropic workspace's spend limit is the last stop.
+  // a minute per visitor (an IPv6 visitor is counted by their /64 block) and 20 a minute for
+  // everyone together (lowered from 60 on 2026-11-17, to bound a bad day's bill). Over
+  // either, or if either binding is missing, the reply is a plain search instead. The
+  // Anthropic workspace's spend limit is the last stop.
   "ratelimits": [
     { "name": "CHAT_PER_VISITOR", "namespace_id": "1001", "simple": { "limit": 6, "period": 60 } },
-    { "name": "CHAT_EVERYONE", "namespace_id": "1002", "simple": { "limit": 60, "period": 60 } }
+    { "name": "CHAT_EVERYONE", "namespace_id": "1002", "simple": { "limit": 20, "period": 60 } }
   ],
   "routes": [
     { "pattern": "findish.now", "custom_domain": true }

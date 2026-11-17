@@ -3,7 +3,8 @@
 // Plain functions over the index scripts/build-index.mjs writes. No page, no network: `npm
 // test` runs them (src/lib/search-core.test.mjs, src/lib/ranking.test.mjs).
 //
-//   prepare(index)            get the index ready to search, once
+//   prepare(index)            get the index ready to search, once (prepareSteps: a part at a time)
+//   addVideos(ready, rows)    the video rows, when they come after the recipes (the page)
 //   understand(ready, text)   plain phrases -> tags and filters ("no pork", "under 30 minutes")
 //   queryWords(ready, text)   the words a search matches on, with typos fixed
 //   search(ready, filters)    recipes, best first, creators taking turns
@@ -135,6 +136,18 @@ const plain = (text) => fold(text).split(SPLIT).filter(Boolean).join(' ');
  * and every word the index knows (for fixing typos).
  */
 export function prepare(index) {
+  const steps = prepareSteps(index);
+  let step = steps.next();
+  while (!step.done) step = steps.next();
+  return step.value;
+}
+
+/**
+ * prepare(), a part at a time: stops after every `every` recipes, so a page can let the
+ * browser breathe in between instead of holding it for the whole index (a slow phone would
+ * ignore taps for a quarter of a second). Run it to the end for what prepare() returns.
+ */
+export function* prepareSteps(index, every = Infinity) {
   // Things to leave out that aren't one ingredient ("dairy") sit after the real ingredients,
   // so a tag, an address and a `without` list can hold either kind.
   const groups = index.groups || [];
@@ -146,7 +159,10 @@ export function prepare(index) {
   const vocab = new Map();
   const count = (w, n = 1) => vocab.set(w, (vocab.get(w) || 0) + n);
 
-  const recipes = index.recipes.map((row, i) => {
+  const recipes = [];
+  for (let i = 0; i < index.recipes.length; i++) {
+    if (i && i % every === 0) yield i;
+    const row = index.recipes[i];
     const [s, name, url, min, cuisine, pos, own, img, kw, opens = 0, course = '', added = '', flags = 0] = row;
     const src = index.sources[s];
     for (const p of pos) ingUsed[p]++;
@@ -158,7 +174,7 @@ export function prepare(index) {
     for (const w of new Set(title)) count(w);
     for (const w of other) if (!title.includes(w)) count(w);
     const text = fold(`${name} ${kw}`);
-    return {
+    recipes.push({
       i,
       src,
       name,
@@ -183,8 +199,8 @@ export function prepare(index) {
       // Only kept when the name has Chinese, Japanese, Korean or Thai in it.
       raw: unspaced(text) ? text : '',
       howTo: /^how to\b/i.test(name),
-    };
-  });
+    });
+  }
   // A site's own name finds its recipes too, a long way down the list.
   const srcWords = new Map(index.sources.map((s) => [s.id, words(s.name)]));
   // Ingredient names are words too ("scallion" finds recipes that use scallions).
@@ -232,14 +248,7 @@ export function prepare(index) {
     return id;
   });
 
-  const videos = index.videos.rows.map((row, i) => {
-    const title = words(row[1]);
-    for (const w of new Set(title)) count(w);
-    const text = fold(row[1]);
-    return { i, row, title, phrase: ` ${title.filter((w) => !STOP.has(w)).join(' ')} `, raw: unspaced(text) ? text : '', creator: channelCreator[row[0]], flags: row[6] || 0 };
-  });
-
-  return {
+  const ready = {
     index,
     ing,
     real,
@@ -249,7 +258,7 @@ export function prepare(index) {
     ingWord,
     srcWords,
     recipes,
-    videos,
+    videos: [],
     // Creators with something to find; `everyone` also has paused sites with nothing here yet.
     creators: creators.filter((c) => c.recipes || c.videos),
     everyone: creators,
@@ -259,6 +268,28 @@ export function prepare(index) {
     cache: new Map(),
     names: null,
   };
+  addVideos(ready, index.videos.rows);
+  return ready;
+}
+
+/**
+ * The videos' words, once the index has its video rows. prepare() does this itself when
+ * the rows are there; the page gets them in a second file after the recipes
+ * (src/lib/index-format.mjs) and calls this when it lands. Until then a search finds
+ * recipes only, and typo fixing goes by the recipes' words alone.
+ */
+export function addVideos(ready, rows) {
+  if (ready.videos.length) return; // already here: their words are counted once
+  const { vocab, channelCreator } = ready;
+  ready.index.videos.rows = rows;
+  ready.videos = rows.map((row, i) => {
+    const title = words(row[1]);
+    for (const w of new Set(title)) vocab.set(w, (vocab.get(w) || 0) + 1);
+    const text = fold(row[1]);
+    return { i, row, title, phrase: ` ${title.filter((w) => !STOP.has(w)).join(' ')} `, raw: unspaced(text) ? text : '', creator: channelCreator[row[0]], flags: row[6] || 0 };
+  });
+  // What was worked out without them (which spelling finds the most) is worked out again.
+  ready.cache.clear();
 }
 
 // ---------------------------------------------------------------------------------------

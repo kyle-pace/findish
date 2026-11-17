@@ -693,6 +693,8 @@ function render() {
   if (blank) {
     resultsEl.innerHTML = '';
     moreBtn.hidden = true;
+    // A note belongs to the search it was for; back home, it goes with the results.
+    $('note').hidden = true;
     statusEl.innerHTML = '';
     return;
   }

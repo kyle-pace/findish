@@ -862,12 +862,33 @@ function renderNote() {
   const note = want.kind === 'cuisine' ? notes.cuisines[want.id] : notes.ingredients[want.id];
   if (!note) return void (box.hidden = true);
   const data_ = `data-note="${want.kind}" data-note-id="${esc(want.id)}"`;
-  box.innerHTML = `<h2 id="note-title">${esc(want.kind === 'cuisine' ? note.name : want.label)}</h2>
+  // A native show/hide: open or closed, it stays the way it was left, on later searches too.
+  box.innerHTML = `<details id="note-details"${notesOpen() ? ' open' : ''}>
+    <summary><span id="note-title">About ${esc(want.kind === 'cuisine' ? note.name : want.label)}</span></summary>
     <p>${esc(note.line)}</p>
     <p class="note-more"><a href="${esc(note.page)}" ${data_} data-note-link="world-cuisine">Explore ${esc(
       want.kind === 'cuisine' ? note.name : want.label.toLowerCase(),
-    )} on World cuisine</a>. Text from <a href="${esc(note.wiki)}" ${data_} data-note-link="wikipedia">Wikipedia</a>.</p>`;
+    )} on World cuisine</a>. Text from <a href="${esc(note.wiki)}" ${data_} data-note-link="wikipedia">Wikipedia</a>.</p>
+  </details>`;
   box.hidden = false;
+  $('note-details').addEventListener('toggle', (e) => {
+    const open = (e.target as HTMLDetailsElement).open;
+    if (open === notesOpen()) return; // the same as before: nothing to save or count
+    try {
+      localStorage.setItem(NOTES_KEY, open ? 'open' : 'closed');
+    } catch {}
+    track('Changed Notes Setting', { notes_shown: open, note_kind: want.kind });
+  });
+}
+
+/** Whether notes start open. Kept in this browser only (localStorage), like the display settings. */
+const NOTES_KEY = 'findish-notes';
+function notesOpen(): boolean {
+  try {
+    return localStorage.getItem(NOTES_KEY) !== 'closed';
+  } catch {
+    return true;
+  }
 }
 
 function renderAlso() {

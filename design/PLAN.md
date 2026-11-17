@@ -97,3 +97,4 @@ Kyle wanted people to be able to search for a cuisine, or an ingredient, as the 
 
 - A cuisine is a suggestion like a creator or an ingredient, and becomes a tag with a basil outline (between an ingredient's fill and a creator's tomato ring).
 - When the search is exactly one cuisine or one ingredient, a quiet strip under the count: its name, one sentence from World cuisine (from Wikipedia), and links to both. A field-rule line on the left, not a panel or card, so it reads as a note and not a result. Two ingredients, a dish name, a creator or anything left out: no strip.
+- It's a show/hide ("About Thai cuisine"), so anyone who'd rather not see notes can close it to one quiet line; it stays closed on later searches in that browser.

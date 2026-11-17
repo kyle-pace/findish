@@ -37,9 +37,10 @@ npm run preview   # builds, then runs it the way Cloudflare will
 | --- | --- |
 | The page | `src/pages/index.astro` |
 | The page's script: the box, tags, suggestions, filters, URL state | `src/scripts/search.ts` |
-| Small pure parts of the page (tag order, cleaning the words, when Enter may go to Ask, reading a `?q=` link as a sentence, the order of results, the "Narrow it" line, completions), with tests | `src/lib/page-state.mjs`, `src/lib/page-state.test.mjs` |
-| What the page keeps on the device and nowhere else (the last 8 searches, the last 8 recipes opened, saved recipes, a saved list as a link), with tests | `src/lib/kept.mjs`, `src/lib/kept.test.mjs`; `localStorage` keys `findish-recent-searches`, `findish-opened`, `findish-saved` |
-| Common dish phrases from recipe names (`index.phrases`), for the box's completions and the "Related" line | `scripts/phrases.mjs`, tests in `scripts/phrases.test.mjs` |
+| Small pure parts of the page (tag order, cleaning the words, when Enter may go to Ask, reading a `?q=` link as a sentence, the order of results, the "Narrow it" line, completions, the filters that are set and the filter sheet's button), with tests | `src/lib/page-state.mjs`, `src/lib/page-state.test.mjs` |
+| What the page keeps on the device and nowhere else (the last 8 searches, the last 8 recipes opened on the search, creator and browse pages, saved recipes, a saved list as a link), with tests | `src/lib/kept.mjs`, `src/lib/kept.test.mjs`; `localStorage` keys `findish-recent-searches`, `findish-opened`, `findish-saved` |
+| Common dish phrases from recipe names (`index.phrases`), for the box's completions and the "Related" line: whole dishes only, from two creators or more | `scripts/phrases.mjs`, tests in `scripts/phrases.test.mjs` |
+| The "Related" line under a dish search (same cuisine, and a shared dish word or main ingredients) | `src/lib/related.mjs`, tests in `src/lib/related.test.mjs` |
 | The search itself (words, typo fixing, understanding a sentence, ranking, videos), shared by the page, the MCP server and Ask | `src/lib/search-core.mjs`; tests in `src/lib/search-core.test.mjs`, and a ranking fixture of everyday dish searches in `src/lib/ranking.test.mjs` |
 | What a recipe has in it that people leave out (vegetarian, vegan, no dairy, no nuts…) and which cuisine it's filed under, both worked out when the index is built | `scripts/diet.mjs`, `scripts/cuisine.mjs` (tests beside them) |
 | The index (generated, not committed) | `public/index.json`, from `scripts/build-index.mjs`: the full index, read by the MCP server, Ask, the build-time pages and Grocery Deals |

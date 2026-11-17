@@ -184,7 +184,7 @@ test('Claude checks a search, then shows it', async () => {
   assert.match(result.top[0], /uses tofu, scallions|uses scallions, tofu/i);
   assert.ok(!JSON.stringify(result).includes('http'));
   assert.equal(claude.sent[0].system, SYSTEM);
-  assert.equal(claude.sent[0].tools, toolsFor(ready));
+  assert.deepEqual(claude.sent[0].tools, toolsFor(ready));
   assert.ok(claude.sent[0].opts.timeoutMs <= LIMITS.callMs);
 });
 

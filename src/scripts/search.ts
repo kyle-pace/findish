@@ -69,8 +69,30 @@ type Hit = { r: Recipe; score: number; used: number[]; missing: number };
 
 const PAGE = 24;
 const TIMES = [15, 30, 45, 60];
-const TRY = ['mapo tofu', 'pad thai', 'dumplings', 'green curry', 'fried rice', 'scones'];
+// The home page's ideas are drawn at random from these on every visit, so a refresh brings
+// new ones. Dishes are specific (not "salad" or "soup"), from many cuisines and courses;
+// one only shows when it finds at least TRY_MIN recipes, so an idea never lands on a thin page.
+const TRY = [
+  'mapo tofu', 'pad thai', 'dumplings', 'green curry', 'fried rice', 'scones', 'ramen', 'noodle soup',
+  'meatballs', 'pancakes', 'cheesecake', 'udon', 'teriyaki', 'katsu', 'tacos', 'tom yum', 'chow mein',
+  'miso soup', 'mochi', 'bao', 'kimchi', 'lasagna', 'congee', 'risotto', 'brownies', 'lo mein',
+  'spring rolls', 'satay', 'pho', 'granola', 'massaman', 'roast chicken', 'banana bread', 'galette',
+  'larb', 'focaccia', 'dal', 'shakshuka', 'carbonara', 'enchiladas', 'chili', 'stir fry', 'cookies',
+];
+const TRY_SHOWN = 4;
+const TRY_MIN = 5;
 const POPULAR_SHOWN = 5;
+
+/** A few picked at random, in a random order (a Fisher–Yates shuffle, cut short). */
+function pickSome<T>(list: readonly T[], n: number): T[] {
+  const a = [...list];
+  const k = Math.min(n, a.length);
+  for (let i = 0; i < k; i++) {
+    const j = i + Math.floor(Math.random() * (a.length - i));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a.slice(0, k);
+}
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 const page = $('page');
@@ -1083,20 +1105,23 @@ const keepPunct = (html: string) => html.replace(/(<button[^>]*>[^<]*<\/button>[
 function buildStart() {
   // Totals, not names: the list of creators is under the box and on the About page.
   $('from').textContent = `${plural(data.recipes.length, 'recipe')} and ${plural(data.videos.rows.length, 'video')} from ${creators.length} creators. Every one opens on its creator’s own site.`;
-  const tries = TRY.filter((t) => search({ q: t, with: [] }).length)
-    .slice(0, 4)
-    .map((t) => `<button type="button" data-try="${esc(t)}">${esc(t)}</button>`);
+  // Every line is a fresh draw on each visit: four dishes, five of the 18 most-used
+  // ingredients, two creators and three of the week's new recipes.
+  const tries: string[] = [];
+  for (const t of pickSome(TRY, TRY.length)) {
+    if (tries.length === TRY_SHOWN) break;
+    if (search({ q: t, with: [] }).length >= TRY_MIN) tries.push(`<button type="button" data-try="${esc(t)}">${esc(t)}</button>`);
+  }
   $('try').innerHTML = keepPunct(`Try ${orList(tries)}.`);
-  const pop = data.popular.slice(0, POPULAR_SHOWN).map((p) => `<button type="button" data-add="${p}">${esc(ingName(p))}</button>`);
+  const pop = pickSome(data.popular, POPULAR_SHOWN).map((p) => `<button type="button" data-add="${p}">${esc(ingName(p))}</button>`);
   $('popular').innerHTML = keepPunct(`Or start with what you have: ${orList(pop)}.`);
   // Two creators, not all of them: the full list (with ways to support each) is on About.
-  const who = creators.slice(0, 2).map((c) => `<button type="button" data-creator="${esc(c.id)}">${esc(c.name)}</button>`);
+  const who = pickSome(creators, 2).map((c) => `<button type="button" data-creator="${esc(c.id)}">${esc(c.name)}</button>`);
   // New this week: a few by name, straight to the recipe, and a way to see them all.
   const fresh = (data.fresh || []).map((i) => recipes[i]);
   $('fresh').hidden = !fresh.length;
   if (fresh.length) {
-    const names = fresh
-      .slice(0, 3)
+    const names = pickSome(fresh, 3)
       .map((r, n) => `<a href="${esc(r.url)}" data-src-id="${esc(r.src.id)}" data-pos="${n + 1}" data-key="${esc(r.key)}" data-from="new">${esc(r.name)}</a>`);
     const all = fresh.length > names.length ? ` <button type="button" data-fresh="1">See all ${fresh.length}</button>.` : '';
     $('fresh').innerHTML = keepPunct(`New this week: ${andList(names)}.${all}`);
@@ -1453,6 +1478,8 @@ app.addEventListener('click', (e) => {
   if (el.dataset.add) addIngredient(Number(el.dataset.add), 'popular');
   else if (el.dataset.creator) addCreator(el.dataset.creator, 'home');
   else if (el.dataset.try) {
+    // Which of the rotating dishes people pick (a typed search looks the same otherwise).
+    track('Tapped Dish Idea', { dish: el.dataset.try });
     qInput.value = el.dataset.try;
     submit();
   } else if (el.dataset.exact) {

@@ -210,6 +210,17 @@ import '../styles/theme.css';
     padding-bottom: 6vh;
   }
 
+  /* On a phone the ideas under the box make the column taller than the screen, so
+     centering does nothing and the name and box sit at the very top. Start them a
+     sixth of the way down instead, so the box lands near the middle, within thumb
+     reach, and the ideas follow below. */
+  @media (max-width: 40rem) {
+    [data-mode='home'] .app {
+      justify-content: flex-start;
+      padding-top: clamp(var(--space-8), 16svh, 9rem);
+    }
+  }
+
   [data-mode='home'] .top,
   [data-mode='home'] .search,
   [data-mode='home'] .start {

@@ -19,7 +19,7 @@ The other two directions considered: a cookbook-index list (one column, time on 
 
 ## The wordmark (November 16, 2026)
 
-Findish is "fin", a plate-shaped d, "ish", in Atkinson bold. A nori bar runs over "fin" and the d, another under the d and "ish", so the d (a plate seen from above, with its stem) is where find and dish meet. Kyle picked it on November 16 from mocks that combined two earlier ideas, the bars and the plate d; it replaced the curve under "dish". It's text, CSS borders and one small inline SVG for the d (`src/components/Wordmark.astro`), so it scales and follows light and dark; screen readers hear "Findish" from hidden text and skip the drawing. It's the big name on the home page, the small link home in results, and a link home at the top of every other page (`src/components/SiteHead.astro`, since there's no top bar). The plate d on its own is the favicon (`public/favicon-v2.svg`, renamed so search engines refetch it; every page passes it to `LabLayout`), and the home share card (`design/og.html`) uses the full mark.
+Findish is "fin", a plate-shaped d in nori green, "ish", in Atkinson bold. The d (a plate seen from above, with its stem) is where find and dish meet. Kyle picked the plate d on November 16 from mocks that combined two earlier ideas, bars over and under the name and the plate d; it replaced the curve under "dish", and he had the bars taken off the same day because they boxed the name in. It's text and one small inline SVG for the d (`src/components/Wordmark.astro`), so it scales and follows light and dark; screen readers hear "Findish" from hidden text and skip the drawing. It's the big name on the home page, the small link home in results, and a link home at the top of every other page (`src/components/SiteHead.astro`, since there's no top bar). The plate d on its own is the favicon (`public/favicon-v2.svg`, renamed so search engines refetch it; every page passes it to `LabLayout`), and the home share card (`design/og.html`) uses the full mark.
 
 ## The subject
 
@@ -75,3 +75,8 @@ Atkinson Hyperlegible Next only. The name is the one large thing on the home pag
 ## Still true from before
 
 Results are rows (photo left), one column on phones, two on wide screens. Meta lines are plain sentences ("25 minutes, Chinese, from The Woks of Life"), never middle dots. No pills, eyebrows or badges.
+
+
+## The home page on a phone (November 16, 2026)
+
+On a phone the ideas under the box make the column taller than the screen, so centering does nothing. Under 40rem the home page starts the name a sixth of the way down (`16svh`), so the box lands near the middle, within thumb reach, and the ideas follow below.

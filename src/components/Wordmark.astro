@@ -1,6 +1,7 @@
 ---
-// The Findish wordmark (Kyle's pick, 2026-11-16): "fin", a plate-shaped d, "ish". A bar runs
-// over "fin" and the d, another under the d and "ish", so the d is where find and dish meet.
+// The Findish wordmark (Kyle's pick, 2026-11-16): "fin", a plate-shaped d in nori green, "ish".
+// The d, a plate seen from above with its stem, is where find and dish meet. (It had bars over
+// and under for an hour; Kyle took them off the same day.)
 // Text and CSS plus one small inline SVG: it scales with the font size it's given and
 // follows light and dark mode. Screen readers hear one word, "Findish".
 const plate = '<svg viewBox="0 0 60 76" class="wordmark-plate" focusable="false"><circle cx="25" cy="50" r="20" fill="none" stroke="currentColor" stroke-width="8"/><circle cx="25" cy="50" r="8" fill="currentColor" opacity="0.35"/><rect x="41" y="2" width="9" height="72" rx="4.5" fill="currentColor"/></svg>';
@@ -28,23 +29,15 @@ const plate = '<svg viewBox="0 0 60 76" class="wordmark-plate" focusable="false"
   }
 
   .wordmark-art {
-    --bar: 0.08em;
     display: inline-flex;
     align-items: stretch;
   }
 
-  /* Bar over "fin" and the d */
-  .wm-fin {
-    border-top: var(--bar) solid var(--accent-ink);
-    padding: 0.13em 0 0.2em;
-  }
-
-  /* The plate d sits between both bars */
+  /* The plate d, sitting on the baseline */
   .wm-d {
     display: flex;
     align-items: flex-end;
-    border-block: var(--bar) solid var(--accent-ink);
-    padding: 0.13em 0.02em;
+    padding-inline: 0.02em;
   }
 
   .wm-d :global(.wordmark-plate) {
@@ -55,19 +48,7 @@ const plate = '<svg viewBox="0 0 60 76" class="wordmark-plate" focusable="false"
     color: var(--accent-ink);
   }
 
-  /* Bar under the d and "ish" */
-  .wm-ish {
-    border-bottom: var(--bar) solid var(--accent-ink);
-    padding: 0.2em 0 0.13em;
-  }
-
   @media (forced-colors: active) {
-    .wm-fin,
-    .wm-d,
-    .wm-ish {
-      border-color: CanvasText;
-    }
-
     .wm-d :global(.wordmark-plate) {
       color: CanvasText;
     }

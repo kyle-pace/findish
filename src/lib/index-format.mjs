@@ -212,3 +212,39 @@ export function unpack(file, extra = {}, videos = null) {
     recipes,
   };
 }
+
+/**
+ * Whether video rows from another copy of the index can be used with this one. A row points
+ * at a channel and at ingredients by their place in the lists, so the lists must be the
+ * same: same crawl, same channels in the same order, same ingredients in the same order.
+ */
+export function sameLists(mine, other) {
+  const ids = (xs) => (xs || []).map((x) => (Array.isArray(x) ? x[0] : x?.id)).join('\n');
+  return (
+    !!mine && !!other && mine.crawled === other.crawled && ids(mine.videos?.sources) === ids(other.videos?.sources) && ids(mine.ing) === ids(other.ing)
+  );
+}
+
+/**
+ * The video rows for an index the page already has, without ever throwing. `packed` gets
+ * the videos file; `whole` gets /index.json, tried when the file can't be had (a page left
+ * open across a deploy asks for a name that is gone). Its rows are only used when it is
+ * the same index as the one on the page: after a deploy it is a newer one, whose rows would
+ * point at the wrong channels and ingredients, so the visit goes without videos instead
+ * (`missed`), and the page says so quietly.
+ *   ing: the ingredient list the recipes were unpacked with (before search-core adds groups)
+ */
+export async function videoRowsFor(index, ing, packed, whole) {
+  try {
+    return { rows: unpackVideos(await packed(), ing), missed: false };
+  } catch {
+    // The whole index, below.
+  }
+  try {
+    const all = await whole();
+    if (sameLists({ ...index, ing }, all) && Array.isArray(all.videos?.rows)) return { rows: all.videos.rows, missed: false };
+  } catch {
+    // Neither could be had.
+  }
+  return { rows: [], missed: true };
+}

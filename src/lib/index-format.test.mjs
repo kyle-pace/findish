@@ -5,7 +5,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { addVideos, prepare, prepareSteps, queryWords, search, searchVideos, understand } from './search-core.mjs';
-import { pack, slug, unpack, unpackVideos } from './index-format.mjs';
+import { pack, sameLists, slug, unpack, unpackVideos, videoRowsFor } from './index-format.mjs';
 import { realIndex } from './test-index.mjs';
 
 const index = realIndex();
@@ -204,4 +204,37 @@ test('a page that meets a newer format says so instead of guessing', () => {
 test('slug: the way sites name a recipe’s page', () => {
   assert.equal(slug('Mapo Tofu (麻婆豆腐)'), 'mapo-tofu');
   assert.equal(slug("Grandma's Mac & Cheese!"), 'grandmas-mac-and-cheese');
+});
+
+// --- the videos file can't be had ----------------------------------------------------------
+
+test('when the videos file is gone, rows from a different index are never mixed in', async () => {
+  const mine = unpack(files.recipes, files.extra);
+  const ing = [...mine.ing];
+  const gone = () => Promise.reject(new Error('404'));
+  // The same index in /index.json (only the videos file was blocked): its rows are used.
+  const same = await videoRowsFor(mine, ing, gone, async () => wire(index));
+  assert.equal(same.missed, false);
+  assert.deepEqual(same.rows, index.videos.rows);
+  // A newer index after a deploy: one more ingredient at the front moves every position,
+  // so its rows would name the wrong ingredients. The visit goes without videos.
+  const newer = wire(index);
+  newer.ing.unshift(['zz-new', 'Something new', 1, []]);
+  assert.deepEqual(await videoRowsFor(mine, ing, gone, async () => newer), { rows: [], missed: true });
+  // A channel added or moved, or another crawl: the same.
+  const moved = wire(index);
+  moved.videos.sources.reverse();
+  assert.equal((await videoRowsFor(mine, ing, gone, async () => moved)).missed, true);
+  assert.equal((await videoRowsFor(mine, ing, gone, async () => ({ ...wire(index), crawled: '2099-01-01' }))).missed, true);
+  // Neither can be had, or what came back isn't an index: no videos, and nothing thrown.
+  assert.deepEqual(await videoRowsFor(mine, ing, gone, gone), { rows: [], missed: true });
+  assert.deepEqual(await videoRowsFor(mine, ing, gone, async () => null), { rows: [], missed: true });
+  assert.deepEqual(await videoRowsFor(mine, ing, async () => ({ nope: true }), async () => 'x'), { rows: [], missed: true });
+  // The usual way still works, and the page's search with no videos is still a search.
+  const usual = await videoRowsFor(mine, ing, async () => files.videos, gone);
+  assert.deepEqual(usual.rows, index.videos.rows);
+  const bare = prepare(mine);
+  addVideos(bare, []);
+  assert.deepEqual(searchVideos(bare, { ...blank(), q: 'chicken' }), []);
+  assert.ok(sameLists(mine, index) && !sameLists(mine, newer) && !sameLists(mine, null));
 });

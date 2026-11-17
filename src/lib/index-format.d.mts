@@ -8,3 +8,5 @@ export function slug(name: string): string;
 export function pack(index: unknown): { recipes: unknown; videos: unknown; extra: Required<IndexExtra> };
 export function unpack(recipes: unknown, extra?: IndexExtra, videos?: unknown): unknown;
 export function unpackVideos(videos: unknown, ing: unknown[]): unknown[][];
+export function sameLists(mine: unknown, other: unknown): boolean;
+export function videoRowsFor(index: unknown, ing: unknown[], packed: () => Promise<unknown>, whole: () => Promise<unknown>): Promise<{ rows: unknown[][]; missed: boolean }>;

@@ -15,9 +15,12 @@
 // work on the page. It's done a thousand recipes at a time with a pause between, so a slow
 // phone still answers taps and typing while it happens.
 //
-// If either file can't be had (a page left open across a deploy asks for names that are
-// gone), /index.json still holds everything, and is used instead.
-import { unpack, unpackVideos, type IndexExtra } from '../lib/index-format.mjs';
+// If the recipes file can't be had (a page left open across a deploy asks for names that
+// are gone), /index.json still holds everything, and is used instead. If only the videos
+// file can't be had, /index.json's video rows are used when it is the same index, and
+// otherwise the visit goes without videos: rows from a newer index would point at the wrong
+// channels and ingredients in the one already on the page.
+import { unpack, videoRowsFor, type IndexExtra } from '../lib/index-format.mjs';
 import { addVideos, prepareSteps, type Ready } from '../lib/search-core.mjs';
 
 type Files = IndexExtra & { recipes?: string; videos?: string };
@@ -52,8 +55,12 @@ export type Loaded = {
   index: unknown;
   /** The index, ready to search (recipes; videos too when `videos` is null). */
   ready: Ready;
-  /** Fetches the video rows and adds them to `ready` (call it once the recipes are on the page), or null when they're already in. */
-  videos: (() => Promise<void>) | null;
+  /**
+   * Fetches the video rows and adds them to `ready` (call it once the recipes are on the
+   * page), or null when they're already in. Never throws; false means they couldn't be had
+   * and this visit goes without videos.
+   */
+  videos: (() => Promise<boolean>) | null;
 };
 
 export async function loadIndex(): Promise<Loaded> {
@@ -67,20 +74,19 @@ export async function loadIndex(): Promise<Loaded> {
     try {
       const index = unpack(await get(files.recipes), files);
       await breathe();
+      // The ingredient list as the file has it: getting ready adds the groups to leave out after it.
+      const ing = [...(index as { ing: unknown[] }).ing];
       const ready = await prepareGently(index);
       const url = files.videos;
       return {
         index,
         ready,
         videos: async () => {
-          let rows: unknown[][];
-          try {
-            rows = unpackVideos(await get(url), ready.ing);
-          } catch {
-            rows = (await everything()).videos.rows;
-          }
+          // Never the rows of a different index: see videoRowsFor.
+          const { rows, missed } = await videoRowsFor(index, ing, () => get(url), everything);
           addVideos(ready, rows);
           await breathe(); // before the page draws its search again with them
+          return !missed;
         },
       };
     } catch {

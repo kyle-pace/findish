@@ -1,10 +1,9 @@
 ---
-// The Findish wordmark (Kyle's pick, 2026-11-16): "fin", a plate-shaped d in tomato red, "ish",
-// with a short line over "fin" and another under "ish". The d, a plate seen from above with its
-// stem, is where find and dish meet, and it's left open: the first bars ran over and under the
-// d too and boxed it in, so they came off, and the two short lines came back the same night.
-// The d's strokes match the bold letters' weight, and it has no extra room on its right, so the
-// gaps either side of it are even.
+// The Findish wordmark (Kyle's pick, 2026-11-16): "fin", a plate-shaped d in tomato red, "ish".
+// The d, a plate seen from above with its stem, is where find and dish meet. Its strokes match
+// the bold letters' weight, and it has no extra room on its right, so the gaps either side of it
+// are even. (Bars over "fin" and under "ish" were tried twice that day; offset like that they
+// read as lopsided, so they're off.)
 // Text and CSS plus one small inline SVG: it scales with the font size it's given and
 // follows light and dark mode. Screen readers hear one word, "Findish".
 const plate = '<svg viewBox="0 0 52 76" class="wordmark-plate" focusable="false"><circle cx="25" cy="50" r="18.5" fill="none" stroke="currentColor" stroke-width="11"/><circle cx="25" cy="50" r="7" fill="currentColor" opacity="0.35"/><rect x="38" y="2" width="11" height="72" rx="5.5" fill="currentColor"/></svg>';
@@ -32,21 +31,8 @@ const plate = '<svg viewBox="0 0 52 76" class="wordmark-plate" focusable="false"
   }
 
   .wordmark-art {
-    --bar: 0.08em;
     display: inline-flex;
     align-items: stretch;
-  }
-
-  /* A short line over "fin"… */
-  .wm-fin {
-    border-top: var(--bar) solid var(--accent-ink);
-    padding-top: 0.04em;
-  }
-
-  /* …and one under "ish", with the d between them, open above and below. */
-  .wm-ish {
-    border-bottom: var(--bar) solid var(--accent-ink);
-    padding-bottom: 0.06em;
   }
 
   /* The plate d, sitting on the baseline */
@@ -65,11 +51,6 @@ const plate = '<svg viewBox="0 0 52 76" class="wordmark-plate" focusable="false"
   }
 
   @media (forced-colors: active) {
-    .wm-fin,
-    .wm-ish {
-      border-color: CanvasText;
-    }
-
     .wm-d :global(.wordmark-plate) {
       color: CanvasText;
     }

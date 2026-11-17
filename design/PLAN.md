@@ -169,3 +169,32 @@ From a user test, an engineering audit and a second Mobbin pass. Nothing about t
 - **Opened recipes** are muted ink, like the line under them.
 - **Nothing found** lists what would find something (each with its count), then the home page's three idea lines, left-aligned.
 - **Ask:** the choice comes first. A question's suggestions are just two rows, "Ask: …" ("Sent to Claude to turn into a search. Not kept.") and "Search for these words" ("Searched here, on your device."). The answer is one block with a tomato rule on the left: the question (tap to put it back in the box; one line on a phone), the answer in full ink, and one small muted line with who answered and "Search my words instead". Centred, without the rule, on the home page.
+
+## The features round (November 17, 2026)
+
+From the Mobbin pass's gap list. Each one is drawn with what the page already has: sentence lines of underlined words, the filter row, the suggestions panel. No chips, no cards, no icons beyond the × that tags already use.
+
+- **Under the empty box:** click into the box with nothing in it and the panel that holds suggestions lists what's kept on this device: "Recent searches" (the last 8, each one line like "tofu, ginger, from The Woks of Life", with a × and "Clear recent searches"), "Recently opened" (up to 5 recipes) and "Your 3 saved recipes". They are real links and buttons under small bold headings, not options in a list, so removing one works with a finger, a keyboard or a screen reader. Typing swaps them for suggestions.
+- **Save:** a quiet underlined word at the end of the line under a recipe ("…from The Woks of Life. Save"). Once saved it reads "Saved" in ink with a tomato underline, like a filter that's set. The saved view is a removable "saved" tag, reached from the footer, the panel and one line on the home page ("Or go back to your 3 saved recipes.").
+- **The creator's name** in that line is a link to their page.
+- **Diet and Order** are two more words in the filter row ("Diet: any", "Order: best match"). The row's three actions (Pick one at random, Share this search, Start over) wrap to the next line together on a desktop and stay in the one scrolling line on a phone.
+- **"Narrow it"** is one muted sentence under the count: "Narrow it: Chinese (9), Japanese (2), 30 minutes or less (6), vegetarian (2)." Only choices that would narrow this list, and none for a short list.
+- **"Related"** is one sentence after the results of a dish search: "Related: twice cooked pork, kung pao chicken." It shows only when there are two or more worth offering, which is less often than not.
+- **Ingredient results** (two or more ingredient tags, no dish words) sit under headings: "Uses all 3", "Uses 2 of 3", "Uses 1 of 3" ("Uses both" for two), each with its count, a rule over every heading but the first.
+- **Completions:** up to three common dishes that finish what's typed ("map" offers "mapo tofu"), between the tags to add and the recipes, the typed part marked like the words in recipe names.
+- **Creator pages** lead with a search box for just that creator (a square-shouldered field and an ink "Search" button, in place of the "Search their recipes" button) and, when the latest crawl found any, "New from them this week" above "How to back them".
+
+```
+Results                                             Under the empty box
+[ mapo tofu                                  (⌕) ]  [ A dish, ingredient, cuisine or creator (⌕) ]
+Show ▾ Course ▾ Cuisine ▾ Creator ▾ Time ▾          Recent searches
+Diet: any ▾ Order: best match ▾   Pick…  Share…     pad thai, ginger                          ×
+11 recipes and 17 videos on YouTube.                mapo tofu, Chinese cuisine                ×
+Narrow it: Chinese (9), 30 minutes or less (6).     Clear recent searches
+[photo] Mapo Tofu                                   Recently opened
+        35 minutes, Chinese, from The Woks of Life. Save     Mapo Tofu            The Woks of Life
+…                                                   Your 2 saved recipes
+Related: twice cooked pork, kung pao chicken.
+```
+
+Checked against the defaults: the new things are sentences, words in the filter row and headed lists; the only new colour is the tomato underline under "Saved".

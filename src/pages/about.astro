@@ -68,8 +68,15 @@ import { ADD_TO_CLAUDE, ASSISTANTS_PAGE, PRIVACY_PAGE } from '../lib/assistants'
         After a search, the words under the box narrow it down: what to show, the course (mains, sides, soups, desserts and so on),
         the cuisine, the creator and the time. Under a main dish, “Thai sides to go with it” (or whichever cuisine it is) finds sides
         from the same kitchen. The course comes from how each site files its recipes, or from a plainly named dish (“soup”,
-        “cookies”), so a recipe no site labels only shows up when no course is picked. Under the ideas on the front page,
+        “cookies”), so a recipe no site labels only shows up when no course is picked. Diet (vegetarian or vegan) and
+        the order (best match, quickest first or newest first) are there too. “Narrow it” under the count names the choices
+        that would do something for this search, and “Share this search” gives you its link. In the footer,
         “New this week” lists what the latest weekly check found.
+      </p>
+      <p>
+        “Save” under a recipe keeps it for later, and “Saved” in the footer shows what you kept. Click in the empty search
+        box for your recent searches and the recipes you opened last. All of it is kept only on your device, and each one
+        can be removed. Press / to jump to the search box.
       </p>
     </section>
 
@@ -174,7 +181,7 @@ import { ADD_TO_CLAUDE, ASSISTANTS_PAGE, PRIVACY_PAGE } from '../lib/assistants'
     <section aria-labelledby="privacy">
       <h2 id="privacy">Privacy</h2>
       <p>
-        What you type never leaves your device. Photos load from each creator’s site when they come on screen. Anonymous counts, like how
+        What you type never leaves your device, and neither do your recent searches or saved recipes. Photos load from each creator’s site when they come on screen. Anonymous counts, like how
         often a recipe gets opened, go to the site’s analytics; see the{' '}
         <a href={PRIVACY_PAGE}>privacy page</a>.
       </p>

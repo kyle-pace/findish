@@ -585,6 +585,71 @@ const COURSE_ANY = COURSE_WORDS.map(([re]) => re).join('|');
 const LEAD = /^\s*(?:i\s+have|ive\s+got|i\s+ve\s+got|i\s+got|we\s+have|weve\s+got|we\s+got|ive|theres|there\s+is|using|with|have|got)\s+/;
 const EXTRA = /^(?:some|leftover|leftovers|fresh|a|an|the|my|few|lots of|a bit of|a little|\d+)\s+/;
 
+// Nothing longer is read as a sentence: the page stops at 400 characters, /mcp at 200.
+const MAX_SENTENCE = 400;
+const LEAVE_OUT_MOST = 8;
+const LEAVE_OUT_START = /\b(without|no|minus|skip|hold the|not)\s+(?=[a-z])/g;
+const LEAVE_OUT_END = new Set(['with', 'using', 'under', 'in', 'for', 'from']);
+const LEAVE_OUT_PART = /\s*(?:([a-z]+)|(,)|(\S))/y;
+
+/**
+ * Finds each "no …", "without …" in a folded sentence and hands the word that started it and
+ * the list after it to `take`, which returns what to put in its place (null: leave it as it
+ * was). One pass over the sentence, no backtracking.
+ */
+function cutLeaveOuts(t, take) {
+  let out = '';
+  let from = 0;
+  LEAVE_OUT_START.lastIndex = 0;
+  for (let m; (m = LEAVE_OUT_START.exec(t)); ) {
+    const start = LEAVE_OUT_START.lastIndex;
+    // `end` is where the list stops; `comma` the last comma that could end it instead, if
+    // something that can't be in a list (a number, a symbol) turns up before a real end.
+    let end = -1;
+    let comma = -1;
+    let at = start;
+    let first = true;
+    for (;;) {
+      LEAVE_OUT_PART.lastIndex = at;
+      const part = LEAVE_OUT_PART.exec(t);
+      if (!part) {
+        end = at; // only spaces are left
+        break;
+      }
+      if (part[1]) {
+        if (!first && LEAVE_OUT_END.has(part[1])) {
+          end = at;
+          break;
+        }
+        first = false;
+        at = LEAVE_OUT_PART.lastIndex;
+        continue;
+      }
+      if (part[2]) {
+        // A comma carries the list on only when a word that isn't an ending word follows it.
+        const next = /\s*([a-z]+)/y;
+        next.lastIndex = LEAVE_OUT_PART.lastIndex;
+        const word = next.exec(t);
+        if (!word || LEAVE_OUT_END.has(word[1])) {
+          end = at;
+          break;
+        }
+        comma = at;
+        at = LEAVE_OUT_PART.lastIndex;
+        continue;
+      }
+      end = comma;
+      break;
+    }
+    if (end === -1) continue; // not a list; the next "no" is looked for after this one
+    const put = take(m[1], t.slice(start, end));
+    out += t.slice(from, m.index) + (put == null ? t.slice(m.index, end) : put);
+    from = end;
+    LEAVE_OUT_START.lastIndex = end;
+  }
+  return out + t.slice(from);
+}
+
 const blankUnderstood = (q = '') => ({ q, time: 0, with: [], without: [], notWords: [], sites: [], diet: '', cuisine: '', course: '', show: '' });
 
 /**
@@ -595,7 +660,7 @@ export function understand(ready, text, { list = false } = {}) {
   const out = blankUnderstood();
   const { index } = ready;
   // Lowercase, no accents or apostrophes, hyphens as spaces ("pork-free", "López-Alt").
-  let t = ` ${fold(text).replace(/[-‐-―]/g, ' ').replace(/\s+/g, ' ')} `;
+  let t = ` ${fold(String(text ?? '').slice(0, MAX_SENTENCE)).replace(/[-‐-―]/g, ' ').replace(/\s+/g, ' ')} `;
   const cut = (re) => (t = t.replace(re, ' '));
   const took = () => out.time || out.with.length || out.without.length || out.notWords.length || out.sites.length || out.diet || out.cuisine || out.course || out.show;
 
@@ -664,15 +729,21 @@ export function understand(ready, text, { list = false } = {}) {
     if (first && !STOP.has(norm(first))) out.notWords.push(first);
     return ws.slice(1).join(' ');
   };
-  const stop = String.raw`(?=\s*(?:,|\bwith\b|\busing\b|\bunder\b|\bin\b|\bfor\b|\bfrom\b|$))`;
-  t = t.replace(new RegExp(String.raw`\b(without|no|minus|skip|hold the|not)\s+([a-z][a-z ]*?(?:\s*(?:,|and|or)\s*[a-z][a-z ]*?)*)` + stop, 'g'), (all, how, items) => {
+  // Only the word that starts it ("no", "without") is found with a pattern; what follows is
+  // read one word at a time, so a long made-up sentence can't make the pattern try every way
+  // of splitting it (it once took 40 seconds on 96 characters). The list ends at the end of
+  // the sentence, at "with", "using", "under", "in", "for" or "from", or at a comma that
+  // isn't followed by another thing to leave out.
+  t = cutLeaveOuts(t, (how, items) => {
     let kept = '';
-    for (const piece of items.split(/\s*(?:,|\band\b|\bor\b)\s*/)) {
+    const pieces = items.split(/\s*(?:,|\band\b|\bor\b)\s*/);
+    // More than a handful is not a real sentence; the rest stay as words.
+    for (const piece of pieces.slice(0, LEAVE_OUT_MOST)) {
       const rest = leaveOut(piece, how !== 'not');
-      if (rest == null) return all;
+      if (rest == null) return null;
       kept += ` ${rest}`;
     }
-    return ` ${kept} `;
+    return ` ${kept} ${pieces.slice(LEAVE_OUT_MOST).join(' ')} `;
   });
   t = t.replace(/\b([a-z]+)\s+free\b/g, (all, w) => {
     const p = groupFor(ready, w) ?? ingredientFor(ready, w, true);

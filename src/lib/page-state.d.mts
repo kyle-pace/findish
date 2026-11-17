@@ -24,3 +24,4 @@ export function setFilters(
 ): SetFilter[];
 export function filtersLabel(set: SetFilter[]): string;
 export function showLabel(recipes: number, videos: number, blank?: boolean): string;
+export const MAX_Q: number;

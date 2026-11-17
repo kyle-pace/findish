@@ -4,12 +4,25 @@
 // results are put in, the "Narrow it" line, and the search box's completions. (What the
 // page keeps on the device is in kept.mjs.)
 
-/** What's typed, ready for the address: spaces tidied, and no punctuation left on the end ("mapo tofu." -> "mapo tofu"). */
+/** The longest search the page keeps: as long as a question to Ask can be. */
+export const MAX_Q = 400;
+const END_MARK = new Set([' ', '.', ',', ';', ':', '!', '?', '…']);
+
+/**
+ * What's typed, ready for the address: spaces tidied, no punctuation left on the end ("mapo
+ * tofu." -> "mapo tofu"), and no longer than MAX_Q, so a link made to be enormous can't keep
+ * the page busy. The end is trimmed one character at a time, not with a pattern, which
+ * would look again from every punctuation mark in a long run of them.
+ */
 export function cleanQ(text) {
-  return String(text ?? '')
+  const s = String(text ?? '')
+    .slice(0, MAX_Q * 4)
     .replace(/\s+/g, ' ')
     .trim()
-    .replace(/[\s.,;:!?…]+$/u, '');
+    .slice(0, MAX_Q);
+  let end = s.length;
+  while (end && END_MARK.has(s[end - 1])) end--;
+  return s.slice(0, end);
 }
 
 /**

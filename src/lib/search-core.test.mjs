@@ -6,6 +6,7 @@ import assert from 'node:assert/strict';
 import { closeWords, creatorFor, creatorMatches, ingredientFor, looksLikeAsk, prepare, queryWords, search, searchVideos, stem, understand, viaIngredient, words, queryFor } from './search-core.mjs';
 import { soleQuery } from './page-state.mjs';
 import { realIndex } from './test-index.mjs';
+import { SLOW_SENTENCES } from './slow-sentences.mjs';
 
 const index = realIndex();
 const ready = prepare(index);
@@ -378,4 +379,34 @@ test('a word that only matched an ingredient is named: "Uses chicken thighs"', (
     for (const p of ps) assert.ok(h.r.pos.has(p), `${h.r.name} uses ${ready.ing[p][1]}`);
   }
   assert.deepEqual(viaIngredient(ready, hits[0].r, []), []);
+});
+
+// --- sentences built to be slow -----------------------------------------------------------
+
+test('a 200-character sentence made to be slow is understood in well under 50 ms', () => {
+  understand(ready, 'no pork'); // the first call sets up the creators' names
+  for (const text of SLOW_SENTENCES) {
+    assert.equal(text.length <= 200, true);
+    const start = performance.now();
+    understand(ready, text);
+    understand(ready, text, { list: true });
+    const took = performance.now() - start;
+    assert.ok(took < 50, `${took.toFixed(0)} ms for ${JSON.stringify(text.slice(0, 40))}…`);
+  }
+});
+
+test('a long "no …" list still leaves things out, and stops at eight', () => {
+  const u = said('curry no pork, peanuts or shrimp');
+  assert.deepEqual(u.without.length, 3);
+  assert.equal(u.q, 'curry');
+  const many = understand(ready, `no ${'abc, abd, abe, abf, abg, abh, abi, abj, abk, abl'}`);
+  assert.equal(many.notWords.length, 8);
+  assert.match(many.q, /abk abl/);
+});
+
+test('a comma before "with" ends what is left out, so "no pork, with tofu" still asks for tofu', () => {
+  const u = said('no pork, with tofu');
+  assert.deepEqual(u.with, ['tofu']);
+  assert.equal(u.without.length, 1);
+  assert.equal(u.q, '');
 });

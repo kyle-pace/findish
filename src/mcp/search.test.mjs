@@ -314,3 +314,15 @@ test('recipes with a list: a recipe flagged for meat by its name is not marked v
   assert.equal(recipesWith(flagged, { with: ['tofu', 'scallions'] }).recipes.find((x) => x.name === 'Vegan Mapo Tofu').veg, false);
   assert.ok(!names(recipesWith(flagged, { with: ['tofu', 'scallions'], diet: 'vegetarian' })).includes('Vegan Mapo Tofu'));
 });
+
+test('a 200-character query made to be slow comes back in well under 50 ms', async () => {
+  const { SLOW_SENTENCES } = await import('../lib/slow-sentences.mjs');
+  searchRecipes(ready, { query: 'no pork' });
+  for (const query of SLOW_SENTENCES) {
+    const start = performance.now();
+    const r = searchRecipes(ready, { query });
+    const took = performance.now() - start;
+    assert.ok(Array.isArray(r.recipes));
+    assert.ok(took < 50, `${took.toFixed(0)} ms for ${JSON.stringify(query.slice(0, 40))}…`);
+  }
+});

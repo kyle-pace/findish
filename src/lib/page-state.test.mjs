@@ -9,6 +9,18 @@ test('punctuation on the end of a search is not kept in the address', () => {
   assert.equal(cleanQ('...'), '');
 });
 
+test('a link made to be enormous is cut to 400 characters without keeping the page busy', () => {
+  // 200,000 punctuation marks that are not at the end: the old pattern looked again from each one.
+  const huge = `soup ${'.,;'.repeat(70000)} x`;
+  const start = performance.now();
+  const q = cleanQ(huge);
+  const took = performance.now() - start;
+  assert.ok(took < 50, `${took.toFixed(0)} ms`);
+  assert.ok(q.length <= 400);
+  assert.equal(cleanQ(`${'pad thai '.repeat(60)}`).length <= 400, true);
+  assert.equal(cleanQ(`${'a'.repeat(398)}. more`), 'a'.repeat(398));
+});
+
 test('tags keep the order they were added in, so Backspace takes off the last one added', () => {
   let order = tagOrder([], ['with:tofu']);
   order = tagOrder(order, ['fresh', 'with:tofu']); // "new this week" added after tofu

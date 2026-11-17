@@ -269,6 +269,16 @@ Findish (findish.now; called Recipe search until 2026-11-16, when it moved off k
 - The reading pages (About, assistants, privacy) share `src/styles/prose.css` (`<article class="prose">`).
 - Both tools carry a `title` and `readOnlyHint`, which the Connectors Directory requires.
 - Seattle Grocery Deals has a sister server (`mcp/` in its repo, at mcp.seattlegrocery.deals) and stays separate on purpose (Kyle, 2026-11-11): recipes are for anyone, deals are only for Seattle. Henwood's is local, in the Mac app.
+### Ask (the chat experiment)
+
+- Started 2026-11-16 (Kyle's call): describe what you want in your own words ("what can I make with fish, kimchi and onions?") and the page shows the search for it. Only offered at `findish.now/?chat=1` (remembered for the visit in that tab, in `sessionStorage`); not linked anywhere yet.
+- `src/chat/chat.mjs` is the logic, with no network code: Claude (Haiku 5.5) gets two tools, `search_recipes` (the MCP search, `src/mcp/search.mjs`, so it can check a search and loosen one that finds fewer than 3) and `show_results` (the search to show plus a sentence or two). It never writes recipe names, links or methods; `pageQuery()` turns its search into the page's own address parameters and the page shows the results itself. At most 3 searches per message, 400 characters per message, 4 messages per chat. Tests with a pretend Claude in `src/chat/chat.test.mjs`.
+- `src/chat/anthropic.mjs` is the one file that talks to Anthropic. The key is the Worker secret `ANTHROPIC_API_KEY` (set in the Cloudflare dashboard, never in code), in an Anthropic workspace with its own monthly spend limit. Kyle's Max plan API credits cover it.
+- `POST /api/chat` (`src/pages/api/chat.ts`) takes `{"messages": [...]}` and answers `{"reply", "query"}`. Never logs or keeps what was typed. Two Workers rate limits in `wrangler.jsonc` (6 a minute per visitor, keyed by IP in memory only; 60 a minute for everyone). Over a limit, with no key, or if Claude fails, it answers `{"fallback": "busy"|"off"|"error"}` with a plain search of the person's words, so the page never breaks.
+- The page side is `src/scripts/chat.ts` (loaded by `search.ts` only when Ask is on) and `src/styles/chat.css`. It hands the search to `search.ts` as a `findish:show` event, which shows it like any search and reports the result count. The privacy page's `#ask` section covers it.
+- Events: "Opened Chat" (`opened_from`: home or results), "Sent Chat Message" (`turn_number`, `message_length`, `showed_search`, `result_count`, `fell_back`), and "Opened Recipe" gets `from_ask: true` while the results are still the ones Ask showed. Never the words typed.
+- Before opening it to everyone: decide whether to keep it, check the Anthropic privacy wording on `/privacy/#ask`, and consider Turnstile (a new host, needs Kyle's OK) if the rate limits aren't enough.
+
 ### The list endpoint
 
 - `POST findish.now/api/with` answers the Seattle Grocery Deals app's "Recipes with your list" (added 2026-11-14, Kyle's call): recipes that use two or more of a few ingredients. The app sends `{"with": [catalog ids], "diet"?, "limit"?}` for the list items it matched to this week's deals; the ids come from Grocery Deals' `recipes.json`, which takes them from this index, so they match exactly. It never sends what the person typed.

@@ -11,7 +11,7 @@
     "sync-catalog": "node scripts/sync-catalog.mjs",
     "sync-world-cuisine": "node scripts/sync-world-cuisine.mjs",
     "crawl": "node crawler/crawl.mjs",
-    "test": "node --test crawler/test/*.test.mjs src/mcp/*.test.mjs scripts/*.test.mjs",
+    "test": "node --test crawler/test/*.test.mjs src/mcp/*.test.mjs src/chat/*.test.mjs scripts/*.test.mjs",
     "try-mcp": "node scripts/try-mcp.mjs",
     "check": "node .agents/skills/page-check/check.mjs"
   },

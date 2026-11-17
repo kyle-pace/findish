@@ -36,7 +36,8 @@ const updated = 'November 16, 2026';
       <h2 id="short">The short version</h2>
       <p>
         There are no accounts, ads or sign-ups, and nothing is sold or shared for advertising. What you type into the search stays on your
-        device. The server for AI assistants answers each question and keeps nothing about it. The only thing collected is anonymous usage
+        device. The one exception is Ask, a chat experiment you have to open yourself: what you type there goes to Claude, Anthropic’s AI, to
+        be turned into a search, and nothing is kept. The server for AI assistants answers each question and keeps nothing about it. The only thing collected is anonymous usage
         from the search page, and you can turn that off below.
       </p>
     </section>
@@ -51,6 +52,22 @@ const updated = 'November 16, 2026';
         Recipe photos load from each creator’s own site when they come on screen, without telling that site which page you came from. Like
         any website, those sites see your IP address when they send a photo, and they have their own privacy rules. Opening a recipe takes
         you to the creator’s site.
+      </p>
+    </section>
+
+    <section aria-labelledby="ask">
+      <h2 id="ask">Ask (an experiment)</h2>
+      <p>
+        Ask lets you describe what you want in your own words, like “what can I make with fish, kimchi and onions?”, and shows the search
+        for it. It’s only on the page when you open it. Unlike the search box, what you type into Ask leaves your device: this site sends
+        your messages from that chat, and nothing else about you, to Claude, an AI made by <a href="https://www.anthropic.com">Anthropic</a>,
+        which turns them into a search. Findish doesn’t save or log what you typed, and the chat is gone when you leave or start over.
+      </p>
+      <p>
+        Anthropic says it doesn’t train its AI on what’s sent through its API by default. How long it keeps it, and why, is in its{' '}
+        <a href="https://privacy.anthropic.com">privacy center</a> and <a href="https://www.anthropic.com/legal/commercial-terms">commercial terms</a>.
+        Your IP address is used for a minute or so to stop any one visitor sending too many messages, and isn’t stored. Analytics counts
+        that a message was sent, how long it was and how many recipes it found, never the words.
       </p>
     </section>
 
@@ -116,8 +133,8 @@ const updated = 'November 16, 2026';
     <section aria-labelledby="sharing">
       <h2 id="sharing">Who else is involved</h2>
       <p>
-        Nothing is sold, and nothing is shared for advertising. Two services help run the site and only do that job: Cloudflare hosts it and{' '}
-        <a href="https://amplitude.com">Amplitude</a> holds the anonymous usage. Apart from the recipe photos, everything, fonts included, is
+        Nothing is sold, and nothing is shared for advertising. Three services help run the site and only do that job: Cloudflare hosts it,{' '}
+        <a href="https://amplitude.com">Amplitude</a> holds the anonymous usage, and Anthropic’s Claude answers Ask, only when you use it. Apart from the recipe photos, everything, fonts included, is
         served from this site.
       </p>
     </section>

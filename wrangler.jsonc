@@ -10,6 +10,13 @@
   // findish.now is this Worker's Custom Domain (the zone is in Kyle's Cloudflare account,
   // moved from Porkbun on 2026-11-16). The old kylepace.dev/recipe-search/ addresses are
   // forwarded here by the hub (kyle-pace/kylepace.dev, public/_redirects).
+  // Rate limits for Ask (src/pages/api/chat.ts), so the chat can't run up a bill: 6 messages
+  // a minute per visitor and 60 a minute for everyone together. Over either, the reply is a
+  // plain search instead. The Anthropic workspace's spend limit is the last stop.
+  "ratelimits": [
+    { "name": "CHAT_PER_VISITOR", "namespace_id": "1001", "simple": { "limit": 6, "period": 60 } },
+    { "name": "CHAT_EVERYONE", "namespace_id": "1002", "simple": { "limit": 60, "period": 60 } }
+  ],
   "routes": [
     { "pattern": "findish.now", "custom_domain": true }
   ]

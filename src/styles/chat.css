@@ -1,0 +1,170 @@
+/*
+  Ask, the chat experiment (src/scripts/chat.ts). Loaded only with it. Quiet on purpose: the
+  toggle is an underlined text button like "Pick one at random", the box borrows the search
+  box's field rule, and the only color is the tomato Ask button, matching the search button.
+  The person's lines sit on a basil wash like ingredient tags; Ask's lines are plain text.
+*/
+
+.ask {
+  margin: var(--space-3) 0 0;
+}
+
+.ask .visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.ask-toggle,
+.ask-new {
+  min-height: 2.75rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--field-rule);
+  text-decoration-thickness: 0.08em;
+  text-underline-offset: 0.2em;
+  cursor: pointer;
+}
+
+.ask-toggle:hover,
+.ask-new:hover {
+  text-decoration-color: currentColor;
+}
+
+.ask-toggle[aria-expanded='true'] {
+  font-weight: 700;
+}
+
+.ask-panel {
+  max-width: 42rem;
+  margin-top: var(--space-2);
+}
+
+.ask-log {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-3);
+  padding: 0;
+  list-style: none;
+}
+
+.ask-log:empty {
+  display: none;
+}
+
+.ask-log p {
+  margin: 0;
+  max-width: 65ch;
+  line-height: 1.45;
+}
+
+.ask-you {
+  justify-self: start;
+  padding: var(--space-1) var(--space-3);
+  border-radius: 0.6rem 0.6rem 0.6rem 0.15rem;
+  background: var(--scallion-fill);
+  color: var(--ink);
+}
+
+.ask-ask {
+  color: var(--ink);
+}
+
+.ask-note {
+  color: var(--ink-muted);
+}
+
+.ask-form label {
+  display: block;
+  margin-bottom: var(--space-1);
+  font-weight: 700;
+}
+
+.ask-row {
+  display: flex;
+  gap: var(--space-2);
+  align-items: stretch;
+}
+
+.ask-row textarea {
+  flex: 1;
+  min-width: 0;
+  min-height: 2.75rem;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--field-rule);
+  border-radius: 0.5rem;
+  background: var(--bg-raised);
+  color: var(--ink);
+  font: inherit;
+  line-height: 1.4;
+  resize: vertical;
+}
+
+.ask-row textarea::placeholder {
+  color: var(--ink-muted);
+  opacity: 1;
+}
+
+.ask-row textarea:disabled {
+  opacity: 0.7;
+}
+
+.ask-send {
+  min-width: 4.5rem;
+  min-height: 2.75rem;
+  padding: 0 var(--space-3);
+  border: 0;
+  border-radius: 0.5rem;
+  background: var(--go);
+  color: var(--go-ink);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.ask-send:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.ask-row textarea:focus-visible,
+.ask-send:focus-visible,
+.ask-toggle:focus-visible,
+.ask-new:focus-visible,
+.ask-form a:focus-visible {
+  outline: 3px solid var(--accent-ink);
+  outline-offset: 2px;
+}
+
+.ask-form .ask-note {
+  margin: var(--space-2) 0 0;
+  font-size: var(--step--1, 0.9rem);
+}
+
+.ask-form a {
+  color: var(--accent-ink);
+}
+
+@media (max-width: 30rem) {
+  .ask-row {
+    flex-direction: column;
+  }
+}
+
+/* On the home page everything is centered, like the search box above it. */
+[data-mode='home'] .ask {
+  margin-top: 0;
+  text-align: center;
+}
+
+[data-mode='home'] .ask-panel {
+  margin-inline: auto;
+  text-align: left;
+}

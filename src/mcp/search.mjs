@@ -92,7 +92,7 @@ export function ingredientFor(ready, phrase) {
   return found;
 }
 
-function creatorFor(ready, phrase) {
+export function creatorFor(ready, phrase) {
   const want = words(phrase).join(' ');
   if (!want) return null;
   const all = [...ready.creators.values()];
@@ -105,7 +105,7 @@ function creatorFor(ready, phrase) {
   );
 }
 
-function cuisineFor(ready, wanted) {
+export function cuisineFor(ready, wanted) {
   const want = words(wanted).join(' ');
   const hit = ready.index.cuisines.find(([c]) => words(c).join(' ') === want);
   return hit ? hit[0] : null;

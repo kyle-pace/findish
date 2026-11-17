@@ -37,3 +37,7 @@ cdn.sanity.io
 
 # Recipe photos from Alton Brown, on its own results, lazily and with no referrer. Added under the content-image rule, 2026-11-08.
 altonbrown.com
+
+# Claude's API (Anthropic), called only by the Worker for Ask, the chat experiment (src/chat/anthropic.mjs), never by the page.
+# Approved by Kyle, 2026-11-16, when he set up the API key.
+api.anthropic.com

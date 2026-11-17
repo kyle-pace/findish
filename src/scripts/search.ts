@@ -1325,6 +1325,8 @@ function openedRecipe(source: string, position: number, from: string, key = '') 
     opened_from: from,
     ingredient_count: state.with.length,
     ...(key ? { recipe_key: key } : {}),
+    // The results came from Ask (src/scripts/chat.ts) and nothing was changed since.
+    ...(app.dataset.fromAsk ? { from_ask: true } : {}),
   });
 }
 
@@ -1332,6 +1334,7 @@ function openedRecipe(source: string, position: number, from: string, key = '') 
 // URL state
 
 function writeUrl(push: boolean) {
+  delete app.dataset.fromAsk; // the person changed the search, so it's theirs now
   const u = new URL(location.href);
   u.search = '';
   u.hash = '';
@@ -1567,4 +1570,35 @@ addEventListener('popstate', () => {
   render();
 });
 
-load();
+// ---------------------------------------------------------------------------------------
+// Ask, the chat experiment (src/scripts/chat.ts, src/chat/chat.mjs). Only at ?chat=1 for
+// now, remembered for the rest of the visit in this tab. Its code loads only then.
+
+function askOn() {
+  const asked = new URLSearchParams(location.search).get('chat') === '1';
+  try {
+    if (asked) sessionStorage.setItem('findish-ask', '1');
+    return asked || sessionStorage.getItem('findish-ask') === '1';
+  } catch {
+    return asked;
+  }
+}
+
+// Ask hands over a search as the page's own address parameters; the page shows it as if the
+// person had built it, and says how many recipes it found.
+addEventListener('findish:show', (e) => {
+  const detail = (e as CustomEvent<{ query: string; count?: number }>).detail;
+  if (!data) return;
+  const u = new URL(location.href);
+  u.search = detail.query;
+  u.hash = '';
+  history.pushState(null, '', u);
+  readUrl();
+  render();
+  app.dataset.fromAsk = '1';
+  detail.count = isBlank() ? 0 : search().length;
+});
+
+load().then(() => {
+  if (askOn()) import('./chat.ts');
+});

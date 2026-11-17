@@ -1,6 +1,7 @@
 ---
-// One creator's page: who they are, how to back them (join, buy, follow, most helpful first)
-// and a few of their recipes. Built at build time for every creator in the index
+// One creator's page: who they are, a search box for just their recipes, what's new from
+// them when the latest crawl found any, how to back them (join, buy, follow, most helpful
+// first) and a few of their recipes. Built at build time for every creator in the index
 // (src/lib/creators.ts). Added 2026-11-16; see design/PLAN.md, "Creator pages".
 import LabLayout from 'kp-design/layouts/LabLayout.astro';
 import { SITE } from '../../lib/site';
@@ -77,15 +78,62 @@ const ld = {
         )
       }
       {c.paused === 'new' && <p class="paused">Their recipes arrive with the next weekly update.</p>}
+      {
+        (c.recipes > 0 || c.videos > 0) && (
+          // A search of just this creator: it opens the search page with them as a tag and the
+          // words in the box (/?site=<id>&q=…). Left empty, it shows everything from them.
+          <form class="find-theirs" action="/" method="get" role="search" aria-label={c.name} data-search-creator={c.id}>
+            <input type="hidden" name="site" value={c.id} />
+            <label for="their-q">Search their {c.recipes ? n(c.recipes, 'recipe') : n(c.videos, 'video')}</label>
+            <div class="find-row">
+              <input id="their-q" name="q" type="search" autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="search" placeholder="A dish or an ingredient" />
+              <button type="submit">Search</button>
+            </div>
+          </form>
+        )
+      }
       <p class="go-row">
-        {(c.recipes > 0 || c.videos > 0) && (
-          <a class="go-link" href={search} data-search-creator={c.id}>
-            Search their {c.recipes ? 'recipes' : 'videos'}
-          </a>
-        )}
         <a href={c.url} data-support={c.id} data-kind="site">{c.host}</a>
       </p>
     </header>
+
+    {
+      c.fresh.length > 0 && (
+        <section class="picks fresh" aria-labelledby="fresh">
+          <h2 id="fresh">New from them this week</h2>
+          <ol class="rows">
+            {c.fresh.slice(0, 6).map((p, k) => (
+              <li>
+                <article class="row">
+                  <div class="text">
+                    <h3>
+                      <a href={p.url} data-src-id={c.id} data-key={p.key} data-pos={k + 1} data-new>
+                        {p.name}
+                      </a>
+                    </h3>
+                    <p class="meta">{[p.minutes ? fmtTime(p.minutes) : '', p.cuisine].filter(Boolean).join(', ') || c.host}</p>
+                  </div>
+                  <div class="photo">
+                    {p.img ? (
+                      <img src={p.img} alt="" width="320" height="240" loading="lazy" decoding="async" referrerpolicy="no-referrer" />
+                    ) : (
+                      <span class="no-photo">No photo</span>
+                    )}
+                  </div>
+                </article>
+              </li>
+            ))}
+          </ol>
+          {c.fresh.length > 6 && (
+            <p class="all">
+              <a href={`/?new=1&site=${encodeURIComponent(c.id)}`} data-search-creator={c.id}>
+                See all {c.fresh.length} new from {c.name}
+              </a>
+            </p>
+          )}
+        </section>
+      )
+    }
 
     <section class="back" aria-labelledby="back">
       <h2 id="back">How to back them</h2>

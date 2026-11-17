@@ -43,6 +43,8 @@ export type Creator = {
   buy: SupportLink[];
   follow: SupportLink[];
   picks: Pick[];
+  /** Their recipes the latest crawl's week found (the index's `fresh`), newest first. Often none. */
+  fresh: Pick[];
   videoPicks: VideoPick[];
 };
 
@@ -71,7 +73,7 @@ function build(): Creator[] {
   const list: Creator[] = [];
   const byId = new Map<string, Creator>();
   const add = (id: string, name: string, url: string, extra: Partial<Creator> = {}) => {
-    const c: Creator = { id, name, url, host: hostOf(url), recipes: 0, videos: 0, cuisine: '', cuisines: [], join: [], buy: [], follow: [], picks: [], videoPicks: [], ...extra };
+    const c: Creator = { id, name, url, host: hostOf(url), recipes: 0, videos: 0, cuisine: '', cuisines: [], join: [], buy: [], follow: [], picks: [], fresh: [], videoPicks: [], ...extra };
     list.push(c);
     byId.set(id, c);
     return c;
@@ -94,6 +96,7 @@ function build(): Creator[] {
     counts.set(id, m);
   };
   const rows = new Map<string, any[]>();
+  const isFresh = new Set<any>((index.fresh || []).map((i: number) => index.recipes[i]));
   for (const r of index.recipes) {
     const id = index.sources[r[0]].id;
     bump(id, r[4]);
@@ -124,11 +127,17 @@ function build(): Creator[] {
 
     // A few of their recipes: the most opened first, then ones with a photo, then the newest.
     const site = index.sources.find((s: any) => s.id === c.id)?.site || '';
+    const pick = (r: any): Pick => ({ name: r[1], url: r[2].startsWith('http') ? r[2] : site + r[2], key: `${c.id}:${r[2]}`, minutes: r[3], cuisine: r[4], img: r[7] });
     c.picks = (rows.get(c.id) || [])
       .slice()
       .sort((a, b) => (b[9] || 0) - (a[9] || 0) || Number(!!b[7]) - Number(!!a[7]) || String(b[11] || '').localeCompare(String(a[11] || '')))
       .slice(0, 8)
-      .map((r) => ({ name: r[1], url: r[2].startsWith('http') ? r[2] : site + r[2], key: `${c.id}:${r[2]}`, minutes: r[3], cuisine: r[4], img: r[7] }));
+      .map(pick);
+    // What the latest crawl's week found from them, newest first: their page leads with it.
+    c.fresh = (rows.get(c.id) || [])
+      .filter((r) => isFresh.has(r))
+      .sort((a, b) => String(b[11] || '').localeCompare(String(a[11] || '')))
+      .map(pick);
     // With no recipes here (a channel alone, or a site on hold), their newest videos instead.
     if (!c.recipes)
       c.videoPicks = (vids.get(c.id) || [])

@@ -4,6 +4,8 @@
 //   Opened Recipe         source, position, opened_from: creator, recipe_key (counts toward popularity)
 //   Opened Browse Page    browse_kind: cuisine, browse_page (korean), opened_from: creator (a cuisine under "What they cook")
 //   Filtered Creators     result_count (never what was typed), once the filter box loses focus
+//   Searched Creator      source, has_words (whether anything was typed; never the words), from the search box on a creator's page
+//   Opened Recipe         also opened_from: creator_new for a recipe under "New from them this week"
 import { track } from 'kp-design/analytics';
 
 document.addEventListener('click', (e) => {
@@ -17,10 +19,16 @@ document.addEventListener('click', (e) => {
     track('Opened Recipe', {
       source: d.srcId,
       position: Number(d.pos || 0),
-      opened_from: 'creator',
+      opened_from: 'new' in d ? 'creator_new' : 'creator',
       ingredient_count: 0,
       ...(d.key ? { recipe_key: d.key } : {}),
     });
+});
+
+// The search box on a creator's page goes to the search page with them as a tag.
+document.querySelector<HTMLFormElement>('.find-theirs')?.addEventListener('submit', (e) => {
+  const form = e.currentTarget as HTMLFormElement;
+  track('Searched Creator', { source: form.dataset.searchCreator, has_words: !!form.querySelector<HTMLInputElement>('input[name=q]')?.value.trim() });
 });
 
 // The list's filter: hides creators whose name, site or cuisine doesn't have every typed word,

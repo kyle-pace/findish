@@ -25,6 +25,19 @@ const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-');
   imageAlt="Findish creators: the people behind the recipes, and how to back them."
   themeColor={{ light: '#fbf5ec', dark: '#1d1714' }}
 >
+  <link slot="head" rel="manifest" href="/manifest.webmanifest" />
+  <script
+    slot="head"
+    type="application/ld+json"
+    set:html={JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Findish', item: 'https://findish.now/' },
+        { '@type': 'ListItem', position: 2, name: 'Creators', item: 'https://findish.now/creators/' },
+      ],
+    })}
+  />
   <SiteHead wide />
 
   <article class="creators-page" data-page="creators">
@@ -64,6 +77,8 @@ const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-');
         </section>
       ))
     }
+
+    <p class="note">After a kind of food instead of a person? <a href="/browse/">Browse by cuisine, course or ingredient</a>.</p>
 
     {
       linkOnly.length > 0 && (

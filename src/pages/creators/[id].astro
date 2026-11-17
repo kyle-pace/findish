@@ -5,7 +5,8 @@
 import LabLayout from 'kp-design/layouts/LabLayout.astro';
 import { SITE } from '../../lib/site';
 import SiteHead from '../../components/SiteHead.astro';
-import { CREATORS, andList, fmtTime, n, slugOf, type Creator } from '../../lib/creators';
+import { CREATORS, andList, fmtTime, n, pagePath, slugOf, type Creator } from '../../lib/creators';
+import { cuisinePath } from '../../lib/browse';
 import '../../styles/theme.css';
 import '../../styles/creators.css';
 
@@ -23,6 +24,31 @@ const backs = c.join.length + c.buy.length + c.follow.length > 0;
 const description = `${c.name} on Findish: ${lede.replace(/\.$/, '')}. Ways to back them${
   c.join.length || books.length ? `, like ${andList([...c.join.map((l) => l.label), ...(books.length ? [books.length === 1 ? 'their cookbook' : 'their cookbooks'] : [])])}` : ''
 }, and a few of their recipes.`;
+// The cuisines they cook that have a browse page, with how many of their recipes each is.
+const cuisines = c.cuisines.filter((x) => cuisinePath(x.name)).slice(0, 8);
+const url = (path: string) => new URL(path, 'https://findish.now').href;
+// Who the page is about, for search engines: a profile of the creator (their own site and
+// the places they publish), and where the page sits. Nothing about their recipes' contents.
+const sameAs = [...new Set([c.channel, ...c.follow.map((l) => l.url)].filter((u): u is string => !!u && u !== c.url))];
+const ld = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'ProfilePage',
+      url: url(pagePath(c.id)),
+      name: `${c.name} on Findish`,
+      mainEntity: { '@type': 'Organization', name: c.name, url: c.url, ...(sameAs.length ? { sameAs } : {}) },
+    },
+    {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Findish', item: url('/') },
+        { '@type': 'ListItem', position: 2, name: 'Creators', item: url('/creators/') },
+        { '@type': 'ListItem', position: 3, name: c.name, item: url(pagePath(c.id)) },
+      ],
+    },
+  ],
+};
 ---
 
 <LabLayout
@@ -31,12 +57,14 @@ const description = `${c.name} on Findish: ${lede.replace(/\.$/, '')}. Ways to b
   bar={false}
   lab={{ name: 'the search', href: '/' }}
   about="/about/"
-  title={`${c.name}: recipes and ways to back them`}
+  title={`${c.name} on Findish: recipes and ways to back them`}
   description={description}
   image="/og-creators.png"
   imageAlt="Findish creators: the people behind the recipes, and how to back them."
   themeColor={{ light: '#fbf5ec', dark: '#1d1714' }}
 >
+  <link slot="head" rel="manifest" href="/manifest.webmanifest" />
+  <script slot="head" type="application/ld+json" set:html={JSON.stringify(ld)} />
   <SiteHead wide />
 
   <article class="creator" data-page="creator" data-creator={c.id}>
@@ -207,6 +235,24 @@ const description = `${c.name} on Findish: ${lede.replace(/\.$/, '')}. Ways to b
               </li>
             ))}
           </ol>
+        </section>
+      )
+    }
+
+    {
+      cuisines.length > 0 && (
+        <section class="cooks" aria-labelledby="cuisines">
+          <h2 id="cuisines">What they cook</h2>
+          <ul class="list">
+            {cuisines.map((x) => (
+              <li>
+                <a href={cuisinePath(x.name)} data-browse-kind="cuisine" data-browse-page={cuisinePath(x.name)!.split('/')[2]}>
+                  {x.name}
+                </a>
+                <span class="has">{n(x.count, 'recipe')} from {c.name}</span>
+              </li>
+            ))}
+          </ul>
         </section>
       )
     }

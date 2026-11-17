@@ -1,0 +1,13 @@
+---
+// /course/<id>/: one browse page per entry in COURSES (src/lib/browse.ts). Added 2026-11-17.
+import BrowsePage from '../../components/BrowsePage.astro';
+import { COURSES, type Browse } from '../../lib/browse';
+
+export function getStaticPaths() {
+  return COURSES.map((b) => ({ params: { id: b.slug }, props: { b } }));
+}
+
+const { b } = Astro.props as { b: Browse };
+---
+
+<BrowsePage b={b} />

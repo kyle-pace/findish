@@ -36,7 +36,9 @@ npm run preview   # builds, then runs it the way Cloudflare will
 | What | Where |
 | --- | --- |
 | The page | `src/pages/index.astro` |
-| Searching, typeahead, filters, URL state | `src/scripts/search.ts` |
+| The page's script: the box, tags, suggestions, filters, URL state | `src/scripts/search.ts` |
+| The search itself (words, typo fixing, understanding a sentence, ranking, videos), shared by the page, the MCP server and Ask | `src/lib/search-core.mjs`; tests in `src/lib/search-core.test.mjs`, and a ranking fixture of everyday dish searches in `src/lib/ranking.test.mjs` |
+| What a recipe has in it that people leave out (vegetarian, vegan, no dairy, no nuts…) and which cuisine it's filed under, both worked out when the index is built | `scripts/diet.mjs`, `scripts/cuisine.mjs` (tests beside them) |
 | The index (generated, not committed) | `public/index.json`, from `scripts/build-index.mjs` |
 | Ingredient matching and the source list | `vendor/kitchen-catalog/` (refresh with `npm run sync-catalog`), read through `crawler/lib/sources.mjs` |
 | Links to World cuisine (the line above a one-cuisine search) | `vendor/world-cuisine/notes.json` from World cuisine (refresh with `npm run sync-world-cuisine`), sentence rules in `scripts/world-cuisine.mjs` |
@@ -57,13 +59,13 @@ The same index is searchable by AI assistants over MCP (Model Context Protocol, 
 
 | Tool | What it answers |
 | --- | --- |
-| `search_recipes` | Recipes by dish name, by ingredients to cook with, or both; plus without, vegetarian or vegan, course, cuisine, time and creator. Results are names and links to the original, never the method. |
+| `search_recipes` | Recipes by dish name, by ingredients to cook with, or both; plus without (an ingredient, or dairy, eggs, nuts, shellfish, pork, meat, seafood), vegetarian or vegan, course, cuisine, time, creator, new this week, recipes or videos only, sort order and paging. It says what it understood, what spelling it fixed, what it left out, and what to loosen when nothing matches. Results are names and links to the original, never the method. |
 | `list_sources` | Who is indexed, ways to support them (marked join, buy or follow), each creator's page, and the cuisines and courses to filter on. |
 
 | What | Where |
 | --- | --- |
 | The endpoint (the only server-run part of the site) | `src/pages/mcp.ts` |
-| The search rules, as plain functions | `src/mcp/search.mjs`, tests in `src/mcp/search.test.mjs` (`npm test`) |
+| Turning an assistant's arguments into a search and the hits into an answer | `src/mcp/search.mjs`, tests in `src/mcp/search.test.mjs` (`npm test`). The search rules themselves are the page's: `src/lib/search-core.mjs` |
 | The server's address, the Claude link and the page paths | `src/lib/assistants.ts` |
 | Try every tool with the official MCP client | `npm run preview`, then `npm run try-mcp` (add the live address to check a deploy) |
 
@@ -78,7 +80,7 @@ At [findish.now/?chat=1](https://findish.now/?chat=1) only: type a question in t
 | The logic and its tests | `src/chat/chat.mjs`, `src/chat/chat.test.mjs` |
 | The one file that calls Anthropic | `src/chat/anthropic.mjs` (key: the Worker secret `ANTHROPIC_API_KEY`) |
 | The endpoint | `src/pages/api/chat.ts`, rate limits in `wrangler.jsonc` |
-| Telling a question from a search | `looksLikeAsk()` in `src/scripts/search.ts` |
+| Telling a question from a search | `looksLikeAsk()` in `src/lib/search-core.mjs` |
 | The hint and the answer line | `src/scripts/chat.ts`, `src/styles/chat.css` |
 
 ## The prototype

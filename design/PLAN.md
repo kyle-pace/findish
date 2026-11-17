@@ -19,7 +19,7 @@ The other two directions considered: a cookbook-index list (one column, time on 
 
 ## The wordmark (November 16, 2026)
 
-Findish is "fin", a plate-shaped d in nori green, "ish", in Atkinson bold. The d (a plate seen from above, with its stem) is where find and dish meet. Kyle picked the plate d on November 16 from mocks that combined two earlier ideas, bars over and under the name and the plate d; it replaced the curve under "dish", and he had the bars taken off the same day because they boxed the name in. It's text and one small inline SVG for the d (`src/components/Wordmark.astro`), so it scales and follows light and dark; screen readers hear "Findish" from hidden text and skip the drawing. It's the big name on the home page, the small link home in results, and a link home at the top of every other page (`src/components/SiteHead.astro`, since there's no top bar). The plate d on its own is the favicon (`public/favicon-v2.svg`, renamed so search engines refetch it; every page passes it to `LabLayout`), and the home share card (`design/og.html`) uses the full mark.
+Findish is "fin", a plate-shaped d in tomato red, "ish", in Atkinson bold. The d (a plate seen from above, with its stem) is where find and dish meet. Kyle picked the plate d on November 16 from mocks that combined two earlier ideas, bars over and under the name and the plate d; it replaced the curve under "dish", and he had the bars taken off the same day because they boxed the name in. It's text and one small inline SVG for the d (`src/components/Wordmark.astro`), so it scales and follows light and dark; screen readers hear "Findish" from hidden text and skip the drawing. It's the big name on the home page, the small link home in results, and a link home at the top of every other page (`src/components/SiteHead.astro`, since there's no top bar). The plate d on its own is the favicon (`public/favicon-v3.svg`, tomato since November 16, renamed so search engines refetch it; every page passes it to `LabLayout`), and the home share card (`design/og.html`) uses the full mark.
 
 ## The subject
 
@@ -53,18 +53,19 @@ Its own page (`/about/`), built at build time from the index: why it exists, eve
 
 ## Color
 
-"Nori" (Kyle's pick from three directions, November 8): a cool off-white with a green cast, and one deep seaweed green. The earlier bright scallion green read as odd.
+"Tomato and basil" (Kyle's pick, November 16, from three warmer directions; it replaced "Nori", the deep seaweed green from November 8, which read too quiet). A warm cream page, brown-black ink, tomato red as the one bold color, and a soft basil green behind ingredient tags. Tokens in `src/styles/theme.css`; every text pair checked for AA in light and dark.
 
 | Name | Light | Dark | Use |
 | --- | --- | --- | --- |
-| Page | #F7F8F6 | #151918 | Background |
-| Raised | #FFFFFF | #1C2120 | The box, menus |
-| Ink | #13201D | #DFE5E2 | Text, the search button, actions |
-| Muted | #566461 | #98A39F | Secondary text |
-| Field rule | #848F8B | #69756F | The box's border, underlines under actions |
-| Nori | #1D6B5A / fill #E3EFEB | #8EC3B5 / fill #23302D | Tags, focus, a filter that's set. Nothing else. |
-| Chili | #B3261E | #FF8F80 | Removing |
-| Line | #E3E8E5 | #262C2B | Dividers |
+| Cream (page) | #FBF5EC | #1D1714 | Background |
+| Raised | #FFFDF9 | #251E1A | The box, menus |
+| Ink | #2A1712 | #F1E6DF | Text, actions |
+| Muted | #6E5249 | #B8A49B | Secondary text |
+| Field rule | #9A7E72 | #7D6A61 | The box's border, underlines under actions |
+| Tomato | #B8341C (button #C23B22, white glass) | #FF9F86 (button, dark glass) | The plate d, the search button, focus, links, a filter that's set, the ring around creator tags (#F3C9BC / #5A2C22) |
+| Basil | fill #E2EFD9 | fill #25331F | Behind ingredient tags |
+| Chili | #9F1D1D | #FF8F80 | Removing |
+| Line | #EFE2D6 | #332924 | Dividers |
 
 No source tints: the photos carry the color.
 

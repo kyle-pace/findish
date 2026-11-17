@@ -1,22 +1,29 @@
 /*
-  Findish's own look (design/PLAN.md). It's a standalone lab, so it takes
-  kp-design's tokens and makes them its own: a cool off-white or soft charcoal with a
-  green cast, ink for text and controls, and one deep seaweed green ("nori", Kyle's
-  pick, 2026-11-08) kept for the tags, focus and active filters only ("Hushed", Kyle's
-  pick, 2026-11-09); chili for removing. The photos bring the color. Dark mode is a
-  lifted charcoal and an off-white, not near-black and near-white, so nothing glows.
-  Every text pair meets WCAG AA in light and dark, and the field rule meets 3:1 as a
-  UI boundary.
+  Findish's own look (design/PLAN.md). It's a standalone site, so it takes kp-design's
+  tokens and makes them its own: "Tomato and basil" (Kyle's pick, 2026-11-16, replacing
+  the quieter "nori" green). A warm cream page, or a warm charcoal in dark mode, brown-
+  black ink, tomato red for the plate d, the search button, focus and links, and a soft
+  basil green behind ingredient tags. Chili, a darker red, is for removing. The photos
+  still bring most of the color. Dark mode is a lifted charcoal and a warm off-white, not
+  near-black and near-white, so nothing glows. Every text pair meets WCAG AA in light and
+  dark, and the field rule meets 3:1 as a UI boundary (checked 2026-11-16).
 */
 :root {
-  --bg: light-dark(#f7f8f6, #151918);
-  --bg-raised: light-dark(#ffffff, #1c2120);
-  --ink: light-dark(#13201d, #dfe5e2);
-  --ink-muted: light-dark(#566461, #98a39f);
-  --line: light-dark(#e3e8e5, #262c2b);
-  --field-rule: light-dark(#848f8b, #69756f);
-  --accent: #1d6b5a;
-  --accent-ink: light-dark(#1d6b5a, #8ec3b5);
-  --scallion-fill: light-dark(#e3efeb, #23302d);
-  --chili: light-dark(#b3261e, #ff8f80);
+  --bg: light-dark(#fbf5ec, #1d1714);
+  --bg-raised: light-dark(#fffdf9, #251e1a);
+  --ink: light-dark(#2a1712, #f1e6df);
+  --ink-muted: light-dark(#6e5249, #b8a49b);
+  --line: light-dark(#efe2d6, #332924);
+  --field-rule: light-dark(#9a7e72, #7d6a61);
+  /* Tomato */
+  --accent: #c23b22;
+  --accent-ink: light-dark(#b8341c, #ff9f86);
+  /* The search button: tomato with a white glass, or light tomato with a dark one */
+  --go: light-dark(#c23b22, #ff9f86);
+  --go-ink: light-dark(#ffffff, #1d1714);
+  /* Basil, behind ingredient tags (the name is from the earlier scallion palette) */
+  --scallion-fill: light-dark(#e2efd9, #25331f);
+  /* A soft tomato ring around creator tags */
+  --creator-ring: light-dark(#f3c9bc, #5a2c22);
+  --chili: light-dark(#9f1d1d, #ff8f80);
 }

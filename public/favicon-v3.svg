@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <style>.bg{fill:#1d6b5a}.ink{fill:#f7f8f6;stroke:#f7f8f6}@media (prefers-color-scheme:dark){.bg{fill:#8ec3b5}.ink{fill:#151918;stroke:#151918}}</style>
+  <style>.bg{fill:#c23b22}.ink{fill:#fffdf9;stroke:#fffdf9}@media (prefers-color-scheme:dark){.bg{fill:#ff9f86}.ink{fill:#1d1714;stroke:#1d1714}}</style>
   <rect class="bg" width="32" height="32" rx="7"/>
   <circle class="ink" cx="14" cy="19" r="6.5" fill="none" stroke-width="3" style="fill:none"/>
   <circle class="ink" cx="14" cy="19" r="2.4" stroke="none" opacity="0.45"/>

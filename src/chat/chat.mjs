@@ -93,7 +93,7 @@ Building the search:
 - diet: "no meat" or "meatless" is vegetarian.
 - without: what to leave out. There is no dairy-free, gluten-free or nut-free filter, so name the usual ingredients instead ("no dairy" is ["milk", "cheese", "butter", "cream", "yogurt"]) and say it is a best guess.
 - max_minutes: only when they ask for quick (30) or give a time.
-- creator: only when they ask for one. Some creators are videos only: their results are YouTube videos, and you say so.
+- creator: only when they ask for one, by the name in the creator list ("Pailin" is Hot Thai Kitchen, "Nagi" is RecipeTin Eats, "Deb" is Smitten Kitchen). Some creators are videos only: their results are YouTube videos, and you say so.
 - new_only: "what's new" or "anything new this week" is new_only true and nothing else, unless they ask for more.
 - show: "videos" when they only want videos, "recipes" when they only want written recipes.
 - Fix spelling ("chiken parmesean" is "chicken parmesan"), and write dishes the way English-language recipe sites spell them, whatever script the person used ("麻婆豆腐" is "mapo tofu", "떡볶이" is "tteokbokki").
@@ -181,11 +181,14 @@ export function pageQuery(ready, s = {}) {
   const { index } = ready;
   const p = new URLSearchParams();
   const extra = [];
-  const ids = (list, unknown) => {
+  // `own`: only an ingredient's main name counts. Leaving out "cilantro" must not leave out
+  // everything filed under Fresh herbs, which also goes by that name (the page's rule too).
+  const ids = (list, unknown, own = false) => {
     const found = [];
     for (const phrase of (Array.isArray(list) ? list : []).slice(0, 8)) {
       if (typeof phrase !== 'string') continue;
-      const pos = ingredientFor(ready, phrase);
+      let pos = ingredientFor(ready, phrase);
+      if (own && pos != null && ready.ingNames[pos][0] !== words(phrase).join(' ')) pos = null;
       if (pos == null) unknown?.push(phrase);
       else if (!found.includes(index.ing[pos][0])) found.push(index.ing[pos][0]);
     }
@@ -193,7 +196,7 @@ export function pageQuery(ready, s = {}) {
   };
   const withIds = ids(s.ingredients, extra);
   const notWords = [];
-  const withoutIds = ids(s.without, notWords);
+  const withoutIds = ids(s.without, notWords, true);
   const q = words([typeof s.query === 'string' ? s.query : '', ...extra].join(' ')).join(' ');
   if (q) p.set('q', q.slice(0, 120));
   if (withIds.length) p.set('with', withIds.join(','));
@@ -317,8 +320,6 @@ const COUNT_CLAIM = new RegExp(
  *   counts  the real counts for the shown search (recipes, videos, both together)
  */
 export function guardReply(reply, { titles = [], allow = [], counts = [], fallback = 'Here’s a search for that.' } = {}) {
-  const allowed = allow.map(flat);
-  const named = [...new Set(titles.map(flat))].filter((t) => t.trim().split(' ').length >= 2 && !allowed.some((a) => a.includes(t)));
   const real = new Set(counts.map(Number));
   const sentences = String(reply || '')
     .replace(/\s+/g, ' ')
@@ -326,8 +327,7 @@ export function guardReply(reply, { titles = [], allow = [], counts = [], fallba
     .split(/(?<=[.!?…])\s+/)
     .filter(Boolean);
   const kept = sentences.filter((s) => {
-    const f = flat(s);
-    if (named.some((t) => f.includes(t))) return false;
+    if (namesIn(s, titles, allow).length) return false;
     for (const m of s.matchAll(COUNT_CLAIM)) {
       const n = /^\d/.test(m[1]) ? Number(m[1]) : NUMBER_WORDS.indexOf(m[1].toLowerCase());
       if (!real.has(n)) return false;
@@ -335,6 +335,23 @@ export function guardReply(reply, { titles = [], allow = [], counts = [], fallba
     return true;
   });
   return clip(kept.join(' ')) || fallback;
+}
+
+/**
+ * The recipe or video names (two words or more) that appear in `text`, leaving out any whose
+ * words are in `allow`: a dish the person named themselves isn't a leak. Also used by
+ * scripts/ask-eval.mjs to check every reply.
+ */
+export function namesIn(text, titles = [], allow = []) {
+  const allowed = allow.map(flat);
+  const f = flat(text);
+  const seen = new Set();
+  return titles.filter((title) => {
+    const t = flat(title);
+    if (seen.has(t) || t.trim().split(' ').length < 2 || allowed.some((a) => a.includes(t))) return false;
+    seen.add(t);
+    return f.includes(t);
+  });
 }
 
 /**

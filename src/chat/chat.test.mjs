@@ -138,6 +138,15 @@ test("what's new, videos only and what the sides are for reach the page", () => 
   assert.equal(pageQuery(prepare({ ...index, fresh: [] }), { new_only: true }), '');
 });
 
+test("leaving out an ingredient by one of a group's other names doesn't leave out the whole group", () => {
+  // "bean curd" is another name for Tofu here, the way "cilantro" is for Fresh herbs in the real index.
+  const q = new URLSearchParams(pageQuery(ready, { without: ['bean curd', 'tofu'] }));
+  assert.equal(q.get('without'), 'tofu'); // only the one asked for by its own name
+  assert.equal(q.get('not'), 'bean'); // the other is kept out of names instead
+  // Cooking with it by another name is still fine: more recipes is the safe direction.
+  assert.equal(new URLSearchParams(pageQuery(ready, { ingredients: ['bean curd'] })).get('with'), 'tofu');
+});
+
 test('nonsense in a search is dropped, not passed on', () => {
   assert.equal(pageQuery(ready, { course: 'brunch', cuisine: 'Martian', max_minutes: -5, diet: 'keto', ingredients: 'tofu' }), '');
   assert.equal(pageQuery(ready, {}), '');

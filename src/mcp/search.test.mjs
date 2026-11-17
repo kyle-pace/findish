@@ -34,14 +34,15 @@ const index = {
   paused: [{ id: 'joc', name: 'Just One Cookbook', site: 'https://www.justonecookbook.com', why: 'paused' }],
   linkOnly: [{ name: 'Serious Eats', search: 'https://www.seriouseats.com/search?q={q}' }],
   cuisines: [['Chinese', 3], ['Thai', 2]],
+  courses: [['main', 'Mains', 1], ['side', 'Sides and salads', 1]],
   diet: { vegetarian: [0, 1], vegan: [0, 1] },
   ing,
   recipes: [
     [0, 'Mapo Tofu', '/mapo-tofu/', 30, 'Chinese', [0, 2, 3], [0, 2, 3], 'x.jpg', 'sichuan', 5],
     [0, 'Vegan Mapo Tofu', '/vegan-mapo-tofu/', 25, 'Chinese', [2, 3], [2, 3], 'x.jpg', '', 0],
     [0, 'Red Braised Pork Belly', '/pork-belly/', 90, 'Chinese', [1, 0, 3], [1, 3], 'x.jpg', 'hong shao rou', 0],
-    [1, 'Pad See Ew', '/pad-see-ew/', 20, 'Thai', [5, 0], [5, 0], 'x.jpg', 'stir fried noodles', 0],
-    [1, 'Stir-Fried Bok Choy', '/bok-choy/', 10, 'Thai', [4], [4], '', '', 0],
+    [1, 'Pad See Ew', '/pad-see-ew/', 20, 'Thai', [5, 0], [5, 0], 'x.jpg', 'stir fried noodles', 0, 'main'],
+    [1, 'Stir-Fried Bok Choy', '/bok-choy/', 10, 'Thai', [4], [4], '', '', 0, 'side', '2026-11-09'],
   ],
 };
 const ready = prepare(index);
@@ -143,4 +144,13 @@ test('list_sources gives a paused site its address, so apps can match its pages'
   assert.equal(joc.site, 'https://www.justonecookbook.com');
   const kenji = listSources(ready).creators.find((c) => c.name === 'J. Kenji López-Alt');
   assert.equal(kenji.site, undefined);
+});
+
+test('course narrows to that part of a meal, and an unknown course says which exist', () => {
+  const sides = searchRecipes(ready, { course: 'side', cuisine: 'Thai' });
+  assert.deepEqual(names(sides), ['Stir-Fried Bok Choy']);
+  assert.equal(sides.recipes[0].course, 'side');
+  assert.deepEqual(names(searchRecipes(ready, { course: 'Sides and salads' })), ['Stir-Fried Bok Choy']);
+  const bad = searchRecipes(ready, { course: 'elevenses' });
+  assert.ok(bad.error && bad.courses.includes('main'));
 });

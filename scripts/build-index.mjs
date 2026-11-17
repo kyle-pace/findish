@@ -11,6 +11,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { load, match } from '../vendor/kitchen-catalog/catalog.mjs';
 import { readSources } from '../crawler/lib/sources.mjs';
+import { COURSES, courseOf } from './course.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const out = join(root, 'public/index.json');
@@ -84,6 +85,7 @@ const srcList = [];
 const ingIndex = new Map(); // id -> position in ing[]
 const ing = []; // [id, name, recipeCount, parent positions, ...other names]
 const cuisineCount = new Map();
+const courseCount = new Map();
 const recipes = [];
 // How often each recipe was opened lately, by "<source id>:<url as stored>"
 // (data/popularity.json, written daily by scripts/popularity.mjs from Amplitude).
@@ -150,7 +152,10 @@ for (const s of sources.recipes) {
     // Smaller photos where the host can resize (WordPress.com's image CDN takes ?w=).
     let img = s.photos === false ? '' : r.img || '';
     if (img.startsWith('https://i0.wp.com/')) img = img.replace(/\?.*$/, '') + '?w=480&quality=80&ssl=1';
-    recipes.push([srcIdx, name, url, minutes(r.t), cuisine, pos, own, img, kw.join(' · '), popularity[`${s.id}:${url}`] || 0]);
+    // Which part of a meal it is (scripts/course.mjs), and the day the crawler first found it.
+    const course = courseOf(decode(r.k || ''), name);
+    if (course) courseCount.set(course, (courseCount.get(course) || 0) + 1);
+    recipes.push([srcIdx, name, url, minutes(r.t), cuisine, pos, own, img, kw.join(' · '), popularity[`${s.id}:${url}`] || 0, course, r.a || '']);
     srcList[srcIdx].count++;
   }
 }
@@ -180,7 +185,7 @@ for (const v of sources.videos || []) {
     const ids = new Set();
     const m = match(catalog, decode(row.n));
     if (m && !catalog.items[m.id].product) for (const id of withParents(m.id)) ids.add(id);
-    videos.push([ci, decode(row.n), row.id, row.p || '', [...ids].map(ingPos)]);
+    videos.push([ci, decode(row.n), row.id, row.p || '', [...ids].map(ingPos), courseOf('', decode(row.n))]);
   }
 }
 
@@ -220,6 +225,19 @@ const diet = {
   vegan: dietOf((id, item) => notVegetarian(id, item) || (item.section === 'dairy-eggs' && !isPlant(id)) || hasWord(id, DAIRY_EGG)),
 };
 
+// "New this week": recipes the latest crawl's week found, leaving out a creator's first
+// crawl (adding a whole site isn't news about its recipes, and would flood the list).
+const crawled = (status.run || '').slice(0, 10);
+const weekStart = crawled ? new Date(Date.parse(crawled) - 6 * 864e5).toISOString().slice(0, 10) : '';
+const firstSeen = new Map();
+for (const r of recipes) if (r[11] && (!firstSeen.has(r[0]) || r[11] < firstSeen.get(r[0]))) firstSeen.set(r[0], r[11]);
+const fresh = recipes
+  .map((r, i) => [r, i])
+  .filter(([r]) => weekStart && r[11] >= weekStart && r[11] > firstSeen.get(r[0]))
+  .sort(([a], [b]) => b[11].localeCompare(a[11]) || Number(!!b[7]) - Number(!!a[7]))
+  .map(([, i]) => i);
+const courses = COURSES.filter(([id]) => courseCount.get(id)).map(([id, label]) => [id, label, courseCount.get(id)]);
+
 const cuisines = [...cuisineCount].filter(([, n]) => n >= 5).sort((a, b) => b[1] - a[1]);
 
 const paused = sources.recipes
@@ -238,13 +256,15 @@ const support = Object.fromEntries(
 
 const index = {
   built: new Date().toISOString().slice(0, 10),
-  crawled: (status.run || '').slice(0, 10),
+  crawled,
   sources: srcList,
   paused,
   videos: { sources: channels, rows: videos },
   support,
   linkOnly: (sources.link_only || []).map((l) => ({ name: l.name, search: l.search })),
   cuisines,
+  courses,
+  fresh,
   popular,
   diet,
   ing,
@@ -258,7 +278,7 @@ writeFileSync(out, json);
 copyFileSync(join(root, '.agents/allowed-hosts.txt'), join(dirname(out), 'allowed-hosts.txt'));
 console.log(
   `index: ${recipes.length} recipes from ${srcList.length} sites, ${videos.length} videos, ${ing.length} ingredients, ` +
-    `${cuisines.length} cuisines; ${Math.round((matched / lines) * 100)}% of ingredient lines matched; ${Math.round(json.length / 1024)} KB`,
+    `${cuisines.length} cuisines, ${courses.length} courses, ${fresh.length} new this week; ${Math.round((matched / lines) * 100)}% of ingredient lines matched; ${Math.round(json.length / 1024)} KB`,
 );
 if (report) {
   console.log('Most common unmatched lines:');

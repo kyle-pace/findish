@@ -64,13 +64,17 @@ function createServer(origin: string) {
       description:
         'Find recipes from trusted recipe sites (The Woks of Life, Hot Thai Kitchen, Smitten Kitchen, RecipeTin Eats and others; see list_sources). ' +
         'Search by dish (`query`), by what you have to cook with (`ingredients`), or both. With ingredients, recipes that use more of them and need fewer other things come first, and each result lists what it uses and what else it needs. ' +
-        'Each result is a name, a link to the original recipe, the site, and time and cuisine when known. Matching YouTube videos from the same creators come along, labeled as YouTube.',
+        'Each result is a name, a link to the original recipe, the site, and time, cuisine and course when known. Matching YouTube videos from the same creators come along, labeled as YouTube.',
       inputSchema: z.object({
         query: z.string().max(200).optional().describe("Words for the dish, matched in recipe names and keywords, for example 'mapo tofu' or 'noodle soup'. Not for ingredients you have: put those in `ingredients`."),
         ingredients: strings.optional().describe("Things to cook with, one per item, by plain name: ['chicken thighs', 'bok choy', 'tofu']. A recipe must use at least one."),
         without: strings.optional().describe("Ingredients to leave out: ['pork', 'peanuts']."),
         diet: z.enum(['vegetarian', 'vegan']).optional().describe('Leave out recipes with meat or seafood (vegetarian), and also dairy, eggs and honey (vegan). A best guess from ingredient lists.'),
         cuisine: z.string().max(60).optional().describe("A cuisine as listed by list_sources, for example 'Chinese', 'Thai', 'Japanese'."),
+        course: z
+          .enum(['main', 'side', 'soup', 'starter', 'breakfast', 'dessert', 'bread', 'sauce', 'drink'])
+          .optional()
+          .describe("Which part of a meal: 'main', 'side' (sides and salads), 'soup', 'starter', 'breakfast', 'dessert', 'bread', 'sauce' (sauces and pantry) or 'drink'. For sides to go with a dish, ask for course 'side' with the dish's cuisine."),
         max_minutes: z.number().int().min(1).max(1440).optional().describe('Only recipes whose total time is known and at most this many minutes.'),
         creator: z.string().max(80).optional().describe("Only one creator, by name: 'The Woks of Life', 'Kenji'."),
         videos: z.boolean().optional().describe('Set false to leave YouTube videos out. Default true.'),

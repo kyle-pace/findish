@@ -88,6 +88,9 @@ const creators: number = index.sources.length;
         <li>
           <strong>One index file.</strong> <code>scripts/build-index.mjs</code> packs it all into <code>index.json</code>, matching every
           ingredient line to KitchenCatalog, the grocery list the food projects share, so "scallions" and "green onions" are one thing.
+          It also sorts each recipe into a course (<code>scripts/course.mjs</code>): sites label courses about 185 ways, so their
+          labels fold into nine plain ones, a clear dish name decides when there's no label, and anything unclear stays unlabeled
+          rather than guessed. Each recipe also keeps the day the crawler first found it, which is how "New this week" knows what's new.
         </li>
         <li>
           <strong>No search server.</strong> The index is a few hundred kilobytes, so the browser downloads it once and searches it

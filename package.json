@@ -10,7 +10,7 @@
     "preview": "npm run build && wrangler dev",
     "sync-catalog": "node scripts/sync-catalog.mjs",
     "crawl": "node crawler/crawl.mjs",
-    "test": "node --test crawler/test/*.test.mjs src/mcp/*.test.mjs",
+    "test": "node --test crawler/test/*.test.mjs src/mcp/*.test.mjs scripts/*.test.mjs",
     "try-mcp": "node scripts/try-mcp.mjs",
     "check": "node .agents/skills/page-check/check.mjs"
   },

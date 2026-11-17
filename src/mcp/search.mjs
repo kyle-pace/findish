@@ -49,6 +49,7 @@ export function prepare(index) {
       url: r[2].startsWith('http') ? r[2] : index.sources[r[0]].site + r[2],
       min: r[3],
       cuisine: r[4],
+      course: r[10] || '',
       pos: new Set(r[5]),
       own: r[6],
       hasPhoto: Boolean(r[7]),
@@ -169,6 +170,7 @@ function findRecipes(ready, f, loose) {
     if (f.creator && r.src.id !== f.creator.id) continue;
     if (f.maxMinutes && (r.min == null || r.min > f.maxMinutes)) continue;
     if (f.cuisine && r.cuisine !== f.cuisine) continue;
+    if (f.course && r.course !== f.course) continue;
     if (f.out.size && [...r.pos].some((p) => f.out.has(p))) continue;
     if (f.notWords.length && f.notWords.some((w) => r.title.includes(w))) continue;
     const t = textScore(r, f.q, loose);
@@ -232,6 +234,7 @@ const fmtTime = (m) => (m < 60 ? `${m} min` : `${Math.floor(m / 60)} hr${m % 60 
  *   ingredients  things to cook with; a recipe must use at least one, more is better
  *   without      ingredients to leave out
  *   diet         "vegetarian" or "vegan" (a best guess from ingredient lists)
+ *   course       main, side, soup, starter, breakfast, dessert, bread, sauce or drink
  *   cuisine, max_minutes, creator, limit, videos
  */
 export function searchRecipes(ready, opts = {}) {
@@ -240,7 +243,7 @@ export function searchRecipes(ready, opts = {}) {
   const limit = Math.min(Math.max(Number(opts.limit) || 10, 1), 30);
   const name = (p) => index.ing[p][1];
 
-  const f = { q: words(opts.query), with: [], out: new Set(), notWords: [], creator: null, cuisine: '', maxMinutes: Number(opts.max_minutes) || 0 };
+  const f = { q: words(opts.query), with: [], out: new Set(), notWords: [], creator: null, cuisine: '', course: '', maxMinutes: Number(opts.max_minutes) || 0 };
 
   const unknown = [];
   for (const phrase of list(opts.ingredients)) {
@@ -268,6 +271,13 @@ export function searchRecipes(ready, opts = {}) {
     f.cuisine = cuisineFor(ready, opts.cuisine);
     if (!f.cuisine) return { error: `No cuisine matches "${opts.cuisine}".`, cuisines: index.cuisines.map(([c]) => c) };
   }
+  if (opts.course) {
+    const want = String(opts.course).toLowerCase().trim();
+    const c = (index.courses || []).find(([id, label]) => id === want || label.toLowerCase() === want || id + 's' === want);
+    if (!c) return { error: `No course matches "${opts.course}".`, courses: (index.courses || []).map(([id]) => id) };
+    f.course = c[0];
+    notes.push('Courses come from how each site files its recipes, or a plain dish name; recipes no site labels are left out when a course is asked for.');
+  }
   if (opts.creator) {
     f.creator = creatorFor(ready, opts.creator);
     if (!f.creator) return { error: `No creator matches "${opts.creator}".`, creators: [...ready.creators.values()].map((c) => c.name) };
@@ -283,6 +293,7 @@ export function searchRecipes(ready, opts = {}) {
     const out = { name: h.r.name, url: h.r.url, from: h.r.src.name };
     if (h.r.min) out.time = fmtTime(h.r.min);
     if (h.r.cuisine) out.cuisine = h.r.cuisine;
+    if (h.r.course) out.course = h.r.course;
     if (f.with.length) {
       out.uses = h.used.map(name);
       const covers = (p) => f.with.includes(p) || index.ing[p][3].some((parent) => f.with.includes(parent));
@@ -293,7 +304,7 @@ export function searchRecipes(ready, opts = {}) {
   });
 
   // Videos have no cuisine or time in the index, so they only come along when neither is asked for.
-  const wantVideos = opts.videos !== false && !f.cuisine && !f.maxMinutes;
+  const wantVideos = opts.videos !== false && !f.cuisine && !f.maxMinutes && !f.course;
   const videos = wantVideos ? findVideos(ready, f, Math.min(5, limit)) : [];
 
   if (found.total > recipes.length) notes.push(`Showing ${recipes.length} of ${found.total} recipes. Add words, ingredients or filters to narrow it, or raise limit (up to 30).`);
@@ -328,6 +339,7 @@ export function listSources(ready) {
     })),
     not_indexed_but_searchable: (index.linkOnly || []).map((l) => l.name),
     cuisines: index.cuisines.map(([c, n]) => `${c} (${n})`),
+    courses: (index.courses || []).map(([id, label, n]) => `${id}: ${label} (${n})`),
     recipe_count: index.recipes.length,
     video_count: index.videos.rows.length,
     crawled: index.crawled,

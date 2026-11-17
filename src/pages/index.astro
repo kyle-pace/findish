@@ -84,6 +84,7 @@ import '../styles/theme.css';
 
       <div class="filters" role="group" aria-label="Narrow it down">
         <button class="filter" type="button" popovertarget="f-show" id="f-show-btn">Show: <span id="f-show-value">recipes and videos</span></button>
+        <button class="filter" type="button" popovertarget="f-course" id="f-course-btn">Course: <span id="f-course-value">any</span></button>
         <button class="filter" type="button" popovertarget="f-cuisine" id="f-cuisine-btn">Cuisine: <span id="f-cuisine-value">any</span></button>
         <button class="filter" type="button" popovertarget="f-site" id="f-site-btn">Creator: <span id="f-site-value">any</span></button>
         <button class="filter" type="button" popovertarget="f-time" id="f-time-btn">Time: <span id="f-time-value">any</span></button>
@@ -93,6 +94,9 @@ import '../styles/theme.css';
 
       <div class="pop" id="f-show" popover>
         <fieldset><legend>Show</legend><div class="options" id="f-show-options"></div></fieldset>
+      </div>
+      <div class="pop" id="f-course" popover>
+        <fieldset><legend>Course</legend><div class="options" id="f-course-options"></div></fieldset>
       </div>
       <div class="pop" id="f-cuisine" popover>
         <fieldset><legend>Cuisine</legend><div class="options" id="f-cuisine-options"></div></fieldset>
@@ -110,6 +114,7 @@ import '../styles/theme.css';
         <p id="try"></p>
         <p id="popular"></p>
         <p id="creators"></p>
+        <p id="fresh" hidden></p>
       </section>
 
       <section class="picked" id="picked" aria-labelledby="picked-title" hidden tabindex="-1">
@@ -828,6 +833,33 @@ import '../styles/theme.css';
   :global(.row .support a) {
     position: relative;
     z-index: 1;
+  }
+
+  /* "Thai sides to go with it": a quiet link-style button under a main dish, lifted
+     above the row's stretched recipe link like the support links. */
+  :global(.row .sides) {
+    margin: var(--space-1) 0 0;
+    font-size: var(--step--1);
+  }
+
+  :global(.row .sides button) {
+    position: relative;
+    z-index: 1;
+    min-height: 1.5rem;
+    padding: 0.2rem 0;
+    border: 0;
+    background: none;
+    color: var(--accent-ink);
+    font: inherit;
+    font-weight: 700;
+    text-decoration: underline;
+    text-decoration-thickness: 0.08em;
+    text-underline-offset: 0.2em;
+    cursor: pointer;
+  }
+
+  :global(.row .sides button:hover) {
+    text-decoration-thickness: 0.14em;
   }
 
   .picked :global(.support) {

@@ -7,17 +7,17 @@
 // ingredient tags rank recipes by how many of them they use, creator tags narrow to that
 // creator's recipes and videos. With nothing searched, the page is just the box (home);
 // after a search, the box moves up and results fill the page (results).
-// State lives in the URL (?q=, &with=, &site=, &time=, &cuisine=), so searches can be
+// State lives in the URL (?q=, &with=, &site=, &time=, &cuisine=, &course=, &new=), so searches can be
 // shared and the back button works. (`site` holds creator ids, for older links.)
 import { track } from 'kp-design/analytics';
 
 type Source = { id: string; name: string; site: string; host: string; count: number };
 // [catalog id, name, recipes naming it, parent positions, ...other names]
 type Ing = [string, string, number, number[], ...string[]];
-// [source, name, url (path on the site), minutes, cuisine, ingredient positions (with parents), own positions, photo, keywords, opens lately]
-type RecipeRow = [number, string, string, number | null, string, number[], number[], string, string, number?];
-// [channel index, title, video id, published date, ingredient positions]
-type VideoRow = [number, string, string, string, number[]];
+// [source, name, url (path on the site), minutes, cuisine, ingredient positions (with parents), own positions, photo, keywords, opens lately, course, first found]
+type RecipeRow = [number, string, string, number | null, string, number[], number[], string, string, number?, string?, string?];
+// [channel index, title, video id, published date, ingredient positions, course from the title]
+type VideoRow = [number, string, string, string, number[], string?];
 type Channel = { id: string; name: string; channel: string; site: string; count: number };
 type Index = {
   built: string;
@@ -29,6 +29,10 @@ type Index = {
   support: Record<string, { label: string; url: string; book?: boolean }[]>;
   linkOnly: { name: string; search: string }[];
   cuisines: [string, number][];
+  /** [id, label, recipes], in menu order (scripts/course.mjs). */
+  courses?: [string, string, number][];
+  /** Recipes the latest crawl's week found, newest first. */
+  fresh?: number[];
   popular: number[];
   /** Ingredient positions a vegetarian or vegan search leaves out. */
   diet?: { vegetarian: number[]; vegan: number[] };
@@ -46,6 +50,9 @@ type Recipe = {
   url: string;
   min: number | null;
   cuisine: string;
+  /** main, side, soup… or '' when the site doesn't say and the name isn't plain. */
+  course: string;
+  isNew: boolean;
   pos: Set<number>;
   own: number[];
   img: string;
@@ -81,6 +88,8 @@ const fmtTime = (m: number) =>
   m < 60 ? plural(m, 'minute') : `${plural(Math.floor(m / 60), 'hour')}${m % 60 ? ` ${plural(m % 60, 'minute')}` : ''}`;
 /** "a, b and c" */
 const andList = (xs: string[]) => (xs.length < 2 ? xs.join('') : `${xs.slice(0, -1).join(', ')} and ${xs.at(-1)}`);
+/** "2026-11-16" -> "November 16" */
+const fmtDay = (d: string) => new Date(`${d}T12:00:00`).toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
 const orList = (xs: string[]) => (xs.length < 2 ? xs.join('') : `${xs.slice(0, -1).join(', ')} or ${xs.at(-1)}`);
 
 /** "Scallions, chopped!" -> ["scallion", "chopped"]: lowercase, no accents, singular words. */
@@ -112,6 +121,7 @@ const creatorById = new Map<string, Creator>();
 let ingNames: string[][] = []; // per position: its names, as words joined by spaces
 let ingRecipes: number[] = []; // per position: how many recipes use it (directly or as a kind of it)
 const ingById = new Map<string, number>();
+const sideCount = new Map<string, number>(); // sides per cuisine, for "Sides to go with it"
 
 const state = {
   q: '',
@@ -119,6 +129,9 @@ const state = {
   sites: new Set<string>(), // creator ids
   time: 0,
   cuisine: '',
+  course: '',
+  fresh: false, // only what's new this week
+  sidesFor: -1, // the main a "Sides to go with it" search came from (not kept in the URL)
   show: '' as '' | 'recipes' | 'videos', // both, or just one kind
   without: [] as number[], // ingredients to leave out ("no pork")
   notWords: [] as string[], // words to leave out by title, for things that aren't one ingredient ("no peas")
@@ -148,7 +161,7 @@ async function load() {
   data.ing.forEach((g, p) => ingById.set(g[0], p));
   ingRecipes = data.ing.map(() => 0);
   recipes = data.recipes.map((row, i) => {
-    const [s, name, url, min, cuisine, pos, own, img, kw, opens = 0] = row;
+    const [s, name, url, min, cuisine, pos, own, img, kw, opens = 0, course = ''] = row;
     const src = data.sources[s];
     for (const p of pos) ingRecipes[p]++;
     const title = words(name);
@@ -165,6 +178,8 @@ async function load() {
       url: url.startsWith('http') ? url : src.site + url,
       min,
       cuisine,
+      course,
+      isNew: false,
       pos: new Set(pos),
       own,
       img,
@@ -175,6 +190,8 @@ async function load() {
       other: [...new Set(other)],
     };
   });
+  for (const i of data.fresh || []) recipes[i].isNew = true;
+  for (const r of recipes) if (r.course === 'side' && r.cuisine) sideCount.set(r.cuisine, (sideCount.get(r.cuisine) || 0) + 1);
   buildVocab();
   buildFilters();
   buildStart();
@@ -454,12 +471,14 @@ function covers(chosen: number[], p: number): boolean {
   return chosen.includes(p) || data.ing[p][3].some((parent) => chosen.includes(parent));
 }
 
-type Skip = 'site' | 'time' | 'cuisine';
+type Skip = 'site' | 'time' | 'cuisine' | 'course';
 
 function passesFilters(r: Recipe, skip?: Skip): boolean {
   if (skip !== 'site' && state.sites.size && !state.sites.has(r.src.id)) return false;
   if (skip !== 'time' && state.time && (r.min == null || r.min > state.time)) return false;
   if (skip !== 'cuisine' && state.cuisine && r.cuisine !== state.cuisine) return false;
+  if (skip !== 'course' && state.course && r.course !== state.course) return false;
+  if (state.fresh && !r.isNew) return false;
   return true;
 }
 
@@ -554,10 +573,12 @@ function searchVideos(opts: { q?: string; skip?: Skip } = {}): VideoRow[] {
   const sites = opts.skip === 'site' ? new Set<string>() : state.sites;
   // Videos come along when there are words or a creator; ingredients alone bring them
   // only when you've asked for videos.
+  if (state.fresh) return []; // "new this week" is about recipes
   if (!q.length && !sites.size && !(state.show === 'videos' && state.with.length)) return [];
   const chanWords = data.videos.sources.map((c) => words(c.name));
   const matched = data.videos.rows.filter((v) => {
     if (sites.size && !sites.has(creatorOfChannel(v[0]))) return false;
+    if (state.course && opts.skip !== 'course' && v[5] !== state.course) return false;
     if (leaveOut.size && v[4].some((p) => leaveOut.has(p))) return false;
     if (state.notWords.length && words(v[1]).some((w) => state.notWords.some((n) => words(n)[0] === w))) return false;
     if (q.length) {
@@ -575,8 +596,8 @@ function searchVideos(opts: { q?: string; skip?: Skip } = {}): VideoRow[] {
 }
 
 const isBlank = () =>
-  !state.q && !state.with.length && !state.without.length && !state.notWords.length && !state.diet && !state.sites.size && !state.time && !state.cuisine;
-const filterCount = () => Number(!!state.sites.size) + Number(!!state.time) + Number(!!state.cuisine) + Number(!!state.show);
+  !state.q && !state.with.length && !state.without.length && !state.notWords.length && !state.diet && !state.sites.size && !state.time && !state.cuisine && !state.course && !state.fresh;
+const filterCount = () => Number(!!state.sites.size) + Number(!!state.time) + Number(!!state.cuisine) + Number(!!state.course) + Number(!!state.show);
 
 // ---------------------------------------------------------------------------------------
 // Rendering
@@ -604,6 +625,15 @@ function metaLine(r: Recipe): string {
   return `${bits.length ? `${esc(bits.join(', '))}, from ` : 'From '}${esc(r.src.name)}`;
 }
 
+/**
+ * Under a main dish: sides from the same cuisine, so a Thai curry gets Thai sides, not a
+ * Caesar salad. Only when there are a few to pick from, and not under the sides themselves.
+ */
+function sidesLine(r: Recipe, from: string): string {
+  if (r.course !== 'main' || !r.cuisine || (sideCount.get(r.cuisine) || 0) < 3 || from === 'sides') return '';
+  return `<p class="sides"><button type="button" data-sides="${r.i}">${esc(r.cuisine)} sides to go with it</button></p>`;
+}
+
 /** "Uses ginger and tofu, plus 3 more things" / "Uses ginger, not tofu" */
 function usesLine(h: Hit): string {
   const n = state.with.length;
@@ -625,7 +655,7 @@ function row(h: Hit, position: number, _q: string[], from = 'results', support =
   return `<article class="row">
     <div class="text">
       <h3><a href="${esc(r.url)}" data-pos="${position}" data-src-id="${esc(r.src.id)}" data-key="${esc(r.key)}" data-from="${from}">${esc(r.name)}</a></h3>
-      <p class="meta">${metaLine(r)}</p>${usesLine(h)}${support}
+      <p class="meta">${metaLine(r)}</p>${usesLine(h)}${sidesLine(r, from)}${support}
     </div>
     <div class="photo">${photo}</div>
   </article>`;
@@ -666,7 +696,7 @@ function render() {
     .map((h, n) => {
       const first = !supported.has(h.r.src.id);
       supported.add(h.r.src.id);
-      return `<li>${row(h, n + 1, q, 'results', first ? supportLine(h.r.src.id) : '')}</li>`;
+      return `<li>${row(h, n + 1, q, state.sidesFor >= 0 ? 'sides' : 'results', first ? supportLine(h.r.src.id) : '')}</li>`;
     })
     .join('');
   moreBtn.hidden = hits.length <= state.shown;
@@ -683,6 +713,10 @@ function render() {
   else statusEl.innerHTML = `${count} ${hits.length === 1 ? 'recipe' : 'recipes'}${vids}.`;
 
   // A typo we fixed: say what we searched, and offer the words as typed.
+  if (state.sidesFor >= 0 && hits.length && state.course === 'side')
+    statusEl.innerHTML = `${count} ${state.cuisine ? esc(state.cuisine) + ' ' : ''}${hits.length === 1 ? 'side' : 'sides'} to go with ${esc(recipes[state.sidesFor].name)}.`;
+  if (state.fresh && hits.length)
+    statusEl.innerHTML = `${count} ${hits.length === 1 ? 'recipe' : 'recipes'} new this week, from the crawl on ${esc(fmtDay(data.crawled))}.`;
   if (understood.fixes.length)
     statusEl.innerHTML = `Showing results for “${esc(q.join(' '))}”. <button type="button" data-exact="1">Search for “${esc(
       state.q,
@@ -704,12 +738,13 @@ function renderTags() {
     `<li><button type="button" class="tag tag-${kind}" ${attr}="${esc(value)}" aria-label="Remove ${esc(label)}">${esc(label)}<span class="x" aria-hidden="true">×</span></button></li>`;
   $('with-chips').innerHTML = [
     ...[...state.sites].map((id) => tag('data-remove-creator', id, `from ${creatorById.get(id)?.name || id}`, 'creator')),
+    ...(state.fresh ? [tag('data-remove-fresh', 1, 'new this week', 'diet')] : []),
     ...(state.diet ? [tag('data-remove-diet', state.diet, state.diet, 'diet')] : []),
     ...state.with.map((p) => tag('data-remove', p, ingName(p), 'ing')),
     ...state.without.map((p) => tag('data-remove-not', p, `no ${ingName(p)}`, 'not')),
     ...state.notWords.map((w) => tag('data-remove-word', w, `no ${w}`, 'not')),
   ].join('');
-  const any = state.sites.size || state.with.length || state.without.length || state.notWords.length || state.diet;
+  const any = state.sites.size || state.with.length || state.without.length || state.notWords.length || state.diet || state.fresh;
   $('box').toggleAttribute('data-tags', !!any);
   qInput.placeholder = any ? 'and…' : 'A dish, ingredient or creator';
 }
@@ -738,6 +773,7 @@ function renderEmpty() {
   if (state.sites.size) fixes.push({ label: 'any creator', n: search({ skip: 'site' }).length, apply: () => state.sites.clear() });
   if (state.time) fixes.push({ label: 'any time', n: search({ skip: 'time' }).length, apply: () => (state.time = 0) });
   if (state.cuisine) fixes.push({ label: 'any cuisine', n: search({ skip: 'cuisine' }).length, apply: () => (state.cuisine = '') });
+  if (state.course) fixes.push({ label: 'any course', n: search({ skip: 'course' }).length, apply: () => (state.course = '') });
   const useful = fixes.filter((f) => f.n > 0).sort((a, b) => b.n - a.n);
   emptyFixes = useful.map((f) => f.apply);
   $('empty').hidden = false;
@@ -853,17 +889,24 @@ function buildFilters() {
     .map(([c]) => `<label><input type="radio" name="cuisine" value="${esc(c)}"> ${c ? esc(c) : 'Any cuisine'} <span class="count"></span></label>`)
     .join('');
 
+  $('f-course-options').innerHTML = [['', 'Any course'], ...(data.courses || []).map(([id, label]) => [id, label])]
+    .map(([id, label]) => `<label><input type="radio" name="course" value="${esc(id)}"> ${esc(label)} <span class="count"></span></label>`)
+    .join('');
+
   for (const pop of document.querySelectorAll<HTMLElement>('.pop')) {
     pop.addEventListener('change', (e) => {
       const el = e.target as HTMLInputElement;
       if (el.name === 'site') el.checked ? state.sites.add(el.value) : state.sites.delete(el.value);
       if (el.name === 'time') state.time = Number(el.value);
       if (el.name === 'cuisine') state.cuisine = el.value;
+      if (el.name === 'course') state.course = el.value;
       if (el.name === 'show') state.show = el.value as typeof state.show;
       state.shown = PAGE;
       render();
       updateCounts(pop);
       writeUrl(false);
+      // Which filters people reach for, and what they pick (ids and labels, never typed text).
+      track('Changed Filter', { filter_name: el.name, filter_value: el.name === 'site' ? (el.checked ? el.value : '') : el.value, result_count: search().length });
     });
     // Open under its word on wider screens; on phones CSS makes it a sheet at the bottom.
     pop.addEventListener('toggle', (e) => {
@@ -915,6 +958,7 @@ function updateCounts(pop: HTMLElement) {
     if (kind === 'time')
       text = (Number(el.value) ? hits.filter((h) => h.r.min != null && h.r.min <= Number(el.value)).length : hits.length).toLocaleString();
     if (kind === 'cuisine') text = (el.value ? hits.filter((h) => h.r.cuisine === el.value).length : hits.length).toLocaleString();
+    if (kind === 'course') text = (el.value ? hits.filter((h) => h.r.course === el.value).length : hits.length).toLocaleString();
     label.querySelector('.count')!.textContent = text;
   }
 }
@@ -929,12 +973,14 @@ function renderFilterButtons() {
   set('f-site', site);
   set('f-time', state.time ? `${fmtTime(state.time)} or less` : '');
   set('f-cuisine', state.cuisine);
+  set('f-course', (data.courses || []).find(([id]) => id === state.course)?.[1].toLowerCase() || '');
   set('f-show', state.show === 'recipes' ? 'recipes only' : state.show === 'videos' ? 'videos only' : '');
   $('f-show-value').textContent = state.show ? $('f-show-value').textContent : 'recipes and videos';
   for (const el of document.querySelectorAll<HTMLInputElement>('.pop input')) {
     if (el.name === 'site') el.checked = state.sites.has(el.value);
     if (el.name === 'time') el.checked = Number(el.value) === state.time;
     if (el.name === 'cuisine') el.checked = el.value === state.cuisine;
+    if (el.name === 'course') el.checked = el.value === state.course;
     if (el.name === 'show') el.checked = el.value === state.show;
   }
   $('clear-all').hidden = isBlank();
@@ -957,6 +1003,16 @@ function buildStart() {
   $('popular').innerHTML = keepPunct(`Or start with what you have: ${orList(pop)}.`);
   // Two creators, not all of them: the full list (with ways to support each) is on About.
   const who = creators.slice(0, 2).map((c) => `<button type="button" data-creator="${esc(c.id)}">${esc(c.name)}</button>`);
+  // New this week: a few by name, straight to the recipe, and a way to see them all.
+  const fresh = (data.fresh || []).map((i) => recipes[i]);
+  $('fresh').hidden = !fresh.length;
+  if (fresh.length) {
+    const names = fresh
+      .slice(0, 3)
+      .map((r, n) => `<a href="${esc(r.url)}" data-src-id="${esc(r.src.id)}" data-pos="${n + 1}" data-key="${esc(r.key)}" data-from="new">${esc(r.name)}</a>`);
+    const all = fresh.length > names.length ? ` <button type="button" data-fresh="1">See all ${fresh.length}</button>.` : '';
+    $('fresh').innerHTML = keepPunct(`New this week: ${andList(names)}.${all}`);
+  }
   $('creators').innerHTML = keepPunct(
     `Or start with a creator, like ${orList(who)}. <a href="/about/#who">See all ${creators.length}</a>.`,
   );
@@ -1183,6 +1239,8 @@ function writeUrl(push: boolean) {
   if (state.sites.size) u.searchParams.set('site', [...state.sites].join(','));
   if (state.time) u.searchParams.set('time', String(state.time));
   if (state.cuisine) u.searchParams.set('cuisine', state.cuisine);
+  if (state.course) u.searchParams.set('course', state.course);
+  if (state.fresh) u.searchParams.set('new', '1');
   if (state.show) u.searchParams.set('show', state.show);
   if (state.without.length) u.searchParams.set('without', state.without.map((p) => data.ing[p][0]).join(','));
   if (state.notWords.length) u.searchParams.set('not', state.notWords.join(','));
@@ -1212,6 +1270,10 @@ function readUrl() {
   state.exact = p.get('exact') === '1';
   const c = p.get('cuisine') || '';
   state.cuisine = data.cuisines.some(([name]) => name === c) ? c : '';
+  const course = p.get('course') || '';
+  state.course = (data.courses || []).some(([id]) => id === course) ? course : '';
+  state.fresh = p.get('new') === '1' && !!data.fresh?.length;
+  state.sidesFor = -1;
   const show = p.get('show');
   state.show = show === 'recipes' || show === 'videos' ? show : '';
   state.shown = PAGE;
@@ -1290,11 +1352,33 @@ app.addEventListener('click', (e) => {
     state.exact = true;
     render();
     writeUrl(true);
-  } else if (el.dataset.remove || el.dataset.removeCreator || el.dataset.removeNot || el.dataset.removeWord || el.dataset.removeDiet) {
+  } else if (el.dataset.sides) {
+    const r = recipes[Number(el.dataset.sides)];
+    clearAll();
+    state.course = 'side';
+    state.cuisine = data.cuisines.some(([c]) => c === r.cuisine) ? r.cuisine : '';
+    state.sidesFor = r.i;
+    state.shown = PAGE;
+    render();
+    writeUrl(true);
+    // The button is gone with the old results: move focus to the first side, and the
+    // status line ("8 Thai sides to go with…") is read out as it changes.
+    resultsEl.querySelector<HTMLAnchorElement>('h3 a')?.focus();
+    track('Opened Sides', { cuisine: r.cuisine, recipe_key: r.key, result_count: search().length });
+  } else if (el.dataset.fresh) {
+    clearAll();
+    state.fresh = true;
+    state.shown = PAGE;
+    render();
+    writeUrl(true);
+    resultsEl.querySelector<HTMLAnchorElement>('h3 a')?.focus();
+    track('Opened New Recipes', { result_count: (data.fresh || []).length });
+  } else if (el.dataset.remove || el.dataset.removeCreator || el.dataset.removeNot || el.dataset.removeWord || el.dataset.removeDiet || el.dataset.removeFresh) {
     if (el.dataset.remove) state.with = state.with.filter((p) => p !== Number(el.dataset.remove));
     else if (el.dataset.removeWord) state.notWords = state.notWords.filter((w) => w !== el.dataset.removeWord);
     else if (el.dataset.removeNot) state.without = state.without.filter((p) => p !== Number(el.dataset.removeNot));
     else if (el.dataset.removeDiet) state.diet = '';
+    else if (el.dataset.removeFresh) state.fresh = false;
     else state.sites.delete(el.dataset.removeCreator!);
     state.shown = PAGE;
     render();
@@ -1322,6 +1406,9 @@ function clearAll() {
   state.sites.clear();
   state.time = 0;
   state.cuisine = '';
+  state.course = '';
+  state.fresh = false;
+  state.sidesFor = -1;
   state.show = '';
   state.without = [];
   state.notWords = [];

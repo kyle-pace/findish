@@ -28,7 +28,8 @@ People look for a recipe three ways: by dish ("mapo tofu"), by what they have ("
 ## Two modes
 
 - **Home** (nothing searched): the name, one line on what's in it, the box, "Pick one at random", and three short lines of ideas (dishes, ingredients, creators). All centered in the window, like a search engine's front page. No filters.
-- **Results** (after a search): the name shrinks to a link home in the upper left, the box sits under it, then the filters as words (Cuisine, Creator, Time), then results. Left-aligned.
+- **Results** (after a search): the name shrinks to a link home in the upper left, the box sits under it, then the filters as words (Show, Course, Cuisine, Creator, Time), then results. Left-aligned. A main dish carries one tomato link, "Thai sides to go with it", that swaps the search for sides from the same cuisine (Course: sides, Cuisine: Thai) and says which dish they're for.
+- **New this week** (November 16): a fourth line under the home page ideas names up to three recipes the latest crawl's week found (not a creator's first crawl) and offers "See all", which shows them as a removable "new this week" tag.
 
 ```
 Home                                       Results

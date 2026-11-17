@@ -52,8 +52,8 @@ The same index is searchable by AI assistants over MCP (Model Context Protocol, 
 
 | Tool | What it answers |
 | --- | --- |
-| `search_recipes` | Recipes by dish name, by ingredients to cook with, or both; plus without, vegetarian or vegan, cuisine, time and creator. Results are names and links to the original, never the method. |
-| `list_sources` | Who is indexed, ways to support them, and the cuisines to filter on. |
+| `search_recipes` | Recipes by dish name, by ingredients to cook with, or both; plus without, vegetarian or vegan, course, cuisine, time and creator. Results are names and links to the original, never the method. |
+| `list_sources` | Who is indexed, ways to support them, and the cuisines and courses to filter on. |
 
 | What | Where |
 | --- | --- |

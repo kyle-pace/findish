@@ -5,6 +5,7 @@
 // design/PLAN.md, "Browse pages". The structured data is a plain list of links (ItemList)
 // and a breadcrumb: never Recipe markup, because the recipes aren't ours.
 import LabLayout from 'kp-design/layouts/LabLayout.astro';
+import { jsonForScript } from '../lib/json-script.mjs';
 import { SITE } from '../lib/site';
 import SiteHead from './SiteHead.astro';
 import { andList, fmtTime, n, pagePath } from '../lib/creators';
@@ -61,7 +62,7 @@ const ld = {
   themeColor={{ light: '#fbf5ec', dark: '#1d1714' }}
 >
   <link slot="head" rel="manifest" href="/manifest.webmanifest" />
-  <script slot="head" type="application/ld+json" set:html={JSON.stringify(ld)} />
+  <script slot="head" type="application/ld+json" set:html={jsonForScript(ld)} />
   <SiteHead wide />
 
   <article class="creator browse" data-page="browse" data-browse-kind={openedFrom} data-browse-page={b.slug}>

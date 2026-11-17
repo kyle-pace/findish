@@ -3,6 +3,7 @@
 // box. Each links to their own page (/creators/<id>/). Added 2026-11-16, when the About
 // page's list of creators was heading toward a hundred; see design/PLAN.md, "Creator pages".
 import LabLayout from 'kp-design/layouts/LabLayout.astro';
+import { jsonForScript } from '../../lib/json-script.mjs';
 import { SITE } from '../../lib/site';
 import SiteHead from '../../components/SiteHead.astro';
 import { CREATORS, byCuisine, linkOnly, n, andList, pagePath, supportHint, totals } from '../../lib/creators';
@@ -29,7 +30,7 @@ const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-');
   <script
     slot="head"
     type="application/ld+json"
-    set:html={JSON.stringify({
+    set:html={jsonForScript({
       '@context': 'https://schema.org',
       '@type': 'BreadcrumbList',
       itemListElement: [

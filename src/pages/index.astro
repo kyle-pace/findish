@@ -10,6 +10,7 @@
 // It's a standalone lab: LabLayout gives it only a back link, a footer line, display
 // settings and analytics; its look is src/styles/theme.css.
 import LabLayout from 'kp-design/layouts/LabLayout.astro';
+import { jsonForScript } from '../lib/json-script.mjs';
 import { SITE } from '../lib/site';
 import Wordmark from '../components/Wordmark.astro';
 import indexFiles from '../../public/index-files.json';
@@ -51,7 +52,7 @@ const FILTERS = [
 >
   <!-- Verifies findish.now in Google Search Console (2026-11-16). Keep it. -->
   <meta slot="head" name="google-site-verification" content="_hVdo4bdUjJmjTStuwg87sYAeLc9GErXZCn0_c9hj9I" />
-  <script slot="head" type="application/ld+json" set:html={JSON.stringify({
+  <script slot="head" type="application/ld+json" set:html={jsonForScript({
     '@context': 'https://schema.org',
     '@type': 'WebSite',
     name: 'Findish',
@@ -64,7 +65,7 @@ const FILTERS = [
        name (with the videos file's, and the few things that change daily) is here for
        src/scripts/index-load.ts. scripts/build-index.mjs writes them. -->
   <link slot="head" rel="preload" href={indexFiles.recipes} as="fetch" crossorigin="anonymous" />
-  <script slot="head" type="application/json" id="index-files" set:html={JSON.stringify(indexFiles)} />
+  <script slot="head" type="application/json" id="index-files" set:html={jsonForScript(indexFiles)} />
   <link slot="head" rel="manifest" href="/manifest.webmanifest" />
   <script slot="head" is:inline>
     // The About section used to live at #about; it's its own page now.

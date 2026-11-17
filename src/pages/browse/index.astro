@@ -3,6 +3,7 @@
 // The way in for people (from the footer) and for search engines. Added 2026-11-17; see
 // design/PLAN.md, "Browse pages".
 import LabLayout from 'kp-design/layouts/LabLayout.astro';
+import { jsonForScript } from '../../lib/json-script.mjs';
 import { SITE } from '../../lib/site';
 import SiteHead from '../../components/SiteHead.astro';
 import { n, totals, CREATORS } from '../../lib/creators';
@@ -39,7 +40,7 @@ const ld = {
   themeColor={{ light: '#fbf5ec', dark: '#1d1714' }}
 >
   <link slot="head" rel="manifest" href="/manifest.webmanifest" />
-  <script slot="head" type="application/ld+json" set:html={JSON.stringify(ld)} />
+  <script slot="head" type="application/ld+json" set:html={jsonForScript(ld)} />
   <SiteHead wide />
 
   <article class="creators-page browse" data-page="browse">

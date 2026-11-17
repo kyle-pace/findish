@@ -4,6 +4,7 @@
 // first) and a few of their recipes. Built at build time for every creator in the index
 // (src/lib/creators.ts). Added 2026-11-16; see design/PLAN.md, "Creator pages".
 import LabLayout from 'kp-design/layouts/LabLayout.astro';
+import { jsonForScript } from '../../lib/json-script.mjs';
 import { SITE } from '../../lib/site';
 import SiteHead from '../../components/SiteHead.astro';
 import { CREATORS, andList, fmtTime, n, pagePath, slugOf, type Creator } from '../../lib/creators';
@@ -65,7 +66,7 @@ const ld = {
   themeColor={{ light: '#fbf5ec', dark: '#1d1714' }}
 >
   <link slot="head" rel="manifest" href="/manifest.webmanifest" />
-  <script slot="head" type="application/ld+json" set:html={JSON.stringify(ld)} />
+  <script slot="head" type="application/ld+json" set:html={jsonForScript(ld)} />
   <SiteHead wide />
 
   <article class="creator" data-page="creator" data-creator={c.id}>

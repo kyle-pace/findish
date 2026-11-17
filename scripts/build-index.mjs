@@ -21,7 +21,7 @@ import { readSources } from '../crawler/lib/sources.mjs';
 import { SOURCES_FILE } from '../crawler/lib/sources.mjs';
 import { COURSES, courseOf } from './course.mjs';
 import { cuisineOf } from './cuisine.mjs';
-import { ALL, GROUPS, VEGETARIAN, itemFlags, titleFlags, wordFlags } from './diet.mjs';
+import { ALL, GROUPS, VEGETARIAN, itemFlags, lineFlags, nameFlags, titleFlags } from './diet.mjs';
 import { isNotRecipe } from './not-recipes.mjs';
 import { pack } from '../src/lib/index-format.mjs';
 import { floorProblems } from './index-floor.mjs';
@@ -118,9 +118,11 @@ for (const s of sources.recipes) {
         matched++;
         direct.add(m.id);
         for (const id of withParents(m.id)) ids.add(id);
-        flags |= itemFlags(withParents(m.id), catalog.items[m.id]);
+        // The line's own words are read as well: "olive oil" is what "tuna in olive oil"
+        // matched, and "vegan chicken" matched chicken (lineFlags in scripts/diet.mjs).
+        flags |= lineFlags(line, itemFlags(withParents(m.id), catalog.items[m.id]));
       } else {
-        flags |= wordFlags(line, { line: true });
+        flags |= lineFlags(line);
         if (report) {
           const k = String(line).toLowerCase();
           unmatched.set(k, (unmatched.get(k) || 0) + 1);
@@ -211,7 +213,7 @@ for (const v of sources.videos || []) {
     const m = match(catalog, decode(row.n));
     if (m && !catalog.items[m.id].product) for (const id of withParents(m.id)) ids.add(id);
     const video = [ci, decode(row.n), row.id, row.p || '', [...ids].map(ingPos), courseOf('', decode(row.n))];
-    const flags = titleFlags(decode(row.n)) | (m && !catalog.items[m.id].product ? itemFlags(withParents(m.id), catalog.items[m.id]) : 0);
+    const flags = nameFlags(decode(row.n), m && !catalog.items[m.id].product ? itemFlags(withParents(m.id), catalog.items[m.id]) : 0);
     if (flags) video.push(flags);
     videos.push(video);
   }

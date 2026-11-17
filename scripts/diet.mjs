@@ -3,10 +3,17 @@
 // and "no dairy" are decided the same way on the page, in the MCP server and in Ask.
 //
 // Three things are read for every recipe:
-//   1. its ingredient lines the catalog matched (by the item's shelf and name),
+//   1. its ingredient lines the catalog matched, by the item's shelf and name, and by the
+//      line's own words for meat and fish the match missed ("tuna in olive oil" matches
+//      olive oil) or a plant version it couldn't tell ("vegan chicken" matches chicken),
 //   2. its ingredient lines the catalog did NOT match (about one in ten), by plain words, and
 //   3. its name, by the same words ("Korean Fried Chicken" has chicken in it whatever the
-//      ingredient list managed to match).
+//      ingredient list managed to match), and by dishes that are meat unless they say
+//      otherwise ("Katsudon", "Smash Burgers", "Pho"). A video has only this.
+//
+// A line that leaves the choice to the cook isn't flagged: "chicken or vegetable stock",
+// "beef broth or water" (Kyle's review, 2026-11-17: a vegetarian can make it, so hiding it
+// loses more than it protects). A bare "stock" with no choice offered still counts as meat.
 // A recipe with no ingredient list at all gets every flag: nothing vouches for it, so it
 // isn't offered as vegetarian, vegan or free of anything.
 //
@@ -48,7 +55,17 @@ const set = (s) => new Set(s.split(/\s+/).filter(Boolean).flatMap((w) => words(w
 
 const PORK_W = set('pork bacon ham sausage chorizo prosciutto pancetta guanciale salami pepperoni spam lard tonkatsu carnitas hotdog mortadella kielbasa bratwurst andouille siu');
 const MEAT_W = set(
-  'chicken beef lamb mutton veal duck goose turkey steak brisket meatball meatloaf meat wagyu bulgogi pastrami venison rabbit quail liver tripe oxtail tallow suet gelatin gelatine giblet drumstick rib ribeye bone yakitori',
+  'chicken beef lamb mutton veal duck goose turkey steak brisket meatball meatloaf meat wagyu bulgogi pastrami venison rabbit quail liver tripe oxtail tallow suet gelatin gelatine giblet drumstick rib ribeye bone yakitori ' +
+    'schmaltz snail escargot',
+);
+// Dishes that are meat unless they say otherwise, read in names only (a video has nothing
+// but its name): "Katsudon", "Easy Pho", "The Best Burger". Not read in ingredient lines,
+// where "burger buns" and "satay sauce" are on the shelf by those names.
+const PORK_DISH = set('katsudon carbonara chashu bossam tonkotsu butadon kakuni samgyeopsal jokbal jeyuk');
+const MEAT_DISH = set(
+  'burger hamburger cheeseburger katsu karaage gyudon oyakodon bolognese schnitzel yakiniku sukiyaki shabu laab larb satay pho ' +
+    'nikujaga hambagu tsukune galbi kalbi dakgalbi samgyetang galbitang galbijjim yukgaejang ragu stroganoff wellington cacciatore kiev gumbo jambalaya ' +
+    'shawarma souvlaki gyro doner kebab kabob birria barbacoa rendang jerky',
 );
 // Only in ingredient lines, where a bare "stock" or "broth" is usually chicken or beef.
 const STOCK_W = set('broth stock bouillon');
@@ -72,10 +89,19 @@ const STOCK_BEFORE = set('vegetable veggie mushroom kombu shiitake');
 // ...for steaks, ribs and meatballs only: "cauliflower steak", "corn ribs", "lentil meatballs".
 const CUT_BEFORE = set('tofu potato cauliflower daikon konnyaku mushroom eggplant cabbage portobello tempeh seitan celeriac watermelon corn lentil chickpea bean zucchini');
 const CUT_W = set('steak rib meatball');
+// ...for a dish (MEAT_DISH, PORK_DISH), one or two words before or the word after: "black
+// bean burger", "tofu katsu", "mushroom bolognese", "halloumi burgers", "karaage okra".
+const DISH_BEFORE = set(
+  'tofu potato cauliflower daikon konnyaku mushroom eggplant cabbage portobello tempeh seitan celeriac corn lentil chickpea bean zucchini ' +
+    'vegetable jackfruit paneer halloumi falafel quinoa beet shiitake pumpkin squash avocado spinach broccoli carrot kimchi egg cheese impossible beyond pea okra',
+);
 // A word just after that makes it something else: "oyster mushrooms", "butter beans".
+const SHELF = set('sauce bun seasoning spice dressing marinade rub paste powder');
 const AFTER = {
   oyster: set('mushroom'),
+  seafood: set('mushroom'),
   duck: set('sauce'),
+  tonkatsu: set('sauce'),
   butter: set('bean lettuce'),
   fish: set('fragrant mint shaped'),
   steak: set('sauce seasoning rub'),
@@ -86,54 +112,167 @@ const AFTER = {
   // "pine nuts" and the like are still nuts; these aren't.
   nut: set('milk'),
 };
+// Birds whose eggs are eggs, not meat: "quail eggs", "salted duck egg yolks".
+const BIRD = set('chicken duck quail goose');
+const EGG_DISH = set('roll noodle drop');
+// "the meat of a coconut": the flesh of a fruit or a nut.
+const FLESH_OF = set('coconut avocado date walnut nut');
+const MUSHROOMS = set('mushroom shiitake shimeji enoki straw');
+const [OR, WATER, EGGW, CELERY, HOT, DOG, BUN, ROAST, POT] = ['or', 'water', 'egg', 'celery', 'hot', 'dog', 'bun', 'roast', 'pot'].map((w) => words(w)[0]);
+const VEG_BITS = 1 | 2 | 64 | 128; // MEAT | FISH | SHELLFISH | PORK
 
-/** The flags for a piece of text: a recipe's name, or an ingredient line the catalog didn't match. */
-export function wordFlags(text, { line = false } = {}) {
+/**
+ * Reads a piece of text word by word. `flags` is what's in it; `spared` says a meat or fish
+ * word was there but something beside it made it a plant version or a lookalike ("vegan
+ * chicken", "mushroom stock", "hot dog buns").
+ *   line    an ingredient line: a bare "stock" counts as meat, dish names don't count
+ *   either  an ingredient line the catalog matched to something without meat or fish:
+ *           "lard or butter" leaves the choice to the cook, so it isn't flagged
+ */
+function read(text, { line = false, either = false } = {}) {
   const t = words(String(text ?? '').replace(/[-/]/g, ' '));
   let f = 0;
-  for (let i = 0; i < t.length; i++) {
-    const w = t[i];
+  let spared = false;
+  let plantStock = -2; // where the last "vegetable stock" was, so "vegetable stock/broth" is one thing
+  // What one word would flag, before anything beside it is looked at.
+  const bitsOf = (w, i) => {
+    let b = 0;
+    if (PORK_W.has(w)) b |= MEAT | PORK;
+    if (MEAT_W.has(w)) b |= MEAT;
+    if (line && STOCK_W.has(w)) b |= MEAT;
+    if (!line && PORK_DISH.has(w)) b |= MEAT | PORK;
+    if (!line && MEAT_DISH.has(w)) b |= MEAT;
+    // "hot dogs", "pot roast"
+    if (w === DOG && t[i - 1] === HOT) b |= MEAT | PORK;
+    if (!line && w === ROAST && t[i - 1] === POT) b |= MEAT;
+    if (SHELL_W.has(w)) b |= FISH | SHELLFISH;
+    if (FISH_W.has(w)) b |= FISH;
+    if (DAIRY_W.has(w)) b |= DAIRY;
+    if (EGG_W.has(w)) b |= EGG;
+    if (OTHER_W.has(w)) b |= OTHER;
+    if (NUT_W.has(w)) b |= NUTS;
+    return b;
+  };
+  // Whether what's beside word i says it isn't what it looks like.
+  const excused = (w, i) => {
     const before = t[i - 1];
     const before2 = t[i - 2];
     const after = t[i + 1];
     // "egg free", "meatless", "no pork" say it isn't in there.
-    if (after === 'free' || after === 'less' || before === 'no' || before === 'without') continue;
-    if (ANY_BEFORE.has(before) || ANY_BEFORE.has(before2) || (t[i - 3] === 'plant' && before2 === 'based') || (before === 'based' && before2 === 'plant')) continue;
-    if (CUT_W.has(w) && (CUT_BEFORE.has(before) || before === '“')) continue;
-    if (w === 'meat' && before === 'coconut') continue;
-    if (AFTER[w]?.has(after)) continue;
+    if (after === 'free' || after === 'less' || before === 'no' || before === 'without') return true;
+    if (ANY_BEFORE.has(before) || ANY_BEFORE.has(before2) || (t[i - 3] === 'plant' && before2 === 'based') || (before === 'based' && before2 === 'plant')) return true;
+    if (CUT_W.has(w) && (CUT_BEFORE.has(before) || before === '“')) return true;
+    if (w === 'meat' && FLESH_OF.has(before)) return true;
+    if (AFTER[w]?.has(after)) return true;
     // "hen of the woods", "chicken of the woods", "cream of tartar"
-    if (after === 'of' && (t[i + 2] === 'tartar' || t[i + 3] === 'wood')) continue;
-    if (w === 'chestnut' && before === 'water') continue;
-    const dairy = DAIRY_W.has(w);
+    if (after === 'of' && (t[i + 2] === 'tartar' || t[i + 3] === 'wood')) return true;
+    if (w === 'chestnut' && before === 'water') return true;
     // "dairy-free butter", "egg-free mayo"
-    if (before === 'free' && (before2 === 'dairy' || before2 === 'egg' || before2 === 'meat')) continue;
+    if (before === 'free' && (before2 === 'dairy' || before2 === 'egg' || before2 === 'meat')) return true;
     // "coconut milk", "peanut butter" (still nuts: those are counted below)
-    if (dairy && DAIRY_BEFORE.has(before)) continue;
-    if ((STOCK_W.has(w) || w === 'dashi') && STOCK_BEFORE.has(before)) continue;
-    if (PORK_W.has(w)) f |= MEAT | PORK;
-    if (MEAT_W.has(w)) f |= MEAT;
-    if (line && STOCK_W.has(w)) f |= MEAT;
-    if (SHELL_W.has(w)) f |= FISH | SHELLFISH;
-    if (FISH_W.has(w)) f |= FISH;
-    if (dairy) f |= DAIRY;
-    if (EGG_W.has(w)) f |= EGG;
-    if (OTHER_W.has(w)) f |= OTHER;
-    if (NUT_W.has(w)) f |= NUTS;
+    if (DAIRY_W.has(w) && DAIRY_BEFORE.has(before)) return true;
+    if (STOCK_W.has(w) || w === 'dashi') {
+      // "vegetable stock", and "vegetable stock/broth" after it
+      if (STOCK_BEFORE.has(before) || plantStock === i - 1) return (plantStock = i), true;
+    }
+    // "celery ribs", "2 ribs celery", "a rib of celery"
+    if (w === 'rib' && (before === CELERY || before2 === CELERY || after === CELERY || (after === 'of' && t[i + 2] === CELERY))) return true;
+    // "quail eggs", "salted duck egg yolks", "duck or chicken eggs", "eggs, duck or chicken"
+    // In a name only when it's the next word, and not a hen's ("Chicken & Egg Bao" has chicken in it).
+    if (BIRD.has(w)) {
+      if (after === EGGW && (line ? !EGG_DISH.has(t[i + 2]) : w !== 'chicken')) return true;
+      if (line && after === OR && BIRD.has(t[i + 2]) && (t[i + 3] === EGGW || before === EGGW)) return true;
+      if (line && before === OR && BIRD.has(before2) && t[i - 3] === EGGW) return true;
+    }
+    // "oyster or straw mushrooms", "shiitake, oyster"
+    if (w === 'oyster' && after !== 'sauce' && t.some((x) => MUSHROOMS.has(x))) return true;
+    // In a list, "hot dog buns" are buns. In a name they're a bun with a hot dog baked in.
+    if (line && w === DOG && after === BUN) return true;
+    if (PORK_DISH.has(w) || MEAT_DISH.has(w) || (w === ROAST && before === POT)) {
+      // "burger buns", "satay sauce", "black bean burgers", "tofu pho"
+      if (SHELF.has(after) || DISH_BEFORE.has(before) || DISH_BEFORE.has(before2) || DISH_BEFORE.has(after)) return true;
+      if (w === 'pho' && t.includes('tofu')) return true;
+    }
+    return false;
+  };
+  const each = t.map((w, i) => {
+    const b = bitsOf(w, i);
+    if (!b) return 0;
+    if (excused(w, i)) {
+      if (b & VEG_BITS) spared = true;
+      return 0;
+    }
+    return b;
+  });
+  // "chicken or vegetable stock", "beef broth or water": the cook can choose, so the meat
+  // on the other side of "or" isn't counted. Any stock line that offers vegetable stock or
+  // water; and, when the catalog matched the line to something with no meat in it ("lard or
+  // butter", "fish sauce or soy sauce"), any line with a side that has none.
+  if (line && t.includes(OR)) {
+    const sides = [[]];
+    t.forEach((w, i) => (w === OR ? sides.push([]) : sides.at(-1).push(i)));
+    const meaty = (side) => side.some((i) => each[i] & VEG_BITS);
+    const stock = t.some((w) => STOCK_W.has(w) || w === 'dashi');
+    const free = sides.some((side) => side.length && !meaty(side) && (either || (stock && side.some((i) => STOCK_BEFORE.has(t[i]) || t[i] === WATER))));
+    if (free && sides.some(meaty)) {
+      spared = true;
+      for (let i = 0; i < each.length; i++) each[i] &= ~VEG_BITS;
+    }
   }
+  for (const b of each) f |= b;
   // Nuts are checked on their own, so "peanut butter" and "almond milk" still count.
   for (const w of t) if (NUT_W.has(w) && !(w === 'chestnut' && t[t.indexOf(w) - 1] === 'water')) f |= NUTS;
   if (/\bnut[\s-]free\b/i.test(String(text))) f &= ~NUTS;
-  return f;
+  return { flags: f, spared };
+}
+
+/** The flags for a piece of text: a recipe's name, or an ingredient line the catalog didn't match. */
+export function wordFlags(text, opts) {
+  return read(text, opts).flags;
+}
+
+/**
+ * The flags for one ingredient line. `item` is what the catalog item it matched carries
+ * (itemFlags), or null when it matched nothing.
+ *   - Matched nothing: the line's words decide.
+ *   - Matched something with no meat or fish ("olive oil" for "tuna in olive oil", "celery"
+ *     for "celery, or 1 cup diced ham"): the words are read too, for meat and fish only.
+ *   - Matched meat or fish, but the line says it's a plant version or a lookalike ("vegan
+ *     chicken", "mushroom stock", "hot dog buns"): the words win, and it isn't flagged.
+ */
+export function lineFlags(line, item = null) {
+  if (item == null) return wordFlags(line, { line: true });
+  const { flags, spared } = read(line, { line: true, either: !(item & VEG_BITS) });
+  if (item & VEG_BITS) return spared && !(flags & VEG_BITS) ? item & ~VEG_BITS : item;
+  return item | (flags & VEG_BITS);
 }
 
 /** A recipe's name. One that calls itself vegan or vegetarian isn't flagged for the meat it imitates. */
 export function titleFlags(name) {
-  let f = wordFlags(name);
+  return nameFlags(name);
+}
+
+/**
+ * A name, and what the catalog item it matched carries (a video has only its name, and
+ * "Vegan Mapo Tofu with Mushroom Mince" may match an item with meat in it). The name's own
+ * words win when it calls itself vegan or vegetarian, or names a plant version or a lookalike
+ * ("Mock Duck", "Tonkatsu Sauce").
+ */
+export function nameFlags(name, item = 0) {
+  const { flags, spared } = read(name);
   const t = new Set(words(name));
-  if (t.has('vegan') || (t.has('plant') && t.has('based'))) f &= ~(VEGAN | SHELLFISH | PORK);
-  else if (t.has('vegetarian') || t.has('meatless') || t.has('veggie') || t.has('mock')) f &= ~(MEAT | FISH | SHELLFISH | PORK);
-  return f;
+  const vegan = t.has('vegan') || (t.has('plant') && t.has('based'));
+  const vegetarian = vegan || t.has('vegetarian') || t.has('meatless') || t.has('veggie') || t.has('mock');
+  let f = flags;
+  let i = item;
+  if (vegan) {
+    f &= ~(VEGAN | SHELLFISH | PORK);
+    i &= ~(VEGAN | SHELLFISH | PORK);
+  } else if (vegetarian) {
+    f &= ~VEG_BITS;
+    i &= ~VEG_BITS;
+  } else if (spared && !(f & VEG_BITS)) i &= ~VEG_BITS;
+  return f | i;
 }
 
 const ITEM_PLANT = new Set(['vegetarian', 'vegan', 'plant', 'mushroom', 'mushrooms', 'kombu', 'coconut', 'peanut', 'almond', 'oat', 'soy', 'cashew', 'vegetable', 'tartar']);

@@ -2,6 +2,22 @@
  "days": 90,
  "updated": "2026-11-17",
  "opens": {
+  "mwl:/recipes/braised-taro-with-chinese-sausage": 2,
+  "rte:/cajun-blackened-fish/": 2,
+  "sudachi:/curry-teriyaki-pork-belly/": 2,
+  "ab:/recipes/how-to-cook-whole-duck/": 1,
+  "htk:/mark-wiens-pla-gapong-neung-manao/": 1,
+  "htk:/thai-chicken-nuggets/": 1,
+  "rte:/baked-fish-with-lemon-cream-sauce/": 1,
+  "rtj:/saikyo-yaki-fish-saikyo-miso-marinated-grilled-fish/": 1,
+  "sk:/2007/05/strawberry-rhubarb-crumble/": 1,
+  "sudachi:/buta-kimuchi-itame-recipe/": 1,
+  "sudachi:/mushroom-miso-soup/": 1,
+  "sudachi:/sakura-denbu/": 1,
+  "woks:/cantonese-steamed-fish/": 1,
+  "woks:/chinese-duck-soup-recipe/": 1,
+  "woks:/eggs-easy-soy-sauce/": 1,
+  "woks:/garlic-baby-bok-choy/": 1,
   "woks:/spicy-cold-tofu-liangban-dofu/": 1
  }
 }

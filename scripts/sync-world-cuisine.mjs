@@ -24,6 +24,7 @@ const notes = buildNotes({
   food: read('food.json'),
   foodSummaries: read('food_summaries.json'),
   catalogLinks: read('catalog_links.json'),
+  catalog: JSON.parse(readFileSync(join(root, 'vendor/kitchen-catalog/catalog.json'), 'utf8')),
 });
 const sha = execFileSync('git', ['-C', src, 'rev-parse', 'HEAD']).toString().trim();
 const nc = Object.keys(notes.cuisines).length;

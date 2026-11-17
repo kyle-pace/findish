@@ -37,3 +37,14 @@ test('notes key cuisines by short name and ingredients by catalog id, only on a 
   assert.equal(notes.ingredients.mushrooms, undefined); // a broader link, not the same thing
   assert.equal(slug('Crème brûlée'), 'creme-brulee');
 });
+
+test("an ingredient matches by any of the catalog's names for it", () => {
+  const notes = buildNotes({
+    cuisines: { cuisines: [] },
+    food: { ingredients: [{ id: 'Scallions', name: 'Scallions', title: 'Scallion' }] },
+    foodSummaries: { Scallions: 'Scallions are edible vegetables of various species in the genus Allium. They are mild.' },
+    catalogLinks: { links: { Scallions: { id: 'green-onion', name: 'Green Onion' } } },
+    catalog: { items: { 'green-onion': { name: 'Green Onion', aliases: ['scallions', 'spring onions'] } } },
+  });
+  assert.equal(notes.ingredients['green-onion'].line, 'Scallions are edible vegetables of various species in the genus Allium.');
+});

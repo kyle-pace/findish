@@ -51,11 +51,11 @@ const norm = (s) =>
 /**
  * Builds the notes file from World cuisine's data: cuisines keyed by their short name in
  * lowercase ("thai"), ingredients keyed by KitchenCatalog id. An ingredient only gets a
- * note when World cuisine's ingredient has the same name as the catalog's ("Ginger" for
- * ginger), not just a link to a broader one (Agaricus bisporus is linked to mushrooms, but
+ * note when World cuisine's ingredient goes by one of the catalog's names for it ("Ginger"
+ * for ginger, "Scallions" for green onion), not just a link to a broader one (Agaricus bisporus is linked to mushrooms, but
  * its summary isn't about mushrooms).
  */
-export function buildNotes({ cuisines, summaries, food, foodSummaries, catalogLinks }) {
+export function buildNotes({ cuisines, summaries, food, foodSummaries, catalogLinks, catalog }) {
   const out = { cuisines: {}, ingredients: {} };
   for (const c of cuisines?.cuisines || []) {
     const line = firstSentence(summaries?.[c.id]);
@@ -66,7 +66,10 @@ export function buildNotes({ cuisines, summaries, food, foodSummaries, catalogLi
   const titles = new Map((food?.ingredients || []).map((g) => [g.id, g.title || g.name]));
   for (const [wcId, link] of Object.entries(catalogLinks?.links || {})) {
     if (!link?.id || out.ingredients[link.id]) continue;
-    if (norm(wcId) !== norm(link.name)) continue;
+    // The same thing by any of the catalog's names: World cuisine's "Scallions" is the
+    // catalog's Green Onion, which lists "scallions" among its other names.
+    const names = [link.name, ...(catalog?.items?.[link.id]?.aliases || [])].map(norm);
+    if (!names.includes(norm(wcId))) continue;
     const line = firstSentence(foodSummaries?.[wcId]);
     if (!line) continue;
     out.ingredients[link.id] = { name: link.name, line, page: pageOf('ingredient', wcId), wiki: wikiOf(titles.get(wcId) || wcId) };

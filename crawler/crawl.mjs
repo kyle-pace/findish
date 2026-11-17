@@ -172,6 +172,8 @@ async function crawlSite(src) {
     }
     if (recipes.has(u)) out.updated++;
     else out.added++;
+    // a: the day we first found it, kept across refetches, for "New this week".
+    recipe.a = recipes.get(u)?.a || today;
     recipes.set(u, recipe);
   }
 
@@ -230,6 +232,7 @@ async function crawlFeed(src) {
     }
     if (recipes.has(post.link)) out.updated++;
     else out.added++;
+    recipe.a = recipes.get(post.link)?.a || today;
     recipes.set(post.link, recipe);
     fresh.push(recipe);
   }

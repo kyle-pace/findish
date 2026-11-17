@@ -938,7 +938,7 @@ function updateCounts(pop: HTMLElement) {
       state.show = show;
       const r = show === 'videos' ? 0 : search().length;
       const v = show === 'recipes' ? 0 : searchVideos().length;
-      return show === 'recipes' ? plural(r, 'recipe') : show === 'videos' ? plural(v, 'video') : `${plural(r, 'recipe')}, ${plural(v, 'video')}`;
+      return (show === 'recipes' ? r : show === 'videos' ? v : r + v).toLocaleString(); // a number, like the other menus
     };
     for (const label of pop.querySelectorAll('label')) label.querySelector('.count')!.textContent = n(label.querySelector('input')!.value as typeof state.show);
     state.show = was;

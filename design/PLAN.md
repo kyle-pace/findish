@@ -82,3 +82,11 @@ Results are rows (photo left), one column on phones, two on wide screens. Meta l
 ## The home page on a phone (November 16, 2026)
 
 On a phone the ideas under the box make the column taller than the screen, so centering does nothing. Under 40rem the home page starts the name a sixth of the way down (`16svh`), so the box lands near the middle, within thumb reach, and the ideas follow below.
+
+## A Mobbin pass (November 16, 2026)
+
+Kyle found the home page cramped and the menus fussy. From filter menus on Navan, TravelPerk, Hotjar and Klarna, search home pages on Perplexity and Surfshark, and result lists on Klarna and Airbnb:
+
+- **Home:** clear space between the name and its line, the box, and the ideas (more on tall screens, via `clamp()` with `vh`); lines break evenly (`text-wrap: balance`) so no word sits alone; New this week is set a little apart, since it's news rather than a way in.
+- **Filter menus:** as wide as the longest option, one line per option (radio, label, count in a grid), counts right-aligned and never wrapping, a soft basil highlight on hover. Show's counts are plain numbers like the other menus. 40px rows on desktop, 44px on phones.
+- **Results:** the "Support them" links are muted ink with a quiet underline instead of tomato, so the recipe's name leads.

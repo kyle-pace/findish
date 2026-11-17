@@ -242,13 +242,24 @@ import '../styles/theme.css';
     padding-bottom: 0.12em;
   }
 
+  /* Room to breathe on the home page: each group (name and line, box, ideas) gets clear
+     space around it, and lines break evenly instead of leaving one word alone. */
   [data-mode='home'] .from {
-    max-width: none;
-    margin-top: var(--space-3);
+    max-width: 34rem;
+    margin: var(--space-4) auto 0;
+    text-wrap: balance;
   }
 
   [data-mode='home'] .search {
-    margin-top: var(--space-8);
+    margin-top: clamp(var(--space-8), 6vh, var(--space-16));
+  }
+
+  [data-mode='home'] .home-actions {
+    margin-top: var(--space-6);
+  }
+
+  [data-mode='home'] .start {
+    margin-top: clamp(var(--space-12), 8vh, var(--space-24));
   }
 
   [data-mode='home'] .filters,
@@ -482,17 +493,28 @@ import '../styles/theme.css';
     padding-block: 0.4rem;
   }
 
+  /* Idea links and buttons sit the same on a wrapped line; the line height keeps them 24px tall. */
+  .start :global(:is(button, a)) {
+    padding-block: 0.15rem;
+  }
+
 
   .start {
     margin-top: var(--space-8);
   }
 
   .start p {
-    margin: 0 auto var(--space-1);
-    max-width: 38em;
+    margin: 0 auto var(--space-4);
+    max-width: 36em;
     font-size: var(--step--1);
-    line-height: 1.7;
+    line-height: 1.6;
     color: var(--ink-muted);
+    text-wrap: balance;
+  }
+
+  /* New this week is news, not another way in: set apart from the three idea lines. */
+  .start #fresh {
+    margin-top: var(--space-8);
   }
 
   .start :global(a) {
@@ -571,13 +593,16 @@ import '../styles/theme.css';
     text-underline-offset: 0.3em;
   }
 
+  /* A menu as wide as its longest option, one line per option (Navan's and TravelPerk's
+     filter menus): nothing wraps, radios line up, counts sit quietly at the right. */
   .pop {
     margin: 0;
-    min-width: 15rem;
-    max-width: min(22rem, calc(100vw - 2 * var(--gutter)));
-    max-height: min(26rem, 70vh);
+    width: max-content;
+    min-width: 14rem;
+    max-width: min(26rem, calc(100vw - 2 * var(--gutter)));
+    max-height: min(28rem, 70vh);
     overflow: auto;
-    padding: var(--space-4) var(--space-6);
+    padding: var(--space-4) var(--space-4) var(--space-3);
     background: var(--bg-raised);
     color: var(--ink);
     border: 1px solid var(--line);
@@ -592,28 +617,39 @@ import '../styles/theme.css';
   }
 
   .pop legend {
-    padding: 0;
+    padding: 0 var(--space-2);
     margin-bottom: var(--space-2);
+    font-size: var(--step--1);
     font-weight: 700;
   }
 
   .options :global(label) {
-    display: flex;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
     gap: var(--space-3);
     align-items: center;
-    min-height: 2.75rem;
+    min-height: 2.5rem;
+    padding: 0 var(--space-2);
+    border-radius: 0.3rem;
+    line-height: 1.3;
     cursor: pointer;
   }
 
+  .options :global(label:hover) {
+    background: var(--scallion-fill);
+  }
+
   .options :global(input) {
-    width: 1.2rem;
-    height: 1.2rem;
+    width: 1.1rem;
+    height: 1.1rem;
+    margin: 0;
     accent-color: var(--accent-ink);
   }
 
   .options :global(.count) {
-    margin-left: auto;
     padding-left: var(--space-4);
+    white-space: nowrap;
+    text-align: right;
     color: var(--ink-muted);
     font-size: var(--step--1);
     font-variant-numeric: tabular-nums;
@@ -626,6 +662,11 @@ import '../styles/theme.css';
       width: 100%;
       border-radius: 0.75rem 0.75rem 0 0;
       padding-bottom: calc(var(--space-8) + env(safe-area-inset-bottom));
+    }
+
+    /* Fingers need the full 44px on a phone. */
+    .options :global(label) {
+      min-height: 2.75rem;
     }
   }
 
@@ -824,8 +865,16 @@ import '../styles/theme.css';
     color: var(--ink-muted);
   }
 
+  /* Quiet, like the rest of the line: the recipe's name leads, the ways to support its
+     creator are there for whoever looks. Underlined, so still links without color. */
   :global(.support a) {
     font-weight: 400;
+    color: var(--ink-muted);
+    text-decoration-color: var(--field-rule);
+  }
+
+  :global(.support a:hover) {
+    color: var(--ink);
   }
 
   /* Inside a result row, lift the support links above the row's stretched recipe link

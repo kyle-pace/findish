@@ -209,17 +209,45 @@ import '../styles/theme.css';
     margin-top: var(--space-6);
   }
 
-  /* Home: the name and box sit a little above the middle of the window, the way a search
-     engine's front page does, and the ideas follow under them. The space above grows with
-     the window's height, so a short laptop screen and a tall monitor both look balanced.
-     (Centering with justify-content broke once the ideas made the column taller than the
-     window: it pushed the name off the top.) */
-  [data-mode='home'] .app {
+  /* Home fills the window exactly, like a search engine's front page: the name, the box
+     and the ideas sit a little above the middle, the footer sits on the bottom edge, and
+     nothing scrolls. The page, main and the column all stretch to the window's height,
+     and two flexible spacers (more below than above) do the centering, so the group can
+     never be pushed off the top. Spacing shrinks with the window's height, and the
+     lower-priority lines step out on short windows (see the height queries below). If
+     text is zoomed so far that it can't fit, the page scrolls as usual rather than
+     cutting anything off. */
+  :global(body:has(#page[data-mode='home']) > main) {
     display: flex;
     flex-direction: column;
-    min-height: calc(100svh - 12rem);
-    padding-top: clamp(var(--space-8), 30svh - 7rem, 18rem);
-    padding-bottom: var(--space-12);
+  }
+
+  [data-mode='home'] {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding-block: var(--space-4);
+  }
+
+  [data-mode='home'] .app {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  [data-mode='home'] .app::before,
+  [data-mode='home'] .app::after {
+    content: '';
+    flex: 2 1 0;
+  }
+
+  [data-mode='home'] .app::after {
+    flex-grow: 3;
+  }
+
+  /* The footer: one quiet line along the bottom, clear of the display settings button. */
+  :global(body:has(#page[data-mode='home']) > .lab-foot) {
+    padding: var(--space-3) calc(var(--gutter) + 4rem) var(--space-4) var(--gutter);
   }
 
   [data-mode='home'] .top,
@@ -238,24 +266,58 @@ import '../styles/theme.css';
     padding-bottom: 0.12em;
   }
 
-  /* Room to breathe on the home page: each group (name and line, box, ideas) gets clear
-     space around it, and lines break evenly instead of leaving one word alone. */
+  /* Each group (name and line, box, ideas) gets clear space around it, scaled to the
+     window's height, and lines break evenly instead of leaving one word alone. */
   [data-mode='home'] .from {
     max-width: 34rem;
-    margin: var(--space-4) auto 0;
+    margin: clamp(var(--space-2), 2svh, var(--space-4)) auto 0;
     text-wrap: balance;
   }
 
   [data-mode='home'] .search {
-    margin-top: clamp(var(--space-8), 6vh, var(--space-16));
+    margin-top: clamp(var(--space-4), 4.5svh, var(--space-12));
   }
 
   [data-mode='home'] .home-actions {
-    margin-top: var(--space-6);
+    margin-top: clamp(var(--space-2), 2svh, var(--space-4));
   }
 
   [data-mode='home'] .start {
-    margin-top: clamp(var(--space-8), 6svh, var(--space-16));
+    margin-top: clamp(var(--space-4), 4.5svh, var(--space-12));
+  }
+
+  [data-mode='home'] .start p {
+    margin-bottom: clamp(var(--space-1), 1.4svh, var(--space-3));
+  }
+
+  [data-mode='home'] .start #fresh {
+    margin-top: clamp(var(--space-3), 3svh, var(--space-6));
+  }
+
+  /* Short windows: the lines that matter least step out first, so the name, the box and
+     a few ideas always fit. New this week goes first, then the creator line, then the
+     line under the name; a phone on its side keeps just the name, box and one idea line. */
+  @media (max-height: 760px) and (max-width: 40rem), (max-height: 640px) {
+    [data-mode='home'] .start #fresh {
+      display: none;
+    }
+  }
+
+  @media (max-height: 620px) and (max-width: 40rem), (max-height: 540px) {
+    [data-mode='home'] .start #creators {
+      display: none;
+    }
+  }
+
+  @media (max-height: 460px) {
+    [data-mode='home'] .from,
+    [data-mode='home'] .start #popular {
+      display: none;
+    }
+
+    [data-mode='home'] .top h1 {
+      font-size: 2rem;
+    }
   }
 
   [data-mode='home'] .filters,

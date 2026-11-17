@@ -8,30 +8,14 @@
 // The answers are worked out in src/mcp/search.mjs (recipesWith).
 
 import type { APIRoute } from 'astro';
-import { env } from 'cloudflare:workers';
-import { prepare, recipesWith } from '../../mcp/search.mjs';
+import { recipesWith } from '../../mcp/search.mjs';
+import { loadIndex } from '../../mcp/load-index';
 
 export const prerender = false;
 
 const MAX_BODY = 4096;
 const HEADERS = { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' };
 const reply = (status: number, value: unknown) => new Response(JSON.stringify(value), { status, headers: HEADERS });
-
-// Read once per isolate, like the MCP endpoint.
-let ready: Promise<ReturnType<typeof prepare>> | null = null;
-function loadIndex(origin: string) {
-  ready ??= (async () => {
-    const assets = (env as { ASSETS?: { fetch: typeof fetch } }).ASSETS;
-    if (!assets) throw new Error('The index is not available here');
-    const res = await assets.fetch(new URL('/index.json', origin));
-    if (!res.ok) throw new Error(`The index answered ${res.status}`);
-    return prepare(await res.json());
-  })().catch((e) => {
-    ready = null;
-    throw e;
-  });
-  return ready;
-}
 
 export const POST: APIRoute = async ({ request }) => {
   const length = Number(request.headers.get('content-length') || 0);

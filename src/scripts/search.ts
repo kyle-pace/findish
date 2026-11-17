@@ -222,8 +222,13 @@ async function load() {
   // The videos come second, so recipe search doesn't wait for them.
   loaded
     .videos?.()
-    .catch(() => {}) // no videos this visit: recipes still work
-    .then(videosLanded);
+    .catch(() => false)
+    .then((got) => {
+      // No videos this visit (index-load.ts says why): recipes still work, and a search
+      // for videos says so instead of "none match".
+      videosMissing = got === false;
+      videosLanded();
+    });
 }
 /** Enter was pressed before the recipes had loaded; the search runs as soon as they have. */
 let submitWaiting = false;
@@ -259,6 +264,8 @@ addEventListener('pagehide', saveView);
 
 /** The video rows haven't arrived yet (they load after the recipes). */
 let videosPending = false;
+/** The video rows couldn't be had this visit. */
+let videosMissing = false;
 
 /** The videos are in: a search on the page is drawn again, now with them. */
 function videosLanded() {
@@ -534,7 +541,7 @@ function render() {
   const vids = videos.length ? ` and ${plural(videos.length, 'video')} on YouTube` : '';
   if (loose && hits.length)
     statusEl.innerHTML = hits.length === 1 ? 'Nothing has every word, so this 1 recipe has most of them.' : `Nothing has every word, so these ${plural(hits.length, 'recipe')} have most of them.`;
-  else if (state.show === 'videos' && !videos.length) statusEl.textContent = 'No videos match all of that.';
+  else if (state.show === 'videos' && !videos.length) statusEl.textContent = videosMissing ? 'The videos didn’t load this time. Refresh the page to try again.' : 'No videos match all of that.';
   else if (!hits.length && videos.length) statusEl.innerHTML = `<strong>${videos.length.toLocaleString()}</strong> ${videos.length === 1 ? 'video' : 'videos'} on YouTube.`;
   else if (!hits.length) statusEl.textContent = 'Nothing matches all of that.';
   else if (state.with.length > 1)
@@ -1441,9 +1448,20 @@ function plainOptions(text: string): Option[] {
   if (text.length > 1) out.push(...ingMatches(text).slice(0, 3).map((p) => ({ kind: 'ing' as const, p })));
   out.push(...completions(data.phrases, text).map((c, n) => ({ kind: 'complete' as const, ...c, n: n + 1 })));
   // While typing, the last word can be the start of one ("dumpl"); after Enter, words are whole.
-  const hits = search({ q: text, typing: true });
+  // Only four are shown, so only the ones that could be among them are put in order
+  // (search-core's `first`); a search held to saved recipes is small enough to do whole.
+  let hits: Hit[];
+  let total: number;
+  if (state.keep) {
+    hits = search({ q: text, typing: true });
+    total = hits.length;
+  } else {
+    const few = core.search(ready!, state, { q: text, typing: true, first: 4 });
+    hits = few;
+    total = few.total;
+  }
   out.push(...hits.slice(0, 4).map((h, n) => ({ kind: 'recipe' as const, h, n: n + 1 })));
-  if (hits.length) out.push({ kind: 'all', n: hits.length, text });
+  if (total) out.push({ kind: 'all', n: total, text });
   return out;
 }
 

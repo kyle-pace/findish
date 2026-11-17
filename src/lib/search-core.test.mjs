@@ -410,3 +410,31 @@ test('a comma before "with" ends what is left out, so "no pork, with tofu" still
   assert.equal(u.without.length, 1);
   assert.equal(u.q, '');
 });
+
+test('asking for only the first four gives the same four as the whole search, and how many matched', () => {
+  for (const q of ['c', 'ch', 'chicken', 'chicken so', 'rice', 'tofu', 'pad t', 'easy', 'salad', 'no', 'mapo tofu', 'zzzz']) {
+    for (const extra of [{}, { diet: 'vegetarian' }, { with: [ing('eggs')] }, { with: [ing('eggs'), ing('tofu')] }]) {
+      const f = { ...blank(), q, ...extra };
+      const whole = search(ready, f, { typing: true });
+      const few = search(ready, f, { typing: true, first: 4 });
+      assert.deepEqual(few.map((h) => h.r.key), whole.slice(0, 4).map((h) => h.r.key), `${q} ${JSON.stringify(extra)}`);
+      assert.equal(few.total, whole.length, q);
+    }
+  }
+});
+
+test('"veggie" means vegetarian, but not beside meat, and "veggie burger" keeps its words', () => {
+  const stir = said('chicken veggie stir fry');
+  assert.equal(stir.diet, '');
+  assert.equal(stir.q, 'chicken veggie stir fry');
+  assert.ok(find({ q: stir.q }).length > 0 || find({ q: stir.q }, { loose: true }).length > 0, 'it finds something');
+  assert.equal(said('beef and veggie soup').diet, '');
+  const pasta = said('veggie pasta');
+  assert.equal(pasta.diet, 'vegetarian');
+  assert.equal(pasta.q, 'pasta');
+  const burger = said('veggie burger');
+  assert.equal(burger.diet, 'vegetarian');
+  assert.equal(burger.q, 'veggie burger');
+  assert.equal(said('quick veggie dinner').diet, 'vegetarian');
+  assert.equal(said('vegan chicken').diet, 'vegan');
+});

@@ -93,6 +93,8 @@ export type SearchOptions = {
   loose?: boolean;
   typing?: boolean;
   top?: number;
+  /** Only the first n, in the same order as the full answer; how many matched is the array's `total`. */
+  first?: number;
   /** Just how many match (search returns a number). */
   count?: boolean;
 };
@@ -135,5 +137,6 @@ export function looksLikeAsk(text: string): boolean;
 export function viaIngredient(ready: Ready, r: Recipe, terms: unknown[]): number[];
 export function covers(ready: Ready, chosen: number[], p: number): boolean;
 export function search(ready: Ready, f: Filters, opts: SearchOptions & { count: true }): number;
+export function search(ready: Ready, f: Filters, opts: SearchOptions & { first: number }): Hit[] & { total: number };
 export function search(ready: Ready, f: Filters, opts?: SearchOptions): Hit[];
 export function searchVideos(ready: Ready, f: Filters, opts?: SearchOptions): unknown[][];

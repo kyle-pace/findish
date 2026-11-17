@@ -684,8 +684,19 @@ export function understand(ready, text, { list = false } = {}) {
 
   // Diet.
   if (/\b(vegan|plant\s+based)\b/.test(t)) out.diet = 'vegan';
-  else if (/\b(vegetarian|veggie|meatless|meat\s+free)\b/.test(t)) out.diet = 'vegetarian';
-  cut(/\b(vegan|plant\s+based|vegetarian|veggie|meatless|meat\s+free)\b/g);
+  else if (/\b(vegetarian|meatless|meat\s+free)\b/.test(t)) out.diet = 'vegetarian';
+  cut(/\b(vegan|plant\s+based|vegetarian|meatless|meat\s+free)\b/g);
+  // "Veggie" means vegetarian too ("veggie pasta"), but not next to meat: "chicken veggie
+  // stir fry" is chicken with vegetables, and asking for vegetarian there finds nothing.
+  // "Veggie burger" is a dish's name: vegetarian, and the words stay.
+  if (/\bveggie\b/.test(t)) {
+    const meaty = new Set(index.diet?.vegetarian || []);
+    const withMeat = t.split(' ').some((w) => w && w !== 'veggie' && meaty.has(ingredientFor(ready, w)));
+    if (!withMeat) {
+      out.diet ||= 'vegetarian';
+      t = t.replace(/\bveggie\b(?!\s+(?:burgers?|dogs?|sausages?|patt(?:y|ies)|nuggets?|meatballs?|balls?|mince|bacon)\b)/g, ' ');
+    }
+  }
 
   // Creators, before cuisines ("chinese cooking demystified" is a channel): a name anywhere,
   // with or without "from" ("kenji fried rice", "from maangchi"), longest names first.
@@ -990,7 +1001,8 @@ export function queryFor(ready, f, opts = {}) {
  *   cuisine, course, fresh (new this week), diet ('vegetarian' | 'vegan'), exact (no typo fixing)
  * `opts`: q and with override f's; skip leaves one filter off ('site', 'time', 'cuisine',
  * 'course'), for counting; loose keeps recipes with most of the words; typing lets the last
- * word be unfinished; count returns just how many.
+ * word be unfinished; count returns just how many; first: n returns only the first n, with
+ * how many matched as the array's `total` (for the search box, which shows four).
  *
  * Order: with dish words, the best word match first (then more of your ingredients, then
  * fewer other things to buy). With two or more ingredients and no words, the most of your
@@ -1048,6 +1060,24 @@ export function search(ready, f, opts = {}) {
   }
   if (opts.count) return n;
   const byUse = !terms.length && chosen.length > 1;
+  // Only the first few are wanted (the search box's suggestions, on every keystroke): put
+  // in order just the ones that could be among them, not thousands. Which those are: the
+  // picks below never reach past recipes within BAND points of the best one left, and the
+  // best one left is always one of the top `first`. The answer is the same as the start of
+  // the full one, with how many matched in `.total`.
+  if (opts.first > 0 && !byUse && opts.mix !== false && hits.length > opts.first) {
+    const best = [];
+    for (const h of hits) {
+      if (best.length < opts.first) best.push(h.score), best.sort((a, b) => b - a);
+      else if (h.score > best[best.length - 1]) (best[best.length - 1] = h.score), best.sort((a, b) => b - a);
+    }
+    const floor = best[best.length - 1] - MIX_BAND;
+    const near = hits.filter((h) => h.score >= floor);
+    const total = hits.length;
+    hits.length = 0;
+    for (const h of near) hits.push(h);
+    hits.total = total;
+  }
   const tail = (a, b) => Number(b.r.hasPhoto) - Number(a.r.hasPhoto) || b.r.opens - a.r.opens || (a.r.name < b.r.name ? -1 : a.r.name > b.r.name ? 1 : 0);
   hits.sort(
     byUse
@@ -1056,8 +1086,16 @@ export function search(ready, f, opts = {}) {
         ? (a, b) => b.score - a.score || b.used.length - a.used.length || a.missing - b.missing || tail(a, b)
         : (a, b) => b.score - a.score || tail(a, b),
   );
+  if (opts.first > 0) {
+    const out = (opts.mix === false ? hits : mix(hits, byUse, (h) => h.r.src.id, opts.first)).slice(0, opts.first);
+    out.total = hits.total ?? hits.length;
+    return out;
+  }
   return opts.mix === false ? hits : mix(hits, byUse, (h) => h.r.src.id, opts.top);
 }
+
+// How close in score two recipes are for creators to take turns between them (mix).
+const MIX_BAND = 2;
 
 /**
  * Take turns between creators. Within each tier (same number of your ingredients used),
@@ -1068,7 +1106,7 @@ export function search(ready, f, opts = {}) {
  */
 function mix(hits, byUse, who, top = Infinity) {
   const out = [];
-  const BAND = 2;
+  const BAND = MIX_BAND;
   const tierOf = (h) => (byUse ? h.used.length : 0);
   for (let i = 0; i < hits.length; ) {
     let j = i;

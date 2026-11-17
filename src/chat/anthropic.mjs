@@ -43,6 +43,11 @@ export async function callClaude(apiKey, body, { fetchImpl = fetch, timeoutMs = 
   for (let attempt = 0; ; attempt++) {
     const left = deadline - now();
     if (left <= 0) throw failed('timeout');
+    // An ordinary timer, not AbortSignal.timeout(): Node doesn't let that one keep a
+    // process alive, so a test waiting on it could end before it fired (it did in CI on
+    // Node 22). It also covers reading the answer, and is cleared however the call ends.
+    const ctl = new AbortController();
+    const timer = setTimeout(() => ctl.abort(new DOMException('Timed out', 'TimeoutError')), left);
     let res;
     try {
       res = await fetchImpl(ENDPOINT, {
@@ -53,18 +58,22 @@ export async function callClaude(apiKey, body, { fetchImpl = fetch, timeoutMs = 
           'content-type': 'application/json',
         },
         body: payload,
-        signal: AbortSignal.timeout(left),
+        signal: ctl.signal,
       });
     } catch (e) {
+      clearTimeout(timer);
       throw failed(e?.name === 'TimeoutError' || e?.name === 'AbortError' ? 'timeout' : 'network');
     }
     if (res.ok) {
       try {
         return await res.json();
-      } catch {
-        throw failed('bad_answer');
+      } catch (e) {
+        throw failed(e?.name === 'TimeoutError' || ctl.signal.aborted ? 'timeout' : 'bad_answer');
+      } finally {
+        clearTimeout(timer);
       }
     }
+    clearTimeout(timer);
     if (attempt === 0 && RETRY_ON.has(res.status) && deadline - now() > RETRY_WAIT_MS * 2) {
       await wait(RETRY_WAIT_MS);
       continue;

@@ -215,7 +215,7 @@ const FILTERS = [
       <!-- Every filter in one sheet, for narrow screens. Its fieldsets are the menus' own,
            moved in while it's open (search.ts), so there is one set of controls. -->
       <dialog class="sheet" id="filter-sheet" aria-labelledby="sheet-title">
-        <h2 id="sheet-title">Filters</h2>
+        <h2 id="sheet-title" tabindex="-1" autofocus>Filters</h2>
         <div class="sheet-body" id="sheet-body"></div>
         <p class="visually-hidden" id="sheet-said" role="status" aria-live="polite"></p>
         <div class="sheet-foot">
@@ -499,6 +499,19 @@ const FILTERS = [
 
   [data-mode='results'] .app[data-state='loading'] .start {
     display: none;
+  }
+
+  /* Phones, after a search: the small text (count, actions, "Narrow it", each result's
+     time, creator and ingredients) was 13px, too small to read comfortably in a hand.
+     It comes up to 15px here, and the count reads at full size. */
+  @media (max-width: 40rem) {
+    [data-mode='results'] {
+      --step--1: 0.9375rem;
+    }
+
+    [data-mode='results'] .status {
+      font-size: var(--step-0);
+    }
   }
 
   /* Phones: give the home page room to breathe. The idea lines get a narrower measure so
@@ -1001,7 +1014,7 @@ const FILTERS = [
     }
 
     .filter-all {
-      display: block;
+      display: inline-flex;
     }
 
     .set-line {
@@ -1119,6 +1132,50 @@ const FILTERS = [
     text-underline-offset: 0.3em;
   }
 
+  /* "Filters" on a narrow screen: a proper button, at reading size, with a sliders icon,
+     a firm outline and a finger-sized height. When anything is set it takes the tomato
+     outline and says how many ("Filters, 2 set"), so it isn't color alone. */
+  .filter.filter-all {
+    align-items: center;
+    gap: var(--space-2);
+    padding: 0 var(--space-4) 0 var(--space-3);
+    border: 1px solid var(--field-rule);
+    border-radius: 999px;
+    background: var(--bg-raised);
+    color: var(--ink);
+    font-size: var(--step-0);
+    font-weight: 600;
+  }
+
+  .filter.filter-all::before {
+    content: '';
+    width: 1.15em;
+    height: 1.15em;
+    background: currentColor;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round'%3E%3Cpath d='M4 7h9M17 7h3M4 17h3M11 17h9'/%3E%3Ccircle cx='15' cy='7' r='2.2'/%3E%3Ccircle cx='9' cy='17' r='2.2'/%3E%3C/svg%3E") center / contain no-repeat;
+  }
+
+  .filter.filter-all:hover {
+    border-color: var(--ink-muted);
+  }
+
+  .filter.filter-all span {
+    font-weight: inherit;
+  }
+
+  .filter.filter-all span::after {
+    content: none;
+  }
+
+  .filter.filter-all[data-active] {
+    border-color: var(--accent-ink);
+    box-shadow: inset 0 0 0 1px var(--accent-ink);
+  }
+
+  .filter.filter-all[data-active] span {
+    text-decoration: none;
+  }
+
   /* A menu as wide as its longest option, one line per option (Navan's and TravelPerk's
      filter menus): nothing wraps, radios line up, counts sit quietly at the right. */
   .pop {
@@ -1209,11 +1266,38 @@ const FILTERS = [
     cursor: pointer;
   }
 
+  /* Drawn ourselves: Safari paints an unchecked native radio as a solid black disc in
+     dark mode. An open ring in the muted ink; checked, a tomato ring with a dot (radio)
+     or a tomato box with a tick (checkbox), so shape says it as well as color. */
   .options :global(input) {
-    width: 1.1rem;
-    height: 1.1rem;
+    flex: none;
+    appearance: none;
+    width: 1.25rem;
+    height: 1.25rem;
     margin: 0;
-    accent-color: var(--accent-ink);
+    border: 2px solid var(--ink-muted);
+    border-radius: 50%;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .options :global(input[type='checkbox']) {
+    border-radius: 0.3rem;
+  }
+
+  .options :global(input[type='radio']:checked) {
+    border-color: var(--accent-ink);
+    background: radial-gradient(circle, var(--accent-ink) 0 38%, transparent 42%);
+  }
+
+  .options :global(input[type='checkbox']:checked) {
+    border-color: var(--accent-ink);
+    background: var(--accent-ink) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%231d1714' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m3.5 8.5 3 3 6-7'/%3E%3C/svg%3E") center / 85% no-repeat;
+  }
+
+  .options :global(input:focus-visible) {
+    outline: 3px solid var(--accent-ink);
+    outline-offset: 2px;
   }
 
   .options :global(.count) {
@@ -1304,6 +1388,12 @@ const FILTERS = [
   .sheet h2 {
     margin: 0 0 var(--space-2);
     padding: 0 var(--space-2);
+  }
+
+  /* The sheet opens with focus on its heading (autofocus), so a screen reader starts at
+     "Filters" and no focus ring sits around the first choice. */
+  .sheet h2:focus {
+    outline: none;
   }
 
   :is(.pop, .sheet) fieldset {

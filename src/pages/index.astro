@@ -110,7 +110,7 @@ import '../styles/theme.css';
 
       <p class="status" id="status" role="status" aria-live="polite">Loading the recipes…</p>
 
-      <aside class="note" id="note" aria-labelledby="note-title" hidden></aside>
+      <p class="note" id="note" hidden></p>
 
       <section class="start" id="start" aria-label="Ideas" hidden>
         <p id="try"></p>
@@ -990,44 +990,20 @@ import '../styles/theme.css';
 
   /* About one cuisine or ingredient: a quiet strip under the count, sized like a result's
      text, with a basil rule on the left (tomato is for things you do). */
+  /* One quiet line above the results for a one-cuisine search: a link to it on World cuisine. */
   .note {
-    max-width: 46rem;
-    margin: var(--space-2) 0 var(--space-6);
-    padding: var(--space-2) 0 var(--space-2) var(--space-4);
-    border-left: 3px solid var(--field-rule);
-  }
-
-  .note :global(summary) {
-    width: fit-content;
-    min-height: 1.5rem;
-    font-weight: 700;
-    cursor: pointer;
-  }
-
-  .note :global(summary::marker) {
-    color: var(--ink-muted);
-  }
-
-  /* Closed, it's one quiet line: the name and its arrow. */
-  .note :global(details:not([open]) summary) {
-    color: var(--ink-muted);
-    font-weight: 400;
-    font-size: var(--step--1);
-  }
-
-  .note :global(p) {
-    margin: var(--space-1) 0 0;
-    max-width: 38em;
-    color: var(--ink-muted);
-  }
-
-  .note :global(.note-more) {
+    margin: 0 0 var(--space-4);
     font-size: var(--step--1);
   }
 
   .note :global(a) {
     color: var(--ink);
     text-decoration-color: var(--field-rule);
+    text-underline-offset: 0.2em;
+  }
+
+  .note :global(a:hover) {
+    text-decoration-color: currentColor;
   }
 
   .picked :global(.support) {

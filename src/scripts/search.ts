@@ -846,29 +846,25 @@ function renderVideos(hits: VideoRow[], q: string[], only: boolean) {
 }
 
 // ---------------------------------------------------------------------------------------
-// A short card when the search is about exactly one cuisine or one ingredient: one sentence
-// from World cuisine (which takes it from Wikipedia) and links to both. Nothing for anything
-// broader, so it never stacks up. Its text loads only the first time a card is needed.
+// When a search is just one cuisine, one quiet line above the results links to that cuisine
+// on World cuisine (kyle-pace/cuisine-explorer). Nothing for ingredients or broader searches.
+// Until 2026-11-16 it was a card with a Wikipedia sentence; Kyle dropped it as filler.
+// The links load (public/notes.json) only the first time the line is needed.
 
-type Note = { name: string; line: string; page: string; wiki: string };
-let notes: { cuisines: Record<string, Note>; ingredients: Record<string, Note> } | null = null;
+type Note = { name: string; page: string };
+let notes: { cuisines: Record<string, Note> } | null = null;
 let notesLoading = false;
 
-function noteFor(): { kind: 'cuisine' | 'ingredient'; id: string; label: string } | null {
+function noteFor(): string | null {
   const others = state.sites.size || state.without.length || state.notWords.length || state.fresh || state.picked >= 0;
-  if (others) return null;
-  if (state.cuisine && !state.q && !state.with.length) return { kind: 'cuisine', id: state.cuisine, label: `${state.cuisine} cuisine` };
-  // One ingredient tag, or the name of one typed on its own ("ginger").
-  const typed = state.q && !state.with.length && !state.cuisine ? ingredientFor(state.q, true) : null;
-  const p = state.with.length === 1 && !state.q && !state.cuisine ? state.with[0] : typed;
-  if (p != null) return { kind: 'ingredient', id: data.ing[p][0], label: data.ing[p][1] };
-  return null;
+  if (others || !state.cuisine || state.q || state.with.length) return null;
+  return state.cuisine;
 }
 
 function renderNote() {
   const box = $('note');
-  const want = noteFor();
-  if (!want) return void (box.hidden = true);
+  const cuisine = noteFor();
+  if (!cuisine) return void (box.hidden = true);
   if (!notes) {
     box.hidden = true;
     if (!notesLoading) {
@@ -876,43 +872,17 @@ function renderNote() {
       fetch('/notes.json')
         .then((r) => (r.ok ? r.json() : null))
         .then((n) => {
-          notes = n || { cuisines: {}, ingredients: {} };
+          notes = n?.cuisines ? n : { cuisines: {} };
           renderNote();
         })
-        .catch(() => (notes = { cuisines: {}, ingredients: {} }));
+        .catch(() => (notes = { cuisines: {} }));
     }
     return;
   }
-  const note = want.kind === 'cuisine' ? notes.cuisines[want.id] : notes.ingredients[want.id];
+  const note = notes.cuisines[cuisine];
   if (!note) return void (box.hidden = true);
-  const data_ = `data-note="${want.kind}" data-note-id="${esc(want.id)}"`;
-  // A native show/hide: open or closed, it stays the way it was left, on later searches too.
-  box.innerHTML = `<details id="note-details"${notesOpen() ? ' open' : ''}>
-    <summary><span id="note-title">About ${esc(want.kind === 'cuisine' ? note.name : want.label)}</span></summary>
-    <p>${esc(note.line)}</p>
-    <p class="note-more"><a href="${esc(note.page)}" ${data_} data-note-link="world-cuisine">Explore ${esc(
-      want.kind === 'cuisine' ? note.name : want.label.toLowerCase(),
-    )} on World cuisine</a>. Text from <a href="${esc(note.wiki)}" ${data_} data-note-link="wikipedia">Wikipedia</a>.</p>
-  </details>`;
+  box.innerHTML = `<a href="${esc(note.page)}" data-note="cuisine" data-note-id="${esc(cuisine)}" data-note-link="world-cuisine">Explore ${esc(note.name)} on World cuisine</a>`;
   box.hidden = false;
-  $('note-details').addEventListener('toggle', (e) => {
-    const open = (e.target as HTMLDetailsElement).open;
-    if (open === notesOpen()) return; // the same as before: nothing to save or count
-    try {
-      localStorage.setItem(NOTES_KEY, open ? 'open' : 'closed');
-    } catch {}
-    track('Changed Notes Setting', { notes_shown: open, note_kind: want.kind });
-  });
-}
-
-/** Whether notes start open. Kept in this browser only (localStorage), like the display settings. */
-const NOTES_KEY = 'findish-notes';
-function notesOpen(): boolean {
-  try {
-    return localStorage.getItem(NOTES_KEY) !== 'closed';
-  } catch {
-    return true;
-  }
 }
 
 function renderAlso() {

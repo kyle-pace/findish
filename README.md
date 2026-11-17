@@ -39,7 +39,7 @@ npm run preview   # builds, then runs it the way Cloudflare will
 | Searching, typeahead, filters, URL state | `src/scripts/search.ts` |
 | The index (generated, not committed) | `public/index.json`, from `scripts/build-index.mjs` |
 | Ingredient matching and the source list | `vendor/kitchen-catalog/` (refresh with `npm run sync-catalog`), read through `crawler/lib/sources.mjs` |
-| Notes on cuisines and ingredients (the card above results) | `vendor/world-cuisine/notes.json` from World cuisine (refresh with `npm run sync-world-cuisine`), sentence rules in `scripts/world-cuisine.mjs` |
+| Links to World cuisine (the line above a one-cuisine search) | `vendor/world-cuisine/notes.json` from World cuisine (refresh with `npm run sync-world-cuisine`), sentence rules in `scripts/world-cuisine.mjs` |
 | Page shell (back link, footer line, analytics) | `LabLayout` from [kp-design](https://github.com/kyle-pace/kp-design), with Findish's own settings in `src/lib/site.ts` |
 | Its own look (colors) | `src/styles/theme.css` |
 | Share card | `design/og.html`, rendered to `public/og.png` |

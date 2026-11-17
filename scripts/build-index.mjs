@@ -274,22 +274,23 @@ const index = {
 mkdirSync(dirname(out), { recursive: true });
 const json = JSON.stringify(index);
 
-// Notes for the card above results when a search is one cuisine or one ingredient
+// The "Explore Thai cuisine on World cuisine" line above results when a search is one cuisine
 // (vendor/world-cuisine/notes.json, from World cuisine; refresh with npm run sync-world-cuisine).
-// Only what Findish has recipes for, in its own file so the page loads it only when a card shows.
+// Just each cuisine's name and World cuisine page, for the cuisines Findish has recipes for,
+// in its own file so the page loads it only when the line shows. (Until 2026-11-16 this also
+// carried a Wikipedia sentence and ingredient notes; Kyle dropped them as filler.)
 const NOTE_CUISINE = { 'chinese american': 'american chinese', 'italian american': 'italian-american' };
 const notesFile = join(root, 'vendor/world-cuisine/notes.json');
 if (existsSync(notesFile)) {
   const wc = JSON.parse(readFileSync(notesFile, 'utf8'));
-  const notes = { cuisines: {}, ingredients: {} };
+  const notes = { cuisines: {} };
   for (const [c] of cuisines) {
     const k = c.toLowerCase();
     const note = wc.cuisines[NOTE_CUISINE[k] || k];
-    if (note) notes.cuisines[c] = note;
+    if (note?.page) notes.cuisines[c] = { name: note.name, page: note.page };
   }
-  for (const g of ing) if (wc.ingredients[g[0]]) notes.ingredients[g[0]] = wc.ingredients[g[0]];
   writeFileSync(join(dirname(out), 'notes.json'), JSON.stringify(notes));
-  console.log(`notes: ${Object.keys(notes.cuisines).length} of ${cuisines.length} cuisines, ${Object.keys(notes.ingredients).length} ingredients`);
+  console.log(`World cuisine links: ${Object.keys(notes.cuisines).length} of ${cuisines.length} cuisines`);
 }
 writeFileSync(out, json);
 // The repo is private, so the hub's Connections page reads this copy of the list.

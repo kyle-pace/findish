@@ -1,6 +1,10 @@
-// Findish, in the browser. Loads the index once (about 290 KB over the wire), then
-// every keystroke searches it locally: no server, no search service, nothing typed ever
-// leaves the page.
+// Findish, in the browser. Loads the index once (about 660 KB over the wire), then
+// every keystroke searches it locally: no server and no search service. What's typed stays
+// on the page, unless Ask is on and it reads like a question (see the end of this file).
+//
+// This file is the page: the box, the tags, the results, the address. The search itself
+// (words, typo fixing, understanding a sentence, ranking, videos) is src/lib/search-core.mjs,
+// the same code the MCP server and Ask run, so all three find and rank the same way.
 //
 // One search box (#q). Words you type search recipe names, ingredients and cuisines.
 // Picking an ingredient or a creator from the suggestions turns it into a tag in the box:
@@ -10,15 +14,18 @@
 // State lives in the URL (?q=, &with=, &site=, &time=, &cuisine=, &course=, &new=), so searches can be
 // shared and the back button works. (`site` holds creator ids, for older links.)
 import { track } from 'kp-design/analytics';
+import * as core from '../lib/search-core.mjs';
+import type { Creator, Hit, Ready, Recipe, Understood } from '../lib/search-core.mjs';
+import { looksLikeAsk, words } from '../lib/search-core.mjs';
 
 type Source = { id: string; name: string; site: string; host: string; count: number };
 // [catalog id, name, recipes naming it, parent positions, ...other names]
 type Ing = [string, string, number, number[], ...string[]];
-// [source, name, url (path on the site), minutes, cuisine, ingredient positions (with parents), own positions, photo, keywords, opens lately, course, first found]
-type RecipeRow = [number, string, string, number | null, string, number[], number[], string, string, number?, string?, string?];
-// [channel index, title, video id, published date, ingredient positions, course from the title]
-type VideoRow = [number, string, string, string, number[], string?];
-type Channel = { id: string; name: string; channel: string; site: string; count: number };
+// [source, name, url (path on the site), minutes, cuisine, ingredient positions (with parents), own positions, photo, keywords, opens lately, course, first found, flags (scripts/diet.mjs)]
+type RecipeRow = [number, string, string, number | null, string, number[], number[], string, string, number?, string?, string?, number?];
+// [channel index, title, video id, published date, ingredient positions, course from the title, flags from the title]
+type VideoRow = [number, string, string, string, number[], string?, number?];
+type Channel = { id: string; name: string; channel: string; site: string; count: number; cuisine?: string };
 type SupportLink = { label: string; url: string; kind: 'join' | 'buy' | 'follow'; book?: boolean; isbn?: string; cover?: string; coverWidth?: number; coverHeight?: number };
 type Index = {
   built: string;
@@ -37,36 +44,12 @@ type Index = {
   popular: number[];
   /** Ingredient positions a vegetarian or vegan search leaves out. */
   diet?: { vegetarian: number[]; vegan: number[] };
+  /** Things to leave out that aren't one ingredient ("dairy"): [id, name, flag, ...other names]. */
+  groups?: [string, string, number, ...string[]][];
+  /** After load() this also holds those groups, after the real ingredients, so a tag can be either. */
   ing: Ing[];
   recipes: RecipeRow[];
 };
-
-/** Whoever made it: a site, a site and its channel, or a channel alone. */
-type Creator = { id: string; name: string; recipes: number; videos: number; words: string[] };
-
-type Recipe = {
-  i: number;
-  src: Source;
-  name: string;
-  url: string;
-  min: number | null;
-  cuisine: string;
-  /** main, side, soup… or '' when the site doesn't say and the name isn't plain. */
-  course: string;
-  isNew: boolean;
-  pos: Set<number>;
-  own: number[];
-  img: string;
-  /** "woks:/mapo-tofu/": the recipe's id in analytics and in data/popularity.json. */
-  key: string;
-  /** Opens in the last 90 days, across everyone (counts only). */
-  opens: number;
-  title: string[];
-  titleText: string;
-  other: string[];
-};
-
-type Hit = { r: Recipe; score: number; used: number[]; missing: number };
 
 const PAGE = 24;
 const TIMES = [15, 30, 45, 60];
@@ -115,29 +98,9 @@ const andList = (xs: string[]) => (xs.length < 2 ? xs.join('') : `${xs.slice(0, 
 const fmtDay = (d: string) => new Date(`${d}T12:00:00`).toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
 const orList = (xs: string[]) => (xs.length < 2 ? xs.join('') : `${xs.slice(0, -1).join(', ')} or ${xs.at(-1)}`);
 
-/** "Scallions, chopped!" -> ["scallion", "chopped"]: lowercase, no accents, singular words. */
-function words(text: string): string[] {
-  return text
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .replace(/[’']/g, '')
-    .split(/[^a-z0-9]+/)
-    .filter(Boolean)
-    .map((w) =>
-      w.length <= 3 || /(ss|us|is)$/.test(w)
-        ? w
-        : w.endsWith('ies')
-          ? w.slice(0, -3) + 'y'
-          : /(oes|ches|shes|xes)$/.test(w)
-            ? w.slice(0, -2)
-            : w.endsWith('s')
-              ? w.slice(0, -1)
-              : w,
-    );
-}
-
 let data: Index;
+/** The index, ready to search (src/lib/search-core.mjs). Not set until it has loaded. */
+let ready: Ready | undefined;
 let recipes: Recipe[] = [];
 let creators: Creator[] = [];
 const creatorById = new Map<string, Creator>();
@@ -160,6 +123,7 @@ const state = {
   notWords: [] as string[], // words to leave out by title, for things that aren't one ingredient ("no peas")
   diet: '' as '' | 'vegetarian' | 'vegan',
   exact: false, // search the words as typed, without fixing typos
+  list: false, // a comma just made an ingredient tag, so what's typed next carries on the list
   shown: PAGE,
   picked: -1, // a recipe picked at random, by index into recipes
 };
@@ -179,457 +143,52 @@ async function load() {
     statusEl.textContent = 'The recipes didn’t load. Refresh the page to try again.';
     return;
   }
-  buildCreators();
-  ingNames = data.ing.map((g) => [g[1], ...(g.slice(4) as string[])].map((n) => words(n).join(' ')));
+  ready = core.prepare(data);
+  // The groups you can leave out ("dairy") sit after the real ingredients from here on.
+  data.ing = ready.ing as Ing[];
+  recipes = ready.recipes;
+  creators = ready.creators;
+  for (const c of creators) creatorById.set(c.id, c);
+  ingNames = ready.ingNames;
+  ingRecipes = ready.ingUsed;
   data.ing.forEach((g, p) => ingById.set(g[0], p));
-  ingRecipes = data.ing.map(() => 0);
-  recipes = data.recipes.map((row, i) => {
-    const [s, name, url, min, cuisine, pos, own, img, kw, opens = 0, course = ''] = row;
-    const src = data.sources[s];
-    for (const p of pos) ingRecipes[p]++;
-    const title = words(name);
-    const other = [
-      ...words(kw),
-      ...words(cuisine),
-      ...words(src.name),
-      ...pos.flatMap((p) => ingNames[p].join(' ').split(' ')),
-    ];
-    return {
-      i,
-      src,
-      name,
-      url: url.startsWith('http') ? url : src.site + url,
-      min,
-      cuisine,
-      course,
-      isNew: false,
-      pos: new Set(pos),
-      own,
-      img,
-      key: `${src.id}:${url}`,
-      opens,
-      title,
-      titleText: ` ${title.join(' ')} `,
-      other: [...new Set(other)],
-    };
-  });
-  for (const i of data.fresh || []) recipes[i].isNew = true;
   for (const r of recipes) if (r.course === 'side' && r.cuisine) sideCount.set(r.cuisine, (sideCount.get(r.cuisine) || 0) + 1);
-  buildVocab();
   buildFilters();
   buildStart();
   readUrl();
   app.dataset.state = 'ready';
-  render();
+  // Enter was pressed before the recipes had loaded: search for what's in the box now,
+  // instead of drawing the page over it.
+  if (submitWaiting) submit();
+  else render();
 }
-
-function buildCreators() {
-  const add = (id: string, name: string) => {
-    let c = creatorById.get(id);
-    if (!c) {
-      c = { id, name, recipes: 0, videos: 0, words: words(name) };
-      for (const a of CREATOR_ALIASES[id] || []) c.words.push(...words(a).filter((w) => !c!.words.includes(w)));
-      creatorById.set(id, c);
-      creators.push(c);
-    }
-    return c;
-  };
-  for (const s of data.sources) add(s.id, s.name).recipes = s.count;
-  for (const s of data.paused) add(s.id, s.name);
-  data.videos.sources.forEach((ch, k) => (add(creatorOfChannel(k), ch.name).videos += ch.count));
-  creators = creators.filter((c) => c.recipes || c.videos);
-}
+let submitWaiting = false;
 
 // ---------------------------------------------------------------------------------------
-// Understanding the words. Two layers, both in the browser:
-// - queryWords: what the search matches on. Filler ("easy", "recipe", "how to make") is
-//   ignored, and a word the index has never seen is swapped for the closest one it has
-//   ("dumpligns" -> "dumpling"), unless you asked for exactly what you typed.
-// - understand: on Enter, plain phrases become tags and filters you can see and remove:
-//   "under 30 minutes", "quick", "with tofu and eggs", "no pork", "vegetarian", "from
-//   Maangchi".
+// The search itself is src/lib/search-core.mjs. These hand it the page's state.
 
-const STOP = new Set(
-  ('a an the and or of for to in on my me i im want wanna need make making made cook cooking cooked how what can should ' +
-    'recipe recipes easy easiest simple best good great tasty yummy delicious perfect ultimate authentic classic traditional ' +
-    'homemade home style version idea ideas some something dish dishes food meal meals tonight today please really very ' +
-    'quick quickly fast speedy weeknight dinner dinners lunch supper with using without no from by').split(' '),
-);
-// Other names people use for a creator ("pailin" for Hot Thai Kitchen).
-const CREATOR_ALIASES: Record<string, string[]> = {
-  htk: ['pailin', 'pailins kitchen'],
-  kenji: ['kenji'],
-  rte: ['nagi', 'recipe tin', 'recipetin'],
-  rtj: ['yumiko'],
-  mwl: ['daddy lau', 'lau'],
-  sk: ['smitten', 'deb perelman'],
-  ccd: ['ccd'],
-  fca: ['french cooking'],
-  ab: ['alton', 'good eats'],
-};
-
-const vocab = new Map<string, number>(); // every word in the index, with how often it appears
-
-function buildVocab() {
-  const add = (ws: string[]) => ws.forEach((w) => vocab.set(w, (vocab.get(w) || 0) + 1));
-  for (const r of recipes) add([...r.title, ...r.other]);
-  for (const v of data.videos.rows) add(words(v[1]));
+/** The words the search matches on, with any typos fixed and words nothing has left out. */
+function queryWords(text: string, typing = false) {
+  return core.queryFor(ready!, state, { q: text, typing });
 }
 
-/** Edit distance, giving up past `max` (letters swapped count as one edit). */
-function distance(a: string, b: string, max: number): number {
-  if (Math.abs(a.length - b.length) > max) return max + 1;
-  let prev2: number[] = [];
-  let prev = Array.from({ length: b.length + 1 }, (_, j) => j);
-  for (let i = 1; i <= a.length; i++) {
-    const cur = [i];
-    let best = i;
-    for (let j = 1; j <= b.length; j++) {
-      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
-      cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + cost);
-      if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) cur[j] = Math.min(cur[j], prev2[j - 2] + 1);
-      best = Math.min(best, cur[j]);
-    }
-    if (best > max) return max + 1;
-    prev2 = prev;
-    prev = cur;
-  }
-  return prev[b.length];
-}
-
-/** The closest word the index knows, if one is close enough to be a typo. */
-function closest(w: string): string {
-  if (w.length < 4 || /\d/.test(w)) return '';
-  const max = w.length >= 7 ? 2 : 1;
-  let best = '';
-  let bestD = max + 1;
-  let bestN = 0;
-  for (const [v, n] of vocab) {
-    if (v.length < 3) continue;
-    const d = distance(w, v, max);
-    if (d < bestD || (d === bestD && n > bestN)) [best, bestD, bestN] = [v, d, n];
-  }
-  return bestD <= max ? best : '';
-}
-
-const queryCache = new Map<string, { words: string[]; fixes: [string, string][] }>();
-
-function queryWords(text: string, exact = state.exact) {
-  const key = `${exact ? 1 : 0}|${text}`;
-  const hit = queryCache.get(key);
-  if (hit) return hit;
-  const all = words(text);
-  const kept = all.filter((w) => !STOP.has(w));
-  const ws = kept.length ? kept : all;
-  const fixes: [string, string][] = [];
-  const out = ws.map((w, n) => {
-    if (exact || !vocab.size || vocab.has(w)) return w;
-    // The last word may still be being typed: a prefix of a known word is fine.
-    if (n === ws.length - 1 && [...vocab.keys()].some((v) => v.startsWith(w))) return w;
-    const fix = closest(w);
-    if (!fix) return w;
-    fixes.push([w, fix]);
-    return fix;
-  });
-  const result = { words: out, fixes };
-  queryCache.set(key, result);
-  return result;
-}
-
-type Understood = {
-  q: string;
-  time: number;
-  with: number[];
-  without: number[];
-  notWords: string[];
-  sites: string[];
-  diet: '' | 'vegetarian' | 'vegan';
-  cuisine: string;
-};
-
-/**
- * The ingredient a phrase names exactly (any of its names, singular or plural). Only an
- * exact name: a guess like "peas" -> peanuts would quietly leave the wrong recipes out.
- */
-function ingredientFor(phrase: string, mainName = false): number | null {
-  const qs = words(phrase).join(' ');
-  if (!qs) return null;
-  return (
-    data.ing
-      .map((_, p) => p)
-      .find((p) => ingRecipes[p] > 0 && (mainName ? ingNames[p][0] === qs : ingNames[p].some((n) => n === qs))) ?? null
-  );
-}
-
-/** The longest run of words at the start of a phrase that names an ingredient: "chicken thighs tonight" -> chicken thighs. */
-function takeIngredient(phrase: string, mainName = false): { p: number | null; meat: boolean; rest: string } {
-  const ws = phrase.trim().split(/\s+/).filter(Boolean);
-  if (/^meats?$/.test(ws[0] || '')) return { p: null, meat: true, rest: ws.slice(1).join(' ') };
-  for (let k = Math.min(3, ws.length); k >= 1; k--) {
-    const p = ingredientFor(ws.slice(0, k).join(' '), mainName);
-    if (p != null) return { p, meat: false, rest: ws.slice(k).join(' ') };
-  }
-  return { p: null, meat: false, rest: phrase };
-}
-
-function creatorFor(phrase: string): string | null {
-  const qs = words(phrase).join(' ');
-  if (!qs) return null;
-  const c = creators.find(
-    (c) => c.words.join(' ') === qs || (CREATOR_ALIASES[c.id] || []).some((a) => words(a).join(' ') === qs),
-  );
-  return c?.id ?? null;
-}
-
+/** What a typed sentence asks for. Before the recipes have loaded, just its words. */
 function understand(text: string): Understood {
-  const out: Understood = { q: '', time: 0, with: [], without: [], notWords: [], sites: [], diet: '', cuisine: '' };
-  // Lowercase, no accents or apostrophes, hyphens as spaces ("pork-free", "López-Alt").
-  let t = ` ${text
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[’']/g, '')
-    .replace(/-/g, ' ')
-    .replace(/\s+/g, ' ')} `;
-  const cut = (re: RegExp) => (t = t.replace(re, ' '));
-
-  // Time: "under 30 minutes", "in 20 min", "1 hour", "30-minute"; or just "quick".
-  const time = t.match(/\b(?:under|less than|in|within|at most|max|no more than|up to)?\s*(\d+(?:\.\d+)?)[\s-]*(minutes?|mins?|m|hours?|hrs?|h)\b/);
-  if (time) {
-    const n = Number(time[1]) * (/^h/.test(time[2]) ? 60 : 1);
-    if (n > 0 && n <= 600) out.time = Math.round(n);
-    t = t.replace(time[0], ' ');
-  } else if (/\b(quick|quickly|fast|speedy)\b/.test(t)) out.time = 30;
-
-  // Diet.
-  if (/\b(vegan|plant[\s-]based)\b/.test(t)) out.diet = 'vegan';
-  else if (/\b(vegetarian|veggie|meatless|meat[\s-]free)\b/.test(t)) out.diet = 'vegetarian';
-  cut(/\b(vegan|plant[\s-]based|vegetarian|veggie|meatless|meat[\s-]free)\b/g);
-
-  // "No-bake cookies" and friends are dishes, not leaving something out.
-  t = t.replace(/\bno (bake|knead|churn|cook|boil)\b/g, 'no$1');
-
-  // Leave out: "no pork", "without peanuts or shrimp", "pork-free".
-  const stop = String.raw`(?=\s*(?:,|\bwith\b|\busing\b|\bunder\b|\bin\b|\bfor\b|\bfrom\b|$))`;
-  t = t.replace(new RegExp(String.raw`\b(?:without|no|minus|skip|hold the|not)\s+([a-z][a-z \-]*?(?:\s*(?:,|and|or)\s*[a-z][a-z \-]*?)*)` + stop, 'g'), (all, list: string) => {
-    let kept = '';
-    for (const piece of list.split(/\s*(?:,|\band\b|\bor\b)\s*/)) {
-      // "no meat" means vegetarian; there's no single "meat" ingredient to leave out.
-      // Leave out an ingredient only when the words are its main name: "cilantro" is
-      // filed under fresh herbs, and leaving out every herb isn't what was asked.
-      const { p, meat, rest } = takeIngredient(piece, true);
-      if (meat) out.diet ||= 'vegetarian';
-      else if (p != null) out.without.push(p);
-      else {
-        // Not an ingredient by that name: leave out recipes with the word in their name.
-        const w = piece.trim().split(/\s+/)[0];
-        if (w && !STOP.has(words(w)[0] || '')) out.notWords.push(w);
-        kept += ` ${piece.split(/\s+/).slice(1).join(' ')}`;
-        continue;
-      }
-      kept += ` ${rest}`;
-    }
-    return kept ? ` ${kept} ` : ' ';
-  });
-  t = t.replace(/\b([a-z]+)[\s-]free\b/g, (all, w: string) => {
-    const p = ingredientFor(w, true);
-    if (p == null) return all;
-    out.without.push(p);
-    return ' ';
-  });
-
-  // Creators: a creator's name anywhere, with or without "from" ("kenji fried rice", "from maangchi").
-  for (const c of creators) {
-    for (const name of [c.words.join(' '), ...(CREATOR_ALIASES[c.id] || []).map((a) => words(a).join(' '))]) {
-      if (name.length < 3) continue;
-      const re = new RegExp(`\\b(?:(?:from|by)\\s+)?${name.replace(/ /g, '\\s+')}s?\\b`);
-      if (re.test(t)) {
-        out.sites.push(c.id);
-        t = t.replace(re, ' ');
-        break;
-      }
-    }
-  }
-
-  // Cuisines, only when said as one: "thai food", "korean recipes", "mexican cooking". A bare
-  // "thai" stays a word, since it also finds dishes a site filed under another cuisine.
-  for (const [c] of data.cuisines) {
-    const name = words(c).join(' ');
-    const re = new RegExp(`\\b${name.replace(/ /g, '\\s+')}\\s+(?:food|foods|cuisine|recipes?|dish(?:es)?|cooking)\\b`);
-    if (re.test(t)) {
-      out.cuisine = c;
-      t = t.replace(re, ' ');
-      break;
-    }
-  }
-
-  // Ingredients: "with tofu and eggs", "using leftover rice", "i have chicken, kale".
-  t = t.replace(/\b(?:with|using|have|got)\s+([a-z][a-z ,\-]*?)(?=\s*(?:\bunder\b|\bin\b|\bfor\b|$))/g, (all, list: string) => {
-    let kept = '';
-    for (const piece of list.split(/\s*(?:,|\band\b|\bor\b|&)\s*/)) {
-      const { p, rest } = takeIngredient(piece.replace(/^(some|leftover|fresh|a|an|the)\s+/, ''));
-      if (p != null) out.with.push(p);
-      kept += ` ${rest}`;
-    }
-    return kept ? ` ${kept} ` : ' ';
-  });
-
-  out.q = t.replace(/\bno(bake|knead|churn|cook|boil)\b/g, 'no $1').replace(/\s+/g, ' ').trim();
-  // Nothing left but filler means the words were all used up.
-  if (!words(out.q).some((w) => !STOP.has(w))) out.q = '';
-  return out;
+  return ready ? core.understand(ready, text, { list: state.list }) : core.blankUnderstood(text.trim());
 }
 
-// ---------------------------------------------------------------------------------------
-// Searching
-
-/** How well a recipe's words match the query words; 0 means it doesn't. */
-function textScore(r: Recipe, q: string[], loose = false): number {
-  if (!q.length) return 1;
-  let score = 0;
-  let missed = 0;
-  for (const [n, t] of q.entries()) {
-    const last = n === q.length - 1;
-    const hit = (w: string) => w === t || (last && t.length > 1 && w.startsWith(t));
-    if (r.title.some(hit)) score += r.title.includes(t) ? 8 : 6;
-    else if (r.other.some(hit)) score += 3;
-    else if (!loose) return 0;
-    else missed++;
-  }
-  // Loose: when nothing has every word, keep what has most of them, ranked by how many.
-  if (loose && (missed === q.length || missed > Math.floor(q.length / 2))) return 0;
-  if (q.length > 1 && r.titleText.includes(` ${q.join(' ')}`)) score += 10;
-  return score - missed * 100;
-}
-
-/** Whether an ingredient you're using covers a recipe's ingredient: pork covers pork belly. */
-function covers(chosen: number[], p: number): boolean {
-  return chosen.includes(p) || data.ing[p][3].some((parent) => chosen.includes(parent));
-}
+const covers = (chosen: number[], p: number) => core.covers(ready!, chosen, p);
 
 type Skip = 'site' | 'time' | 'cuisine' | 'course';
 
-function passesFilters(r: Recipe, skip?: Skip): boolean {
-  if (skip !== 'site' && state.sites.size && !state.sites.has(r.src.id)) return false;
-  if (skip !== 'time' && state.time && (r.min == null || r.min > state.time)) return false;
-  if (skip !== 'cuisine' && state.cuisine && r.cuisine !== state.cuisine) return false;
-  if (skip !== 'course' && state.course && r.course !== state.course) return false;
-  if (state.fresh && !r.isNew) return false;
-  return true;
+function search(opts: { q?: string; with?: number[]; skip?: Skip; loose?: boolean; typing?: boolean } = {}): Hit[] {
+  return core.search(ready!, state, opts);
 }
 
-/** Ingredient positions to leave out: "no pork" tags and a vegetarian or vegan search. */
-function excluded(): Set<number> {
-  return new Set([...state.without, ...(state.diet ? data.diet?.[state.diet] || [] : [])]);
-}
-
-function search(opts: { q?: string; with?: number[]; skip?: Skip; loose?: boolean } = {}): Hit[] {
-  const q = queryWords(opts.q ?? state.q).words;
-  const chosen = opts.with ?? state.with;
-  const out = excluded();
-  const notWords = state.notWords.map((w) => words(w)[0]);
-  const hits: Hit[] = [];
-  for (const r of recipes) {
-    if (!passesFilters(r, opts.skip)) continue;
-    if (out.size && [...r.pos].some((p) => out.has(p))) continue;
-    if (notWords.length && notWords.some((w) => r.title.includes(w))) continue;
-    const t = textScore(r, q, opts.loose);
-    if (!t) continue;
-    let used: number[] = [];
-    let missing = 0;
-    if (chosen.length) {
-      used = chosen.filter((p) => r.pos.has(p));
-      if (!used.length) continue;
-      missing = r.own.filter((p) => !covers(chosen, p)).length;
-    }
-    hits.push({ r, score: t + popBonus(r), used, missing });
-  }
-  hits.sort(
-    (a, b) =>
-      b.used.length - a.used.length ||
-      (chosen.length ? a.missing - b.missing : 0) ||
-      b.score - a.score ||
-      Number(!!b.r.img) - Number(!!a.r.img) ||
-      (q.length || chosen.length ? (a.r.min ?? 999) - (b.r.min ?? 999) : a.r.name.localeCompare(b.r.name)),
-  );
-  return mix(hits, chosen.length > 0);
-}
-
-/**
- * Recipes people open more rank a little higher: up to 4 points, on a log scale, so a
- * popular recipe beats an equally good match but never a clearly better one (a word in
- * the name is worth 6 to 8).
- */
-const popBonus = (r: Recipe) => Math.min(4, Math.log2(1 + r.opens));
-
-/**
- * Take turns between creators. Within each tier (same number of your ingredients used),
- * the next pick is the best recipe that's nearly as good as the best one left (within a
- * couple of points, or needing at most one more ingredient) whose creator hasn't appeared
- * in the last three picks. Close calls get mixed; a clearly better match still comes first.
- */
-function mix(hits: Hit[], byIngredients: boolean): Hit[] {
-  const out: Hit[] = [];
-  const tierOf = (h: Hit) => (byIngredients ? String(h.used.length) : '');
-  const BAND = 2;
-  for (let i = 0; i < hits.length; ) {
-    let j = i;
-    while (j < hits.length && tierOf(hits[j]) === tierOf(hits[i])) j++;
-    const pool = hits.slice(i, j);
-    const recent: string[] = [];
-    while (pool.length) {
-      const top = pool[0];
-      const close = (h: Hit) => (byIngredients ? h.missing <= top.missing + 1 : h.score >= top.score - BAND);
-      let pick = 0;
-      for (let k = 0; k < Math.min(pool.length, 300) && close(pool[k]); k++) {
-        if (!recent.includes(pool[k].r.src.id)) {
-          pick = k;
-          break;
-        }
-      }
-      const [h] = pool.splice(pick, 1);
-      out.push(h);
-      recent.push(h.r.src.id);
-      if (recent.length > 3) recent.shift();
-    }
-    i = j;
-  }
-  return out;
-}
-
-/**
- * Videos for the search: shown when there are words, or a creator is picked. Words match
- * the title (or the channel's name); ingredients alone match ingredients named in the
- * title. Takes turns between channels, newest first within each, so one prolific
- * channel doesn't fill the list.
- */
 function searchVideos(opts: { q?: string; skip?: Skip } = {}): VideoRow[] {
-  const q = queryWords(opts.q ?? state.q).words;
-  const leaveOut = excluded();
-  const sites = opts.skip === 'site' ? new Set<string>() : state.sites;
-  // Videos come along when there are words or a creator; ingredients alone bring them
-  // only when you've asked for videos.
-  if (state.fresh) return []; // "new this week" is about recipes
-  if (!q.length && !sites.size && !(state.show === 'videos' && state.with.length)) return [];
-  const chanWords = data.videos.sources.map((c) => words(c.name));
-  const matched = data.videos.rows.filter((v) => {
-    if (sites.size && !sites.has(creatorOfChannel(v[0]))) return false;
-    if (state.course && opts.skip !== 'course' && v[5] !== state.course) return false;
-    if (leaveOut.size && v[4].some((p) => leaveOut.has(p))) return false;
-    if (state.notWords.length && words(v[1]).some((w) => state.notWords.some((n) => words(n)[0] === w))) return false;
-    if (q.length) {
-      const t = [...words(v[1]), ...chanWords[v[0]]];
-      return q.every((w, n) => t.some((x) => x === w || (n === q.length - 1 && x.startsWith(w))));
-    }
-    return !state.with.length || v[4].some((p) => state.with.includes(p));
-  });
-  const byChannel = new Map<number, VideoRow[]>();
-  for (const v of matched) byChannel.set(v[0], [...(byChannel.get(v[0]) || []), v]);
-  const queues = [...byChannel.values()].sort((a, b) => b.length - a.length);
-  const out: VideoRow[] = [];
-  for (let round = 0; queues.some((qq) => qq.length > round); round++) for (const qq of queues) if (qq[round]) out.push(qq[round]);
-  return out;
+  return core.searchVideos(ready!, state, opts) as VideoRow[];
 }
+
 
 const isBlank = () =>
   !state.q && !state.with.length && !state.without.length && !state.notWords.length && !state.diet && !state.sites.size && !state.time && !state.cuisine && !state.course && !state.fresh;
@@ -724,7 +283,10 @@ function render() {
 
   let hits = state.show === 'videos' ? [] : search();
   // Nothing has every word: show what has most of them, and say so.
-  const loose = !hits.length && q.length > 1 && state.show !== 'videos';
+  // Not when recipes do have every word and only what's being left out hides them ("fried
+  // chicken" on a vegetarian search): then nothing matches, and the page offers to leave nothing out.
+  const hidden = !hits.length && (state.diet || state.without.length || state.notWords.length) && core.search(ready!, { ...state, diet: '', without: [], notWords: [] }, { count: true }) > 0;
+  const loose = !hits.length && q.length > 1 && state.show !== 'videos' && !hidden;
   if (loose) hits = search({ loose: true });
   const videos = state.show === 'recipes' ? [] : searchVideos();
   const shown = hits.slice(0, state.shown);
@@ -756,6 +318,9 @@ function render() {
     statusEl.innerHTML = `${count} ${state.cuisine ? esc(state.cuisine) + ' ' : ''}${hits.length === 1 ? 'side' : 'sides'} to go with ${esc(recipes[state.sidesFor].name)}.`;
   if (state.fresh && hits.length)
     statusEl.innerHTML = `${count} ${hits.length === 1 ? 'recipe' : 'recipes'} new this week, from the crawl on ${esc(fmtDay(data.crawled))}.`;
+  // A word nothing here has was left out of the search: say which.
+  if (understood.ignored.length && (hits.length || videos.length))
+    statusEl.innerHTML += ` Nothing here has “${esc(understood.ignored.join(' '))}”, so that was left out.`;
   if (understood.fixes.length)
     statusEl.innerHTML = `Showing results for “${esc(q.join(' '))}”. <button type="button" data-exact="1">Search for “${esc(
       state.q,
@@ -1164,13 +729,7 @@ const suggest = {
   },
 };
 
-const creatorMatches = (text: string): Creator[] => {
-  const q = words(text);
-  if (!q.length) return [];
-  return creators.filter(
-    (c) => !state.sites.has(c.id) && q.every((t, n) => c.words.some((w) => w === t || (n === q.length - 1 && w.startsWith(t)))),
-  );
-};
+const creatorMatches = (text: string): Creator[] => core.creatorMatches(ready!, text, state.sites);
 
 /** Cuisines whose name starts with what's typed: "tha" -> Thai. */
 const cuisineMatches = (text: string): [string, number][] => {
@@ -1201,7 +760,8 @@ function buildOptions(text: string): Option[] {
     .map((c) => ({ kind: 'creator' as const, c }));
   out.push(...cuisineMatches(text).slice(0, 1).map(([c, n]) => ({ kind: 'cuisine' as const, c, n })));
   if (text.length > 1) out.push(...ingMatches(text).slice(0, 3).map((p) => ({ kind: 'ing' as const, p })));
-  const hits = search({ q: text });
+  // While typing, the last word can be the start of one ("dumpl"); after Enter, words are whole.
+  const hits = search({ q: text, typing: true });
   out.push(...hits.slice(0, 4).map((h, n) => ({ kind: 'recipe' as const, h, n: n + 1 })));
   if (hits.length) out.push({ kind: 'all', n: hits.length, text });
   return out;
@@ -1277,6 +837,7 @@ function choose(n: number) {
 function afterTag() {
   suggest.close();
   state.q = qInput.value.trim();
+  state.exact = false; // "search for exactly this" was about the words before the tag
   state.shown = PAGE;
   state.picked = -1;
   render();
@@ -1297,6 +858,9 @@ function addCreator(id: string, from: string) {
 }
 
 function submit() {
+  // The recipes haven't loaded yet: keep what's typed, and search once they have.
+  if (!ready) return void (submitWaiting = true);
+  submitWaiting = false;
   suggest.close();
   // With Ask on, something that reads like a question goes to Ask instead (src/scripts/chat.ts).
   if (askReady && looksLikeAsk(qInput.value)) {
@@ -1313,7 +877,10 @@ function submit() {
   if (u.time) state.time = u.time;
   if (u.diet) state.diet = u.diet;
   if (u.cuisine) state.cuisine = u.cuisine;
+  if (u.course) state.course = u.course;
+  if (u.show) state.show = u.show;
   state.exact = false;
+  state.list = false;
   qInput.value = u.q;
   state.q = u.q;
   state.shown = PAGE;
@@ -1412,16 +979,34 @@ form.addEventListener('submit', (e) => {
 });
 
 qInput.addEventListener('input', () => {
-  // A comma finishes an ingredient (or a creator), like a tag field: "ginger, tofu, ".
-  if (qInput.value.includes(',')) {
-    const text = qInput.value.replace(/,/g, ' ').trim();
-    const ing = ingMatches(text)[0];
-    const creator = creatorMatches(text)[0];
-    if (ing != null || creator) {
-      qInput.value = '';
-      return ing != null ? addIngredient(ing, 'typed') : addCreator(creator.id, 'typed');
+  // A comma finishes an ingredient (or a creator), like a tag field: "ginger, tofu, ". A
+  // pasted list ("eggplant, tofu, scallions") makes a tag of each piece before its last
+  // comma; what's after it stays in the box, and Enter carries on the list (understand()).
+  if (ready && qInput.value.includes(',')) {
+    const pieces = qInput.value.split(',');
+    const typing = pieces.pop()!.trim();
+    const kept: string[] = [];
+    const added: [string, string][] = [];
+    for (const piece of pieces) {
+      const text = piece.replace(/^\s*(?:i\s+have|i['’]?ve\s+got|we\s+have|with|using)\s+/i, '').trim();
+      if (!text) continue;
+      const ing = core.ingredientFor(ready, text) ?? ingMatches(text)[0];
+      const creator = ing == null ? creatorMatches(text)[0] : undefined;
+      if (ing != null) {
+        if (!state.with.includes(ing)) state.with.push(ing);
+        added.push(['Added Ingredient', data.ing[ing][0]]);
+      } else if (creator) {
+        state.sites.add(creator.id);
+        added.push(['Added Creator', creator.id]);
+      } else kept.push(piece.trim());
     }
-    qInput.value = qInput.value.replace(/,/g, ' ');
+    qInput.value = [...kept, typing].filter(Boolean).join(' ');
+    if (added.length) {
+      afterTag();
+      state.list = true;
+      for (const [event, id] of added) track(event, { [event === 'Added Creator' ? 'creator_id' : 'ingredient_id']: id, added_from: 'typed' });
+      return;
+    }
   }
   suggest.open();
 });
@@ -1544,6 +1129,7 @@ function clearAll() {
   state.notWords = [];
   state.diet = '';
   state.exact = false;
+  state.list = false;
   state.picked = -1;
   qInput.value = '';
 }
@@ -1596,18 +1182,6 @@ addEventListener('popstate', () => {
 
 let askReady = false;
 addEventListener('findish:ask-ready', () => (askReady = true));
-
-// A question or a request in a sentence ("what can I make with fish and kimchi", "something
-// quick and vegetarian for dinner"), not a dish name ("red braised pork belly"). A miss just
-// means a plain search, which still works.
-const ASK_START = /^(what|whats|what's|how|which|any|anything|something|give|suggest|recommend|help|need|i|i'm|im|i've|ive|we|my|can|could|should|ideas?|got|have)\b/;
-const ASK_WORDS = /\b(i|me|my|we|our|have|got|make|cook|using|use up|leftover|leftovers|something|anything|tonight|for dinner|for lunch|that|without|but not|go with|goes with)\b/;
-function looksLikeAsk(text: string) {
-  const t = text.trim().toLowerCase();
-  const n = t.split(/\s+/).filter(Boolean).length;
-  if (n < 3) return false;
-  return t.includes('?') || ASK_START.test(t) || (n >= 5 && ASK_WORDS.test(t));
-}
 
 function askOn() {
   const asked = new URLSearchParams(location.search).get('chat') === '1';

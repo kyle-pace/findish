@@ -12,7 +12,7 @@
     "sync-world-cuisine": "node scripts/sync-world-cuisine.mjs",
     "covers": "node scripts/book-covers.mjs",
     "crawl": "node crawler/crawl.mjs",
-    "test": "node --test crawler/test/*.test.mjs src/mcp/*.test.mjs src/chat/*.test.mjs scripts/*.test.mjs",
+    "test": "node --test crawler/test/*.test.mjs src/lib/*.test.mjs src/mcp/*.test.mjs src/chat/*.test.mjs scripts/*.test.mjs",
     "try-mcp": "node scripts/try-mcp.mjs",
     "check": "node .agents/skills/page-check/check.mjs"
   },

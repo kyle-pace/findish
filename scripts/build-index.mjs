@@ -12,6 +12,7 @@ import { fileURLToPath } from 'node:url';
 import { load, match } from '../vendor/kitchen-catalog/catalog.mjs';
 import { readSources } from '../crawler/lib/sources.mjs';
 import { COURSES, courseOf } from './course.mjs';
+import { isNotRecipe } from './not-recipes.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const out = join(root, 'public/index.json');
@@ -115,6 +116,7 @@ for (const s of sources.recipes) {
   srcList.push({ id: s.id, name: s.name, site, host: new URL(site).hostname.replace(/^www\./, ''), count: 0 });
 
   for (const r of rows) {
+    if (isNotRecipe(s.id, r.u)) continue; // scripts/not-recipes.mjs
     const ids = new Set();
     const direct = new Set();
     for (const line of r.i || []) {

@@ -808,6 +808,180 @@
       }
     },
     {
+      "id": "lebovitz",
+      "name": "David Lebovitz",
+      "url": "https://www.davidlebovitz.com",
+      "kind": "site",
+      "vetted": true,
+      "cuisines": [
+        "French cuisine"
+      ],
+      "note": "David Lebovitz's blog from Paris: baking, desserts and French home cooking, running since 1999.",
+      "collect": {
+        "status": "link-only",
+        "reason": "robots.txt would allow us, and pages carry full Recipe data (about 3,000 posts), but its terms (davidlebovitz.com/terms-of-service/, checked 2026-11-17) say content \"may not be ... used on an application for an electronic device or reprinted or republished in any manner.\" Link-out until he agrees; then add a crawl section (sitemap /sitemap_index.xml, json-ld) and set status to crawl.",
+        "checked": "2026-11-17"
+      },
+      "search": "https://www.davidlebovitz.com/?s={q}",
+      "support": {
+        "links": [
+          {
+            "label": "Newsletter",
+            "url": "https://davidlebovitz.substack.com"
+          }
+        ],
+        "books": [
+          {
+            "title": "My Paris Kitchen",
+            "isbn": "9781607742678"
+          }
+        ]
+      }
+    },
+    {
+      "id": "kingarthur",
+      "name": "King Arthur Baking",
+      "url": "https://www.kingarthurbaking.com",
+      "kind": "site",
+      "vetted": true,
+      "cuisines": [],
+      "note": "Employee-owned flour company in Vermont with a large library of tested baking recipes.",
+      "youtube": {
+        "id": "kingarthur-yt",
+        "url": "https://www.youtube.com/@KingArthurBakingCompany"
+      },
+      "collect": {
+        "status": "link-only",
+        "reason": "Its terms (kingarthurbaking.com/policies/terms-of-use, checked 2026-11-17) forbid using \"any means to scrape or crawl any web pages\" on the site, though robots.txt would allow us and pages carry full Recipe data (about 2,800 recipes). Link-out to its own search; its YouTube channel is read through the YouTube Data API.",
+        "checked": "2026-11-17"
+      },
+      "search": "https://www.kingarthurbaking.com/search?query={q}",
+      "support": {
+        "links": [
+          {
+            "label": "YouTube",
+            "url": "https://www.youtube.com/@KingArthurBakingCompany"
+          }
+        ],
+        "books": [
+          {
+            "title": "The King Arthur Baking School",
+            "isbn": "9781682686157"
+          },
+          {
+            "title": "Big Book of Bread",
+            "isbn": "9781668009741"
+          }
+        ]
+      }
+    },
+    {
+      "id": "pepin",
+      "name": "Jacques Pépin",
+      "url": "https://www.youtube.com/@JacquesPepinFoundation",
+      "kind": "channel",
+      "vetted": true,
+      "cuisines": [
+        "French cuisine"
+      ],
+      "note": "Jacques Pépin's short home-cooking videos, on the Jacques Pépin Foundation's channel (a nonprofit for culinary education).",
+      "collect": {
+        "status": "youtube-only",
+        "reason": "The foundation's site (jp.foundation) holds videos, not recipe data. Its YouTube channel is read through the YouTube Data API.",
+        "checked": "2026-11-17"
+      },
+      "search": "https://www.youtube.com/@JacquesPepinFoundation/search?query={q}",
+      "search_label": "All of Jacques Pépin's videos",
+      "support": {
+        "links": [
+          {
+            "label": "Support the foundation",
+            "url": "https://jp.foundation"
+          },
+          {
+            "label": "YouTube",
+            "url": "https://www.youtube.com/@JacquesPepinFoundation"
+          }
+        ],
+        "books": [
+          {
+            "title": "Essential Pépin",
+            "isbn": "9780547232799"
+          },
+          {
+            "title": "Jacques Pépin Art of the Chicken",
+            "isbn": "9780358654476"
+          }
+        ]
+      }
+    },
+    {
+      "id": "sohla",
+      "name": "Sohla and Ham",
+      "url": "https://www.youtube.com/@SohlaandHam",
+      "kind": "channel",
+      "vetted": true,
+      "cuisines": [],
+      "note": "Sohla El-Waylly and her husband Ham's own cooking channel, started in 2025.",
+      "collect": {
+        "status": "youtube-only",
+        "reason": "Her site (hellosohla.com) has no recipe data to index. Her channel is read through the YouTube Data API.",
+        "checked": "2026-11-17"
+      },
+      "search": "https://www.youtube.com/@SohlaandHam/search?query={q}",
+      "search_label": "All of Sohla and Ham's videos",
+      "support": {
+        "links": [
+          {
+            "label": "YouTube",
+            "url": "https://www.youtube.com/@SohlaandHam"
+          }
+        ],
+        "books": [
+          {
+            "title": "Start Here",
+            "isbn": "9780593320464"
+          }
+        ]
+      }
+    },
+    {
+      "id": "matty",
+      "name": "Matty Matheson",
+      "url": "https://www.youtube.com/@mattymatheson",
+      "kind": "channel",
+      "vetted": true,
+      "cuisines": [
+        "Canadian cuisine"
+      ],
+      "note": "Chef Matty Matheson's channel: Just a Dash, Cookin' Somethin' and other cooking shows.",
+      "collect": {
+        "status": "youtube-only",
+        "reason": "No recipe site of his own to index. His channel is read through the YouTube Data API.",
+        "checked": "2026-11-17"
+      },
+      "search": "https://www.youtube.com/@mattymatheson/search?query={q}",
+      "search_label": "All of Matty's videos",
+      "support": {
+        "links": [
+          {
+            "label": "YouTube",
+            "url": "https://www.youtube.com/@mattymatheson"
+          }
+        ],
+        "books": [
+          {
+            "title": "Matty Matheson: A Cookbook",
+            "isbn": "9781419732454"
+          },
+          {
+            "title": "Matty Matheson: Soups, Salads, Sandwiches",
+            "isbn": "9781984862150"
+          }
+        ]
+      }
+    },
+    {
       "id": "kitchenbutterfly",
       "name": "Kitchen Butterfly",
       "url": "https://www.kitchenbutterfly.com/about-2",

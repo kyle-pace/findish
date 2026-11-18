@@ -699,6 +699,115 @@
       }
     },
     {
+      "id": "eatchofood",
+      "name": "Eat Cho Food",
+      "url": "https://eatchofood.com",
+      "kind": "site",
+      "vetted": true,
+      "cuisines": [
+        "Chinese cuisine"
+      ],
+      "note": "Kristina Cho's blog of Chinese and Chinese American recipes, baking especially, running since 2017.",
+      "collect": {
+        "status": "crawl",
+        "reason": "robots.txt allows us (Squarespace defaults; AI bots get the same rules as everyone). Its pages carry no recipe data, so we read its RSS feed only.",
+        "checked": "2026-11-17"
+      },
+      "feed": {
+        "url": "/blog?format=rss",
+        "notes": [
+          "feed: Squarespace blog feed, newest 20 posts; 19 of 20 kept as recipes on 2026-11-17",
+          "format: posts have no schema.org Recipe, so the site can't be crawled",
+          "feed: posts slowly now (newest 2026-08-26), so only about 20 recipes"
+        ]
+      },
+      "support": {
+        "links": [],
+        "books": [
+          {
+            "title": "Mooncakes and Milk Bread",
+            "isbn": "9780785238997"
+          },
+          {
+            "title": "Chinese Enough",
+            "isbn": "9781648293429"
+          }
+        ]
+      }
+    },
+    {
+      "id": "ruhlman",
+      "name": "Ruhlman's Newsletter",
+      "url": "https://ruhlman.substack.com",
+      "kind": "site",
+      "vetted": true,
+      "cuisines": [],
+      "note": "Michael Ruhlman's biweekly Substack on cooking, recipes, travel and books.",
+      "collect": {
+        "status": "crawl",
+        "reason": "Substack newsletter, read through its public RSS feed only (Kyle's 2026-11-11 decision); robots.txt allows /feed.",
+        "checked": "2026-11-17"
+      },
+      "feed": {
+        "url": "/feed",
+        "notes": [
+          "feed: many posts are for paid subscribers, so few recipes come through (1 of 20 kept on 2026-11-17)"
+        ]
+      },
+      "support": {
+        "links": [
+          {
+            "label": "Newsletter",
+            "url": "https://ruhlman.substack.com"
+          }
+        ],
+        "books": [
+          {
+            "title": "Ratio",
+            "isbn": "9781416566113"
+          }
+        ]
+      }
+    },
+    {
+      "id": "ciaosamin",
+      "name": "a grain of salt",
+      "url": "https://ciaosamin.substack.com",
+      "kind": "site",
+      "vetted": true,
+      "cuisines": [],
+      "note": "Samin Nosrat's Substack on cooking, gardening and reading, with recipes and un-recipes.",
+      "collect": {
+        "status": "crawl",
+        "reason": "Substack newsletter, read through its public RSS feed only (Kyle's 2026-11-11 decision); robots.txt allows /feed.",
+        "checked": "2026-11-17"
+      },
+      "feed": {
+        "url": "/feed",
+        "notes": [
+          "feed: 2 of 20 posts kept as recipes on 2026-11-17"
+        ]
+      },
+      "support": {
+        "links": [
+          {
+            "label": "Newsletter",
+            "url": "https://ciaosamin.substack.com"
+          }
+        ],
+        "books": [
+          {
+            "title": "Salt, Fat, Acid, Heat",
+            "isbn": "9781476753836"
+          },
+          {
+            "title": "Good Things",
+            "isbn": "9781984857781"
+          }
+        ]
+      }
+    },
+    {
       "id": "kitchenbutterfly",
       "name": "Kitchen Butterfly",
       "url": "https://www.kitchenbutterfly.com/about-2",

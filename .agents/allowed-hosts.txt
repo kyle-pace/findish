@@ -41,3 +41,9 @@ altonbrown.com
 # Claude's API (Anthropic), called only by the Worker for Ask, the chat experiment (src/chat/anthropic.mjs), never by the page.
 # Approved by Kyle, 2026-11-16, when he set up the API key.
 api.anthropic.com
+
+# Recipe photos from Substack newsletters (Ruhlman's Newsletter, a grain of salt), served by Substack's image CDN, on their own results, lazily and with no referrer. Added under the content-image rule, 2026-11-17.
+substackcdn.com
+
+# Recipe photos from Eat Cho Food, served by Squarespace's image CDN, on its own results, lazily and with no referrer. Added under the content-image rule, 2026-11-17.
+images.squarespace-cdn.com

@@ -1,14 +1,56 @@
 {
- "run": "2026-11-16T21:02:16.469Z",
+ "run": "2026-11-18T06:43:39.014Z",
  "options": {
   "limit": null,
   "delayMs": 4000
  },
  "sources": {
+  "eatchofood": {
+   "id": "eatchofood",
+   "name": "Eat Cho Food",
+   "result": "ok",
+   "fetched": 1,
+   "added": 19,
+   "updated": 0,
+   "removed": 0,
+   "noRecipe": 1,
+   "httpErrors": {},
+   "feedPosts": 20,
+   "count": 19,
+   "waiting": 0
+  },
+  "ruhlman": {
+   "id": "ruhlman",
+   "name": "Ruhlman's Newsletter",
+   "result": "ok",
+   "fetched": 1,
+   "added": 1,
+   "updated": 0,
+   "removed": 0,
+   "noRecipe": 19,
+   "httpErrors": {},
+   "feedPosts": 20,
+   "count": 1,
+   "waiting": 0
+  },
+  "ciaosamin": {
+   "id": "ciaosamin",
+   "name": "a grain of salt",
+   "result": "ok",
+   "fetched": 1,
+   "added": 2,
+   "updated": 0,
+   "removed": 0,
+   "noRecipe": 18,
+   "httpErrors": {},
+   "feedPosts": 20,
+   "count": 2,
+   "waiting": 0
+  },
   "woks": {
    "id": "woks",
    "name": "The Woks of Life",
-   "result": "ok",
+   "result": "not run",
    "fetched": 6,
    "added": 2,
    "updated": 2,
@@ -22,13 +64,13 @@
   "joc": {
    "id": "joc",
    "name": "Just One Cookbook",
-   "result": "paused",
+   "result": "not run",
    "error": "Cloudflare bot protection blocks automated requests (HTTP 403 on its sitemap from GitHub Actions and from a home connection, with or without our crawler's name; robots.txt allows us; checked 2026-11-08). Needs the site to allow us"
   },
   "htk": {
    "id": "htk",
    "name": "Hot Thai Kitchen",
-   "result": "ok",
+   "result": "not run",
    "fetched": 4,
    "added": 1,
    "updated": 1,
@@ -42,7 +84,7 @@
   "sk": {
    "id": "sk",
    "name": "Smitten Kitchen",
-   "result": "ok",
+   "result": "not run",
    "fetched": 2,
    "added": 0,
    "updated": 2,
@@ -56,13 +98,13 @@
   "maangchi": {
    "id": "maangchi",
    "name": "Maangchi",
-   "result": "paused",
+   "result": "not run",
    "error": "Cloudflare bot protection blocks automated requests (HTTP 403 on its sitemap from GitHub Actions and from a home connection, with or without our crawler's name; robots.txt allows us; checked 2026-11-08). Needs the site to allow us"
   },
   "mala": {
    "id": "mala",
    "name": "The Mala Market",
-   "result": "ok",
+   "result": "not run",
    "fetched": 0,
    "added": 0,
    "updated": 0,
@@ -76,7 +118,7 @@
   "rte": {
    "id": "rte",
    "name": "RecipeTin Eats",
-   "result": "ok",
+   "result": "not run",
    "fetched": 27,
    "added": 3,
    "updated": 23,
@@ -90,7 +132,7 @@
   "rtj": {
    "id": "rtj",
    "name": "RecipeTin Japan",
-   "result": "ok",
+   "result": "not run",
    "fetched": 0,
    "added": 0,
    "updated": 0,
@@ -104,7 +146,7 @@
   "sudachi": {
    "id": "sudachi",
    "name": "Sudachi",
-   "result": "ok",
+   "result": "not run",
    "fetched": 25,
    "added": 2,
    "updated": 16,
@@ -118,7 +160,7 @@
   "mwl": {
    "id": "mwl",
    "name": "Made With Lau",
-   "result": "ok",
+   "result": "not run",
    "fetched": 198,
    "added": 1,
    "updated": 197,
@@ -132,7 +174,7 @@
   "ab": {
    "id": "ab",
    "name": "Alton Brown",
-   "result": "ok",
+   "result": "not run",
    "fetched": 0,
    "added": 0,
    "updated": 0,
@@ -146,85 +188,85 @@
   "woks-yt": {
    "id": "woks-yt",
    "name": "The Woks of Life",
-   "result": "ok",
+   "result": "not run",
    "count": 406
   },
   "joc-yt": {
    "id": "joc-yt",
    "name": "Just One Cookbook",
-   "result": "ok",
+   "result": "not run",
    "count": 591
   },
   "htk-yt": {
    "id": "htk-yt",
    "name": "Hot Thai Kitchen",
-   "result": "ok",
+   "result": "not run",
    "count": 834
   },
   "sk-yt": {
    "id": "sk-yt",
    "name": "Smitten Kitchen",
-   "result": "ok",
+   "result": "not run",
    "count": 91
   },
   "maangchi-yt": {
    "id": "maangchi-yt",
    "name": "Maangchi",
-   "result": "ok",
+   "result": "not run",
    "count": 611
   },
   "rte-yt": {
    "id": "rte-yt",
    "name": "RecipeTin Eats",
-   "result": "ok",
+   "result": "not run",
    "count": 1436
   },
   "rtj-yt": {
    "id": "rtj-yt",
    "name": "RecipeTin Japan",
-   "result": "ok",
+   "result": "not run",
    "count": 75
   },
   "sudachi-yt": {
    "id": "sudachi-yt",
    "name": "Sudachi",
-   "result": "ok",
+   "result": "not run",
    "count": 574
   },
   "mwl-yt": {
    "id": "mwl-yt",
    "name": "Made With Lau",
-   "result": "ok",
+   "result": "not run",
    "count": 605
   },
   "ab-yt": {
    "id": "ab-yt",
    "name": "Alton Brown",
-   "result": "ok",
+   "result": "not run",
    "count": 265
   },
   "kenji": {
    "id": "kenji",
    "name": "J. Kenji López-Alt",
-   "result": "ok",
+   "result": "not run",
    "count": 878
   },
   "ccd": {
    "id": "ccd",
    "name": "Chinese Cooking Demystified",
-   "result": "ok",
+   "result": "not run",
    "count": 362
   },
   "rhs-yt": {
    "id": "rhs-yt",
    "name": "Red House Spice",
-   "result": "ok",
+   "result": "not run",
    "count": 130
   },
   "fca": {
    "id": "fca",
    "name": "French Cooking Academy",
-   "result": "ok",
+   "result": "not run",
    "count": 546
   }
  },

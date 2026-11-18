@@ -231,7 +231,9 @@ const rollup = ing.map(() => 0);
 for (const r of recipes) for (const p of r[5]) rollup[p]++;
 const popular = ing
   .map((g, p) => ({ p, id: g[0], n: rollup[p], item: catalog.items[g[0]] }))
-  .filter(({ id, item, n }) => n >= 15 && SECTIONS.has(item.section) && !NOT_POPULAR.has(id))
+  // A kind of something left out is left out too (cilantro and parsley are fresh herbs, lemons are
+  // lemons and limes), so splitting an item in KitchenCatalog doesn't change these ideas by itself.
+  .filter(({ id, item, n }) => n >= 15 && SECTIONS.has(item.section) && !NOT_POPULAR.has(id) && !NOT_POPULAR.has(item.parent))
   .filter(({ item }) => !(['meat', 'seafood'].includes(item.section) && item.parent && ingIndex.has(item.parent)))
   .sort((a, b) => b.n - a.n)
   .slice(0, 18)

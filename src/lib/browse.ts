@@ -23,6 +23,8 @@ const SKIP_CUISINES = new Set(['World']);
 // What people cook from. Pantry basics and spices are in nearly everything, so a page of
 // "recipes with sugar" would help nobody.
 const SECTIONS = new Set(['produce', 'meat', 'seafood', 'dairy-eggs', 'international', 'frozen']);
+// A kind of one of these is skipped too (cilantro is a fresh herb, lemons are lemons and limes),
+// so splitting an item in KitchenCatalog doesn't add or drop pages by itself.
 const SKIP_INGREDIENTS = new Set(['fresh-herbs', 'lemons-and-limes', 'butter', 'milk', 'garlic-and-onions', 'potatoes-and-root-vegetables']);
 
 export type Row = { name: string; url: string; key: string; source: string; creator: string; minutes: number; cuisine: string; img: string };
@@ -140,7 +142,7 @@ const using = new Map<number, any[]>();
 for (const r of index.recipes) for (const p of r[5]) (using.get(p) || using.set(p, []).get(p)!).push(r);
 export const INGREDIENTS: Browse[] = (index.ing as any[])
   .map((g, p) => ({ id: g[0] as string, name: g[1] as string, recipes: using.get(p) || [], item: catalog.items[g[0]] }))
-  .filter(({ id, item, recipes }) => recipes.length >= MIN_INGREDIENT && item && SECTIONS.has(item.section) && !SKIP_INGREDIENTS.has(id))
+  .filter(({ id, item, recipes }) => recipes.length >= MIN_INGREDIENT && item && SECTIONS.has(item.section) && !SKIP_INGREDIENTS.has(id) && !SKIP_INGREDIENTS.has(item.parent))
   .sort((a, b) => b.recipes.length - a.recipes.length)
   .slice(0, MAX_INGREDIENTS)
   .map(({ id, name, recipes }) => page('with', id, plain(name), `Recipes with ${plain(name)}`, `/?with=${encodeURIComponent(id)}`, recipes))

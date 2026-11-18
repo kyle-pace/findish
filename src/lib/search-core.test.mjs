@@ -15,6 +15,15 @@ const find = (f, opts) => search(ready, { ...blank(), ...f }, opts);
 const names = (hits, n = 5) => hits.slice(0, n).map((h) => h.r.name);
 const ing = (id) => ready.ing.findIndex((g) => g[0] === id);
 const ids = (ps) => ps.map((p) => ready.ing[p][0]);
+// A one-word other name that no ingredient has as its own name ("shiitake" under mushrooms),
+// found in the index so the tests that need one survive the catalog being reorganised.
+const otherNameOnly = () => {
+  const fits = (w) => /^[a-z]{5,}$/.test(w) && stem(w) === w && words(w).join(' ') === w && ingredientFor(ready, w, true) === null && ingredientFor(ready, w) !== null;
+  const all = index.ing.flatMap((g) => g.slice(4)).filter((w) => typeof w === 'string');
+  const found = ['shiitake', 'maitake', 'calamansi'].find(fits) ?? all.find(fits);
+  assert.ok(found, 'the index has no other name that is not also an ingredient');
+  return found;
+};
 const said = (text, opts) => {
   const u = understand(ready, text, opts);
   return { ...u, with: ids(u.with), without: ids(u.without) };
@@ -89,7 +98,8 @@ test('a word that is only the start of others still finds them after Enter', () 
 
 test('an unfinished word never matches inside an ingredient’s other names', () => {
   // "pea" is a word; it must not find recipes just because they use peanuts.
-  const whole = new Set(ready.ingWord.get('pea') || []);
+  // ingWord holds [position, the name's words] pairs: keep the positions whose whole name is "pea".
+  const whole = new Set((ready.ingWord.get('pea') || []).filter(([, need]) => need.every((w) => w === 'pea')).map(([p]) => p));
   const peanuts = ing('peanuts');
   assert.ok(!whole.has(peanuts));
   for (const h of find({ q: 'pea' }, { typing: true })) {
@@ -195,9 +205,14 @@ test('leaving out: an ingredient by its own name, a group, or a word in the name
   assert.deepEqual(said('pasta no dairy').without, ['any-dairy']);
   assert.deepEqual(said('nut free dessert').without, ['any-nuts']);
   assert.deepEqual(said('dairy-free pasta').q, 'pasta');
-  // Cilantro is filed under fresh herbs: leaving out every herb isn't what was asked.
-  const u = said('salsa without cilantro');
-  assert.deepEqual([u.without, u.notWords], [[], ['cilantro']]);
+  // Cilantro is its own ingredient (KitchenCatalog, 2026-11-17), so it's left out as one.
+  assert.deepEqual(said('salsa without cilantro').without, ['cilantro']);
+  // A word that is only another item's other name (shiitake, filed under mushrooms) is kept
+  // out of names instead: leaving out every mushroom isn't what was asked. The word comes
+  // from the index, so a catalog change that gives it its own item doesn't break this.
+  const other = otherNameOnly();
+  const u = said(`soup without ${other}`);
+  assert.deepEqual([u.without, u.notWords], [[], [other]]);
   assert.equal(said('no meat noodles').diet, 'vegetarian');
 });
 
@@ -270,8 +285,10 @@ test('creators are looked up by exact name, and suggested as they are typed', ()
 
 test('an ingredient’s own name wins over another item’s other name', () => {
   assert.equal(ready.ing[ingredientFor(ready, 'scallions')][0], 'green-onion');
-  assert.equal(ingredientFor(ready, 'cilantro', true), null);
-  assert.notEqual(ingredientFor(ready, 'cilantro'), null);
+  assert.equal(ready.ing[ingredientFor(ready, 'cilantro', true)][0], 'cilantro');
+  const other = otherNameOnly();
+  assert.equal(ingredientFor(ready, other, true), null);
+  assert.notEqual(ingredientFor(ready, other), null);
 });
 
 // --- diet ---------------------------------------------------------------------------

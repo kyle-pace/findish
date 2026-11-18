@@ -184,8 +184,8 @@ export function pageQuery(ready, s = {}) {
   const extra = [];
   // To cook with: an ingredient by any of its names, or the longest one named inside a longer
   // phrase ("boneless skinless chicken thighs"). To leave out (`out`): a whole group ("dairy"),
-  // or an ingredient by its own name only. Leaving out "cilantro" must not leave out
-  // everything filed under Fresh herbs, which also goes by that name (the page's rule too).
+  // or an ingredient by its own name only. Leaving out "shiitake" must not leave out
+  // everything filed under Mushrooms, which also goes by that name (the page's rule too).
   const near = (phrase) => {
     const exact = ingredientFor(ready, phrase);
     if (exact != null) return exact;

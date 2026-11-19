@@ -444,7 +444,7 @@ function row(h: Hit, position: number, terms: unknown[], from = 'results', suppo
   const { r } = h;
   const photo = r.img
     ? `<img src="${esc(r.img)}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" width="480" height="360">`
-    : `<span class="no-photo">No photo</span>`;
+    : `<span class="no-photo" aria-hidden="true"></span>`;
   // The name comes first in the page so screen readers hear it first; CSS puts the photo on the left.
   return `<article class="row">
     <div class="text">
@@ -2286,14 +2286,14 @@ for (const [btn, list] of [[moreBtn, resultsEl], [$('more-videos'), $('video-res
   });
 }
 
-// A photo that won't load (moved, blocked) gives way to a plain "No photo".
+// A photo that won't load (moved, blocked) gives way to the empty plate (see .no-photo).
 app.addEventListener(
   'error',
   (e) => {
     const img = e.target as HTMLImageElement;
     if (img.tagName !== 'IMG') return;
     if (img.classList.contains('opt-thumb')) return void (img.style.visibility = 'hidden');
-    img.replaceWith(Object.assign(document.createElement('span'), { className: 'no-photo', textContent: 'No photo' }));
+    img.replaceWith(Object.assign(document.createElement('span'), { className: 'no-photo', ariaHidden: 'true' }));
   },
   true,
 );

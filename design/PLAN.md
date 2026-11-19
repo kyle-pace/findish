@@ -230,3 +230,7 @@ Show: recipes and videos ▾  Course: any ▾  Cuisine: Thai ▾  Creator: any �
 ```
 
 Checked against the defaults: no pills or chips (the set filters are a sentence), no card, no eyebrow; the one new filled thing is the sheet's button, in ink like the search button's shape, and the only colour is the tomato underline and the chili ×.
+
+## A recipe with no photo (2026-11-18)
+
+About 230 recipes have no photo (most are Alton Brown's, whose site shows a stand-in). Their slot used to be a grey box saying "No photo", which Kyle called out as needing something better. Now it holds an empty plate seen from above: a rim and the line of the well, drawn in CSS in the muted ink at low strength. It is the plate from the wordmark's d, so it comes from the subject and not from a stock placeholder; it keeps the rows aligned; and it says "nothing to show here" without a word. A photo that fails to load gets the same plate. It is decoration, hidden from screen readers like the photos' empty alt text, so a screen reader no longer hears "No photo" on each of those rows.

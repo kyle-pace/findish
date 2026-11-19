@@ -1627,13 +1627,24 @@ const FILTERS = [
   }
 
   :global(.row .no-photo) {
+    /* A recipe with no photo gets an empty plate, the one in the wordmark's d, instead of the
+       words "No photo": nothing to read, and it says the same thing. Decoration only, so it is
+       hidden from screen readers, like the photos' empty alt. */
     display: grid;
     place-items: center;
     height: 100%;
-    padding: var(--space-2);
-    font-size: var(--step--1);
-    text-align: center;
     color: var(--ink-muted);
+  }
+
+  :global(.row .no-photo)::before {
+    content: '';
+    /* Seen from above: the rim, then the line where the well begins. */
+    height: 58%;
+    aspect-ratio: 1;
+    border: 0.14rem solid currentColor;
+    border-radius: 50%;
+    background: radial-gradient(closest-side circle, transparent 0 58%, currentColor 60% 64%, transparent 66%);
+    opacity: 0.45;
   }
 
   :global(.row .text) {

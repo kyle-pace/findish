@@ -18,7 +18,7 @@ export function overlaps(a, b) {
 
 /**
  * Runs that got to these sites first: in progress, sharing a site with `mine`, and started
- * before it (the lower id on a tie). Each run is { id, title, started }.
+ * before it (the lower id on a tie). Each run is { id, title, started, event }.
  */
 export function ahead(mine, runs) {
   const me = runs.find((r) => r.id === mine.id) || mine;
@@ -41,4 +41,16 @@ export function mergeStatus(theirs, ours) {
   }
   const kept = (theirs?.alerts || []).filter((a) => !ran(String(a).split(':')[0]));
   return { ...ours, sources, alerts: [...new Set([...(ours.alerts || []), ...kept])] };
+}
+
+/**
+ * What a run does about the runs ahead of it: 'go', 'skip' (a push's smoke test never gets
+ * in a crawl's way), 'wait' (a real crawl with only smoke tests ahead: they take minutes, so
+ * it waits for them instead of standing down, Kyle's call 2026-11-19) or 'stand down'.
+ */
+export function turn(mine, runs) {
+  const busy = ahead(mine, runs);
+  if (!busy.length) return 'go';
+  if (mine.event === 'push') return 'skip';
+  return busy.every((r) => r.event === 'push') ? 'wait' : 'stand down';
 }

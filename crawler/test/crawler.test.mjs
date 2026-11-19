@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { robotsFor, robotsForNames } from '../lib/robots.mjs';
 import { parseSitemap, readSitemaps } from '../lib/sitemap.mjs';
 import { extractRecipe, firstName } from '../lib/extract.mjs';
-import { sourcesOf, overlaps, ahead, mergeStatus } from '../lib/turns.mjs';
+import { sourcesOf, overlaps, ahead, mergeStatus, turn } from '../lib/turns.mjs';
 import { ingredientName } from '../lib/ingredients.mjs';
 import { toMinutes } from '../lib/text.mjs';
 import { toVideo, seconds, fetchChannelVideos } from '../lib/youtube.mjs';
@@ -387,4 +387,15 @@ test('two crawls that finish apart leave one status file with both', () => {
   assert.equal(both.sources.htk.count, 2);
   assert.deepEqual(both.alerts, ['woks: recipe count dropped from 20 to 10']); // sk's old alert is answered
   assert.deepEqual(mergeStatus(undefined, ours).sources.woks.count, 3); // nothing saved yet
+});
+
+test('a smoke test never stands a real crawl down: the crawl waits for it, and the smoke test skips', () => {
+  const smoke = { id: 1, title: 'Crawl: all sites', started: '2026-11-19T07:00:00Z', event: 'push' };
+  const real = { id: 2, title: 'Crawl: woks,sk', started: '2026-11-19T07:00:13Z', event: 'workflow_dispatch' };
+  const weekly = { id: 3, title: 'Crawl: all sites', started: '2026-11-19T07:01:00Z', event: 'schedule' };
+  assert.equal(turn(real, [smoke, real]), 'wait');
+  assert.equal(turn(smoke, [smoke, real]), 'go');
+  assert.equal(turn({ ...smoke, id: 4, started: '2026-11-19T07:02:00Z' }, [real]), 'skip');
+  assert.equal(turn(weekly, [smoke, real, weekly]), 'stand down'); // a real crawl is ahead too
+  assert.equal(turn(real, [real]), 'go');
 });

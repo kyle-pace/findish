@@ -102,8 +102,11 @@ export function fromMicrodata(html) {
   if (start < 0) return null;
   const chunk = s.slice(start, start + 120000);
   const props = {};
+  // A nested item (the author as a Person, say) has its own name: skip what's inside it.
+  const nested = nestedScopes(chunk);
   for (const m of chunk.matchAll(/<([a-z][a-z0-9]*)\b([^>]*\bitemprop=["']([^"']+)["'][^>]*)>/gi)) {
     const [, tag, attrs, propList] = m;
+    if (nested.some(([from, to]) => m.index > from && m.index < to)) continue;
     let value = attr(attrs, 'content') ?? attr(attrs, 'datetime');
     if (value == null && /^(img|source)$/i.test(tag)) value = attr(attrs, 'src');
     if (value == null && /^(a|link)$/i.test(tag)) value = attr(attrs, 'href');
@@ -129,6 +132,24 @@ export function fromMicrodata(html) {
     image: props.image?.[0],
     keywords: props.keywords?.[0],
   };
+}
+
+// Where each nested itemscope element inside the recipe starts and ends, as [from, to].
+// Counts opening and closing tags of the same name, so a span inside a span is fine.
+function nestedScopes(chunk) {
+  const out = [];
+  for (const m of chunk.matchAll(/<([a-z][a-z0-9]*)\b[^>]*\bitemscope\b[^>]*>/gi)) {
+    const tag = m[1].toLowerCase();
+    const re = new RegExp(`<(/?)${tag}\\b[^>]*>`, 'gi');
+    re.lastIndex = m.index + m[0].length;
+    let depth = 1, end = chunk.length, t;
+    while ((t = re.exec(chunk))) {
+      depth += t[1] ? -1 : 1;
+      if (depth === 0) { end = t.index; break; }
+    }
+    out.push([m.index, end]);
+  }
+  return out;
 }
 
 function attr(attrs, name) {

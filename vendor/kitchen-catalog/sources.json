@@ -1718,6 +1718,239 @@
       }
     },
     {
+      "id": "japanesecooking101",
+      "name": "Japanese Cooking 101",
+      "url": "https://japanesecooking101.com",
+      "kind": "site",
+      "vetted": true,
+      "cuisines": [
+        "Japanese cuisine"
+      ],
+      "note": "Noriko and Yuko's site and videos of everyday Japanese home cooking, running since 2008.",
+      "youtube": {
+        "id": "japanesecooking101-yt",
+        "url": "https://www.youtube.com/@JapaneseCooking101"
+      },
+      "collect": {
+        "status": "paused",
+        "reason": "robots.txt lets every crawler in but the AI bots its ad network (Raptive) blocks, and its posts carry recipe data, but its host's bot check (SiteGround's captcha, HTTP 202) stops our crawler's requests. Its YouTube channel is read instead. Needs the site to allow us. Kyle picked it on 2026-11-18. The AI-bot block means its recipes and videos are for finding and linking only, never for training or tuning a model.",
+        "checked": "2026-11-18"
+      },
+      "crawl": {
+        "sitemap": "/post-sitemap.xml",
+        "format": "json-ld",
+        "default_cuisine": "Japanese",
+        "size": "about 700 posts",
+        "notes": [
+          "sitemap: /wp-sitemap.xml (the one robots.txt names) is empty; /sitemap.xml is an index whose post-sitemap.xml lists the posts"
+        ]
+      },
+      "support": {
+        "links": [
+          {
+            "label": "YouTube",
+            "url": "https://www.youtube.com/@JapaneseCooking101"
+          }
+        ],
+        "books": []
+      }
+    },
+    {
+      "id": "chopstickchronicles",
+      "name": "Chopstick Chronicles",
+      "url": "https://www.chopstickchronicles.com",
+      "kind": "site",
+      "vetted": true,
+      "cuisines": [
+        "Japanese cuisine"
+      ],
+      "note": "Shihoko Ura's blog and videos of Japanese home cooking.",
+      "youtube": {
+        "id": "chopstickchronicles-yt",
+        "url": "https://www.youtube.com/@ChopstickChronicles"
+      },
+      "collect": {
+        "status": "crawl",
+        "reason": "Checked as FindishBot: robots.txt allows us and its recipe posts carry recipe data; no terms page beyond a privacy policy and an all-rights-reserved line. Kyle picked it on 2026-11-18.",
+        "checked": "2026-11-18"
+      },
+      "crawl": {
+        "sitemap": "/post-sitemap.xml",
+        "format": "json-ld",
+        "default_cuisine": "Japanese",
+        "size": "about 370 posts"
+      },
+      "support": {
+        "links": [
+          {
+            "label": "YouTube",
+            "url": "https://www.youtube.com/@ChopstickChronicles"
+          }
+        ],
+        "books": []
+      }
+    },
+    {
+      "id": "okonomikitchen",
+      "name": "Okonomi Kitchen",
+      "url": "https://www.okonomikitchen.com",
+      "kind": "site",
+      "vetted": true,
+      "cuisines": [
+        "Japanese cuisine"
+      ],
+      "note": "Lisa Kitahara's plant-based recipes, mostly Japanese and Asian home cooking.",
+      "youtube": {
+        "id": "okonomikitchen-yt",
+        "url": "https://www.youtube.com/@lisa.kitahara"
+      },
+      "collect": {
+        "status": "crawl",
+        "reason": "Checked as FindishBot: robots.txt allows us and its recipe posts carry recipe data; no terms page beyond a privacy policy and an all-rights-reserved line. Kyle picked it on 2026-11-18.",
+        "checked": "2026-11-18"
+      },
+      "crawl": {
+        "sitemap": "/post-sitemap.xml",
+        "format": "json-ld",
+        "default_cuisine": "Japanese",
+        "size": "about 800 posts",
+        "notes": [
+          "sitemap: not listed in robots.txt"
+        ]
+      },
+      "support": {
+        "links": [
+          {
+            "label": "YouTube",
+            "url": "https://www.youtube.com/@lisa.kitahara"
+          }
+        ],
+        "books": []
+      }
+    },
+    {
+      "id": "omnivorescookbook",
+      "name": "Omnivore's Cookbook",
+      "url": "https://omnivorescookbook.com",
+      "kind": "site",
+      "vetted": true,
+      "cuisines": [
+        "Chinese cuisine"
+      ],
+      "note": "Maggie Zhu's blog and videos of Chinese home cooking, regional dishes and takeout favorites.",
+      "youtube": {
+        "id": "omnivorescookbook-yt",
+        "url": "https://www.youtube.com/@OmnivoresCookbook"
+      },
+      "collect": {
+        "status": "crawl",
+        "reason": "Checked as FindishBot: robots.txt allows us and its recipe posts carry recipe data; no terms page beyond a privacy policy and an all-rights-reserved line. Kyle picked it on 2026-11-18.",
+        "checked": "2026-11-18"
+      },
+      "crawl": {
+        "sitemap": "/post-sitemap.xml",
+        "format": "json-ld",
+        "default_cuisine": "Chinese",
+        "size": "about 780 posts"
+      },
+      "support": {
+        "links": [
+          {
+            "label": "YouTube",
+            "url": "https://www.youtube.com/@OmnivoresCookbook"
+          }
+        ],
+        "books": []
+      }
+    },
+    {
+      "id": "halfbakedharvest",
+      "name": "Half Baked Harvest",
+      "url": "https://www.halfbakedharvest.com",
+      "kind": "site",
+      "vetted": true,
+      "cuisines": [],
+      "note": "Tieghan Gerard's blog of seasonal home cooking and baking from Colorado.",
+      "collect": {
+        "status": "crawl",
+        "reason": "Checked as FindishBot: robots.txt allows us and its recipe posts carry recipe data; no terms page beyond a privacy policy and an all-rights-reserved line. Kyle picked it on 2026-11-18.",
+        "checked": "2026-11-18"
+      },
+      "crawl": {
+        "sitemap": "/sitemap_index.xml",
+        "format": "json-ld",
+        "size": "over 1,000 posts",
+        "notes": [
+          "sitemap: the index lists more than one post sitemap"
+        ]
+      },
+      "support": {
+        "links": [],
+        "books": []
+      }
+    },
+    {
+      "id": "ahnestkitchen",
+      "name": "ahnest kitchen",
+      "url": "https://ahnestkitchen.com",
+      "kind": "site",
+      "vetted": true,
+      "cuisines": [
+        "Korean cuisine"
+      ],
+      "note": "Sarah Ahn's collection of her mom's Korean home recipes, plus some non-Korean ones.",
+      "collect": {
+        "status": "crawl",
+        "reason": "Checked as FindishBot: robots.txt allows us (Squarespace defaults) and its recipe pages under /food/ carry recipe data; no terms page. Kyle picked it on 2026-11-18.",
+        "checked": "2026-11-18"
+      },
+      "crawl": {
+        "sitemap": "/sitemap.xml",
+        "format": "json-ld",
+        "include": "/food/",
+        "default_cuisine": "Korean",
+        "size": "about 265 recipe posts",
+        "notes": [
+          "include: the sitemap also lists /thoughts/ essays and other pages"
+        ]
+      },
+      "support": {
+        "links": [
+          {
+            "label": "Cookbook",
+            "url": "https://ahnestkitchen.com/cookbook"
+          }
+        ],
+        "books": []
+      }
+    },
+    {
+      "id": "maunikagowardhan",
+      "name": "Maunika Gowardhan",
+      "url": "https://maunikagowardhan.co.uk",
+      "kind": "site",
+      "vetted": true,
+      "cuisines": [
+        "Indian cuisine"
+      ],
+      "note": "Indian chef and cookbook author Maunika Gowardhan's regional Indian home recipes.",
+      "collect": {
+        "status": "paused",
+        "reason": "robots.txt allows us and lists a recipes sitemap, but Cloudflare's bot check blocks our crawler's requests to recipe pages (HTTP 403 challenge). Needs the site to allow us. Kyle picked it on 2026-11-18.",
+        "checked": "2026-11-18"
+      },
+      "crawl": {
+        "sitemap": "/recipes-sitemap.xml",
+        "format": "json-ld",
+        "default_cuisine": "Indian",
+        "size": "about 140 recipes"
+      },
+      "support": {
+        "links": [],
+        "books": []
+      }
+    },
+    {
       "id": "kitchenbutterfly",
       "name": "Kitchen Butterfly",
       "url": "https://www.kitchenbutterfly.com/about-2",
@@ -3170,7 +3403,7 @@
       "region": "asia-rest",
       "collect": {
         "status": "ready",
-        "reason": "First pass as FindishBot: robots.txt allows us, 3 of 4 sampled pages carried recipe data, and no terms or policy page was found. Read its terms by hand and test-crawl before adding.",
+        "reason": "First pass as FindishBot: robots.txt allows us and newer posts carry recipe data, but older posts don't and some old pages answer with server errors. Its footer says no part of its content (photos, recipes, articles) can be reproduced without written permission, so it needs Kyle's call (like Obviously French, text only) or the writer's OK. Mostly quiet since about 2020. Kyle bookmarked it; checked again 2026-11-18.",
         "checked": "2026-11-18"
       }
     },
@@ -5623,6 +5856,54 @@
         "status": "not-checked",
         "reason": "First pass on 2026-11-18 as FindishBot: robots.txt allows us but no sitemap was found at the usual addresses. Needs a second look by hand.",
         "checked": "2026-11-18"
+      }
+    },
+    {
+      "id": "101cookbooks",
+      "name": "101 Cookbooks",
+      "url": "https://www.101cookbooks.com",
+      "kind": "site",
+      "vetted": false,
+      "cuisines": [],
+      "note": "Heidi Swanson's long-running blog of vegetarian whole-foods recipes.",
+      "collect": {
+        "status": "permission-needed",
+        "reason": "robots.txt allows us and posts carry recipe data, but its User Agreement bars downloading or using the site's content or data without written permission, and bars linking straight to its images. Kyle bookmarked it on 2026-11-18; needs Heidi's OK.",
+        "checked": "2026-11-18"
+      }
+    },
+    {
+      "id": "atableinfrance",
+      "name": "A Table in France",
+      "url": "https://audreylegoff.substack.com",
+      "kind": "site",
+      "vetted": false,
+      "cuisines": [
+        "French cuisine"
+      ],
+      "note": "Audrey Le Goff's Substack of French recipes from Brittany, from the cook behind Pardon Your French.",
+      "collect": {
+        "status": "no-recipe-data",
+        "reason": "Kyle picked it on 2026-11-18, but its RSS feed holds only previews: of the 20 newest posts none had a full recipe (paid posts are cut off, and free ones end at \"Read more\"). Reading post pages would go past the feed-only line for Substack, so nothing is read. Her blog, pardonyourfrench.com, is a separate source (its ingredient lines run together).",
+        "checked": "2026-11-18"
+      },
+      "support": {
+        "links": [
+          {
+            "label": "Newsletter",
+            "url": "https://audreylegoff.substack.com"
+          },
+          {
+            "label": "Blog",
+            "url": "https://pardonyourfrench.com"
+          }
+        ],
+        "books": [
+          {
+            "title": "Rustic French Cooking Made Easy",
+            "isbn": "9781624148637"
+          }
+        ]
       }
     }
   ]

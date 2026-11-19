@@ -114,6 +114,22 @@ test('microdata: Smitten Kitchen (Jetpack) with og:image photo', () => {
   assert.ok(!JSON.stringify(r).includes('SECRET'));
 });
 
+// ahnest kitchen (Squarespace with a Cook Card Maker card, 2026-11-18): the author is a nested
+// Person whose name comes before the recipe's own, so a nested item's props must be skipped.
+const CCM_PAGE = `<div class="ccm-wrapper" id="recipe" itemscope="" itemtype="http://schema.org/Recipe"><div class="ccm-info">
+<div class="ccm-yield ccm-info-child"><strong>Yield: </strong><span class="ccm-yield__amount" itemprop="recipeYield">4</span></div>
+<div class="ccm-author ccm-info-child"><strong>Author: </strong><span itemprop="author" itemscope="" itemtype="http://schema.org/Person"><span itemprop="name">Sarah Ahn</span></span></div></div>
+<div class="ccm-flex-b"><div class="ccm-image"><img loading="lazy" src="https://i.imgur.com/qglRxuQ.jpg" itemprop="image" alt=""></div>
+<div class="ccm-info-wrapper"><h3 class="ccm-name" itemprop="name">Kongnamul Bap (Soybean Sprout Rice Bowl) | 콩나물밥</h3></div></div>
+<ul><li itemprop="recipeIngredient">1 lb soybean sprouts</li><li itemprop="recipeIngredient">2 cups white rice</li></ul></div>`;
+
+test('microdata: a nested item (the author) does not lend the recipe its name', () => {
+  const r = extractRecipe(CCM_PAGE, 'https://ahnestkitchen.com/food/kongnamul-bap', { format: 'microdata' });
+  assert.equal(r.n, 'Kongnamul Bap (Soybean Sprout Rice Bowl) | 콩나물밥');
+  assert.equal(r.y, '4');
+  assert.deepEqual(r.i, ['soybean sprouts', 'white rice']);
+});
+
 test('ingredient names', () => {
   const cases = {
     '2 cups (480ml) chicken stock': 'chicken stock',

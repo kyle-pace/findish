@@ -118,3 +118,18 @@ bakerbynature.com
 joythebaker.com
 
 # Vicky Pham and some of Seonkyoung Longest's recipe photos are served from i0.wp.com (listed above). Obviously French is text only: its terms ask not to use its photos. 2026-11-18.
+
+# Recipe photos from Chopstick Chronicles, on its own results, lazily and with no referrer. Added under the content-image rule, 2026-11-18.
+www.chopstickchronicles.com
+
+# Recipe photos from Okonomi Kitchen, on its own results, lazily and with no referrer. Added under the content-image rule, 2026-11-18.
+www.okonomikitchen.com
+
+# Recipe photos from Omnivore's Cookbook, on its own results, lazily and with no referrer. Added under the content-image rule, 2026-11-18.
+omnivorescookbook.com
+
+# Recipe photos from Half Baked Harvest, on its own results, lazily and with no referrer. Added under the content-image rule, 2026-11-18.
+www.halfbakedharvest.com
+
+# ahnest kitchen's recipe photos, which its recipe cards load from Imgur, on its own results, lazily and with no referrer. Added under the content-image rule, 2026-11-18.
+i.imgur.com

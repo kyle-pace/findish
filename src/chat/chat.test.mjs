@@ -428,7 +428,14 @@ test('a busy or overloaded Claude is tried once more, and only once', async () =
 });
 
 test('a request to Claude that hangs is given up on', async () => {
-  const hang = (url, init) => new Promise((_, reject) => init.signal.addEventListener('abort', () => reject(init.signal.reason)));
+  // AbortSignal.timeout's timer doesn't keep Node running, so a fetch that only waits for it
+  // would let the test process finish first ("event loop has already resolved"), which
+  // cancelled this test and every one after it. A real fetch holds a socket open; this
+  // stand-in holds a timer until the signal fires.
+  const hang = (url, init) => new Promise((_, reject) => {
+    const alive = setTimeout(() => reject(new Error('the signal never fired')), 5000);
+    init.signal.addEventListener('abort', () => (clearTimeout(alive), reject(init.signal.reason)));
+  });
   await assert.rejects(callClaude('k', { messages: [] }, { fetchImpl: hang, timeoutMs: 30 }), (e) => e.reason === 'timeout');
   await assert.rejects(callClaude('k', { messages: [] }, { fetchImpl: async () => { throw new TypeError('fetch failed'); } }), (e) => e.reason === 'network');
   await assert.rejects(callClaude('k', { messages: [] }, { fetchImpl: async () => new Response('not json', { status: 200 }) }), (e) => e.reason === 'bad_answer');

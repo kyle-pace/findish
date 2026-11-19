@@ -1,127 +1,14 @@
 {
- "run": "2026-11-19T05:46:04.273Z",
+ "run": "2026-11-18T06:43:39.014Z",
  "options": {
   "limit": null,
   "delayMs": 4000
  },
  "sources": {
-  "koreanbapsang": {
-   "id": "koreanbapsang",
-   "name": "Korean Bapsang",
-   "result": "ok",
-   "fetched": 275,
-   "added": 254,
-   "updated": 0,
-   "removed": 0,
-   "noRecipe": 21,
-   "httpErrors": {},
-   "sitemapPages": 275,
-   "waiting": 0,
-   "count": 254
-  },
-  "mexicoinmykitchen": {
-   "id": "mexicoinmykitchen",
-   "name": "Mexico in My Kitchen",
-   "result": "error",
-   "error": "HTTP 403 for https://www.mexicoinmykitchen.com/post-sitemap.xml"
-  },
-  "patijinich": {
-   "id": "patijinich",
-   "name": "Pati Jinich",
-   "result": "ok",
-   "fetched": 972,
-   "added": 780,
-   "updated": 0,
-   "removed": 0,
-   "noRecipe": 192,
-   "httpErrors": {},
-   "sitemapPages": 972,
-   "waiting": 0,
-   "count": 780
-  },
-  "recipesfromitaly": {
-   "id": "recipesfromitaly",
-   "name": "Recipes from Italy",
-   "result": "blocked",
-   "fetched": 8,
-   "added": 2,
-   "updated": 0,
-   "removed": 0,
-   "noRecipe": 0,
-   "httpErrors": {
-    "403": 6
-   },
-   "sitemapPages": 547,
-   "waiting": 539,
-   "error": "HTTP 403 three times in a row",
-   "count": 2
-  },
-  "maureenabood": {
-   "id": "maureenabood",
-   "name": "Maureen Abood",
-   "result": "blocked",
-   "fetched": 596,
-   "added": 378,
-   "updated": 0,
-   "removed": 0,
-   "noRecipe": 215,
-   "httpErrors": {
-    "429": 3
-   },
-   "sitemapPages": 728,
-   "waiting": 132,
-   "error": "HTTP 429 three times in a row",
-   "count": 378
-  },
-  "ozlemsturkishtable": {
-   "id": "ozlemsturkishtable",
-   "name": "Ozlem's Turkish Table",
-   "result": "ok",
-   "fetched": 410,
-   "added": 106,
-   "updated": 0,
-   "removed": 0,
-   "noRecipe": 304,
-   "httpErrors": {},
-   "sitemapPages": 410,
-   "waiting": 0,
-   "count": 106
-  },
-  "unicornsinthekitchen": {
-   "id": "unicornsinthekitchen",
-   "name": "Unicorns in the Kitchen",
-   "result": "blocked",
-   "fetched": 597,
-   "added": 586,
-   "updated": 0,
-   "removed": 0,
-   "noRecipe": 6,
-   "httpErrors": {
-    "429": 5
-   },
-   "sitemapPages": 843,
-   "waiting": 246,
-   "error": "HTTP 429 three times in a row",
-   "count": 586
-  },
-  "hungryhuy": {
-   "id": "hungryhuy",
-   "name": "Hungry Huy",
-   "result": "ok",
-   "fetched": 455,
-   "added": 351,
-   "updated": 0,
-   "removed": 0,
-   "noRecipe": 104,
-   "httpErrors": {},
-   "sitemapPages": 455,
-   "waiting": 0,
-   "count": 351
-  },
   "eatchofood": {
    "id": "eatchofood",
    "name": "Eat Cho Food",
-   "result": "not run",
+   "result": "ok",
    "fetched": 1,
    "added": 19,
    "updated": 0,
@@ -135,7 +22,7 @@
   "ruhlman": {
    "id": "ruhlman",
    "name": "Ruhlman's Newsletter",
-   "result": "not run",
+   "result": "ok",
    "fetched": 1,
    "added": 1,
    "updated": 0,
@@ -149,7 +36,7 @@
   "ciaosamin": {
    "id": "ciaosamin",
    "name": "a grain of salt",
-   "result": "not run",
+   "result": "ok",
    "fetched": 1,
    "added": 2,
    "updated": 0,
@@ -383,10 +270,5 @@
    "count": 546
   }
  },
- "alerts": [
-  "mexicoinmykitchen: failed (HTTP 403 for https://www.mexicoinmykitchen.com/post-sitemap.xml)",
-  "recipesfromitaly: blocked (HTTP 403 three times in a row)",
-  "maureenabood: blocked (HTTP 429 three times in a row)",
-  "unicornsinthekitchen: blocked (HTTP 429 three times in a row)"
- ]
+ "alerts": []
 }

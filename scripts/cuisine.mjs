@@ -39,6 +39,11 @@ const FOLD = {
   'basque country': 'Basque',
   'turkish regional': 'Turkish', // Ozlem's Turkish Table: "Turkish Regional Cuisine - Antakya Cuisine"
   'turkish regional cuisine': 'Turkish',
+  'regional turkish': 'Turkish',
+  'regional turkish cuisine': 'Turkish',
+  'southern turkish': 'Turkish',
+  'southern turkish cuisine': 'Turkish',
+  'southern turkish cusine': 'Turkish',
 };
 // Labels that aren't a cuisine: the recipe is left without one.
 const NOT_A_CUISINE = /^(christmas|easter|holiday( recipes)?|festive|baking|desserts?|dinner|soups?|dog food|vegan|miscellaneous|universal|anime|bbq|tropical!?|any flavour you want!?)$/;

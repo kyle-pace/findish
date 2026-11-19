@@ -1047,9 +1047,9 @@
         "url": "https://www.youtube.com/@Mexicoinmykitchen"
       },
       "collect": {
-        "status": "crawl",
-        "reason": "Checked as FindishBot: robots.txt allows it and blocks only OpenAI's bots (GPTBot, ChatGPT-User); its legal page is a privacy policy with nothing against indexing; pages carry full recipe data.",
-        "checked": "2026-11-18"
+        "status": "paused",
+        "reason": "Its firewall answers HTTP 403 for the post sitemap to the crawler from GitHub Actions (first crawl, 2026-11-19), though robots.txt allows us and the same sitemap loaded in the check on 2026-11-18 from another network. Needs the site to allow us; not worked around.",
+        "checked": "2026-11-19"
       },
       "crawl": {
         "sitemap": "/sitemap_index.xml",
@@ -1120,9 +1120,9 @@
       ],
       "note": "Traditional Italian recipes written by Italian home cooks, organized by region and course.",
       "collect": {
-        "status": "crawl",
-        "reason": "Checked as FindishBot: robots.txt allows it, no terms page forbids indexing (the site has a privacy policy only), and its pages carry full recipe data.",
-        "checked": "2026-11-18"
+        "status": "paused",
+        "reason": "Its firewall answers HTTP 403 to the crawler from GitHub Actions (6 of 8 pages on the first crawl, 2026-11-19), though robots.txt allows us and the same pages loaded in the check on 2026-11-18 from another network. Needs the site to allow us; not worked around.",
+        "checked": "2026-11-19"
       },
       "crawl": {
         "sitemap": "/sitemap_index.xml",
@@ -1152,9 +1152,11 @@
       "crawl": {
         "sitemap": "/sitemap_index.xml",
         "format": "json-ld",
+        "delay_seconds": 12,
         "size": "about 730 posts",
         "notes": [
-          "cuisine: often left empty, and not every recipe is Lebanese, so no default"
+          "cuisine: often left empty, and not every recipe is Lebanese, so no default",
+          "delay_seconds: on its first crawl (2026-11-19) it answered HTTP 429 after about 600 pages at one every 4 seconds, so it gets one every 12"
         ]
       }
     },
@@ -1205,9 +1207,11 @@
       "crawl": {
         "sitemap": "/sitemap_index.xml",
         "format": "json-ld",
+        "delay_seconds": 12,
         "size": "about 840 posts",
         "notes": [
-          "cuisine: Persian, Greek, Turkish and Mediterranean, labeled per recipe, so no default"
+          "cuisine: Persian, Greek, Turkish and Mediterranean, labeled per recipe, so no default",
+          "delay_seconds: on its first crawl (2026-11-19) it answered HTTP 429 after about 600 pages at one every 4 seconds, so it gets one every 12"
         ]
       }
     },

@@ -1213,6 +1213,184 @@
       }
     },
     {
+      "id": "hebbarskitchen",
+      "name": "Hebbar's Kitchen",
+      "url": "https://hebbarskitchen.com",
+      "kind": "site",
+      "vetted": true,
+      "cuisines": [
+        "Indian cuisine",
+        "North Indian cuisine"
+      ],
+      "note": "Archana Hebbar's large Indian vegetarian recipe site.",
+      "collect": {
+        "status": "crawl",
+        "reason": "Checked as FindishBot: robots.txt allows it, its policy pages have nothing against indexing, and its pages carry full recipe data.",
+        "checked": "2026-11-18"
+      },
+      "crawl": {
+        "sitemap": "/sitemap_index.xml",
+        "format": "json-ld",
+        "include": "^https://hebbarskitchen\\.com/[^/]+/?$",
+        "default_cuisine": "Indian",
+        "name_split": " | ",
+        "size": "about 5,000 posts",
+        "notes": [
+          "include: top-level posts only; leaves out the Hindi and Kannada copies (/hi/, /kn/) and the template and grouping pages the sitemap also lists",
+          "name_split: names are three search phrases in a row"
+        ]
+      }
+    },
+    {
+      "id": "spiceupthecurry",
+      "name": "Spice Up The Curry",
+      "url": "https://www.spiceupthecurry.com",
+      "kind": "site",
+      "vetted": true,
+      "cuisines": [
+        "Indian cuisine",
+        "Gujarati cuisine",
+        "Andhra cuisine",
+        "Telugu cuisine",
+        "Jain vegetarianism"
+      ],
+      "note": "Kanan Patel's Indian vegetarian recipe blog.",
+      "collect": {
+        "status": "crawl",
+        "reason": "Checked as FindishBot: robots.txt allows it, its policy pages have nothing against indexing, and its pages carry full recipe data.",
+        "checked": "2026-11-18"
+      },
+      "crawl": {
+        "sitemap": "/sitemap_index.xml",
+        "format": "json-ld",
+        "default_cuisine": "Indian",
+        "size": "about 900 posts"
+      }
+    },
+    {
+      "id": "panlasangpinoy",
+      "name": "Panlasang Pinoy",
+      "url": "https://panlasangpinoy.com",
+      "kind": "site",
+      "vetted": true,
+      "cuisines": [
+        "Filipino cuisine"
+      ],
+      "note": "Vanjo Merano's large library of Filipino recipes and cooking videos.",
+      "collect": {
+        "status": "crawl",
+        "reason": "Checked as FindishBot: robots.txt allows it, its policy pages have nothing against indexing, and its recipe posts carry recipe data (about half the sampled posts were articles with none).",
+        "checked": "2026-11-18"
+      },
+      "crawl": {
+        "sitemap": "/sitemap_index.xml",
+        "format": "json-ld",
+        "default_cuisine": "Filipino",
+        "size": "about 3,000 posts",
+        "notes": [
+          "cuisine: not labeled, so the default does the work"
+        ]
+      }
+    },
+    {
+      "id": "rasamalaysia",
+      "name": "Rasa Malaysia",
+      "url": "https://rasamalaysia.com",
+      "kind": "site",
+      "vetted": true,
+      "cuisines": [
+        "Malaysian cuisine"
+      ],
+      "note": "Penang-born Bee Yinn Low's recipe site, including Malaysian and Nyonya dishes.",
+      "collect": {
+        "status": "crawl",
+        "reason": "Checked as FindishBot: robots.txt allows it, its policy pages have nothing against indexing, and its pages carry full recipe data.",
+        "checked": "2026-11-18"
+      },
+      "crawl": {
+        "sitemap": "/sitemap_index.xml",
+        "format": "json-ld",
+        "size": "about 1,000 posts or more",
+        "notes": [
+          "cuisine: labeled per recipe as \"Thai Recipes\", \"American Recipes\"; many dishes are not Malaysian, so no default"
+        ]
+      }
+    },
+    {
+      "id": "dimitrasdishes",
+      "name": "Dimitra's Dishes",
+      "url": "https://www.dimitrasdishes.com",
+      "kind": "site",
+      "vetted": true,
+      "cuisines": [
+        "Greek cuisine"
+      ],
+      "note": "Dimitra Alfieris's video channel and blog focused on classic Greek home cooking.",
+      "collect": {
+        "status": "crawl",
+        "reason": "Checked as FindishBot: robots.txt allows it, its privacy policy (the only policy page) has nothing against indexing, and its pages carry full recipe data.",
+        "checked": "2026-11-18"
+      },
+      "crawl": {
+        "sitemap": "/sitemap_index.xml",
+        "format": "json-ld",
+        "default_cuisine": "Greek",
+        "size": "about 2,000 posts",
+        "notes": [
+          "cuisine: older posts have none, and some say \"Dessert\""
+        ]
+      }
+    },
+    {
+      "id": "mycolombianrecipes",
+      "name": "My Colombian Recipes",
+      "url": "https://www.mycolombianrecipes.com",
+      "kind": "site",
+      "vetted": true,
+      "cuisines": [
+        "Colombian cuisine"
+      ],
+      "note": "Medellín-born Erica Dinho's blog of traditional Colombian recipes.",
+      "collect": {
+        "status": "crawl",
+        "reason": "Checked as FindishBot: robots.txt allows it and pages carry recipe data. Its terms say content may not be reprinted, reproduced or distributed without written permission; we keep names, ingredient names and a link, never the recipe. Kyle's call, 2026-11-18.",
+        "checked": "2026-11-18"
+      },
+      "crawl": {
+        "sitemap": "/sitemap_index.xml",
+        "format": "json-ld",
+        "include": "^https://www\\.mycolombianrecipes\\.com/(?!es/)",
+        "default_cuisine": "Colombian",
+        "size": "about 1,000 posts or more",
+        "notes": [
+          "time: often missing",
+          "include: leaves out the Spanish copies under /es/"
+        ]
+      }
+    },
+    {
+      "id": "tasteofmaroc",
+      "name": "Taste of Maroc",
+      "url": "https://tasteofmaroc.com",
+      "kind": "site",
+      "vetted": true,
+      "cuisines": [
+        "Moroccan cuisine"
+      ],
+      "note": "Moroccan recipes and tutorials from Christine Benlafquih, formerly the Moroccan food writer at The Spruce Eats.",
+      "collect": {
+        "status": "crawl",
+        "reason": "Checked as FindishBot: robots.txt allows it and pages carry full recipe data. Its terms say not to republish, reproduce, duplicate or copy material; we keep names, ingredient names and a link, never the recipe. Kyle's call, 2026-11-18.",
+        "checked": "2026-11-18"
+      },
+      "crawl": {
+        "sitemap": "/sitemap_index.xml",
+        "format": "json-ld",
+        "default_cuisine": "Moroccan",
+        "size": "about 120 posts"
+      }
+    },
+    {
       "id": "kitchenbutterfly",
       "name": "Kitchen Butterfly",
       "url": "https://www.kitchenbutterfly.com/about-2",
@@ -1273,21 +1451,6 @@
       }
     },
     {
-      "id": "tasteofmaroc",
-      "name": "Taste of Maroc",
-      "url": "https://tasteofmaroc.com/about/",
-      "kind": "site",
-      "vetted": false,
-      "cuisines": [
-        "Moroccan cuisine"
-      ],
-      "note": "Moroccan recipes and tutorials from Christine Benlafquih, formerly the Moroccan food writer at The Spruce Eats.",
-      "region": "africa",
-      "collect": {
-        "status": "not-checked"
-      }
-    },
-    {
       "id": "salimaskitchen",
       "name": "Salima's Kitchen",
       "url": "https://salimaskitchen.com/category/moroccan/",
@@ -1299,7 +1462,9 @@
       "note": "Moroccan section of Salima Benkhalti's blog, drawing on her family cooking.",
       "region": "africa",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 4 of 4 sampled pages carried recipe data, and nothing against indexing was found on its policy pages. Read its terms by hand and test-crawl before adding.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -1344,7 +1509,9 @@
       "note": "South African favourites like bobotie and milk tart from Maretha, a South African home cook in the UK.",
       "region": "africa",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 4 of 4 sampled pages carried recipe data, and nothing against indexing was found on its policy pages. Read its terms by hand and test-crawl before adding.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -1404,7 +1571,9 @@
       "note": "Egyptian section of Amira's recipe blog, with koshari, hawawshi, feteer and sweets.",
       "region": "africa",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 4 of 4 sampled pages carried recipe data, and nothing against indexing was found on its policy pages. Read its terms by hand and test-crawl before adding. Kyle looked on 2026-11-18 and left it out for now.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -1509,7 +1678,9 @@
       "note": "Recipe blog by Precious Nkeih centered on Cameroonian dishes, with a companion YouTube channel.",
       "region": "africa",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 2 of 4 sampled pages carried recipe data, and nothing against indexing was found on its policy pages. Read its terms by hand and test-crawl before adding.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -1524,7 +1695,9 @@
       "note": "African and Caribbean recipes from Cameroon born cook Imma, with many Cameroonian dishes.",
       "region": "africa",
       "collect": {
-        "status": "not-checked"
+        "status": "permission-needed",
+        "reason": "Its terms allow personal use only, with no other use without express written permission. robots.txt allows crawling and pages carry full recipe data.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -1554,7 +1727,9 @@
       "note": "Zimbabwean recipes using Shona ingredients and dish names, alongside craft posts.",
       "region": "africa",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 2 of 4 sampled pages carried recipe data, and nothing against indexing was found on its policy pages. Read its terms by hand and test-crawl before adding.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -1599,7 +1774,9 @@
       "note": "Cape Verdean recipes from Crystal, a Providence cook whose family is from Sao Nicolau.",
       "region": "africa",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 4 of 4 sampled pages carried recipe data, and no terms or policy page was found. Read its terms by hand and test-crawl before adding.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -1629,7 +1806,9 @@
       "note": "Namibian and German home recipes from Namibian born Ester, now living in Bavaria.",
       "region": "africa",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "Kyle to decide: Its disclaimer requires written consent for any use beyond what copyright law allows. Mostly in German. robots.txt allows us and pages carry recipe data.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -1704,7 +1883,9 @@
       "note": "Blog of Mexican-American family recipes.",
       "region": "americas",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 3 of 4 sampled pages carried recipe data, and nothing against indexing was found on its policy pages. Read its terms by hand and test-crawl before adding.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -1719,7 +1900,9 @@
       "note": "New Mexico chile recipes on a Southwest home cooking blog.",
       "region": "americas",
       "collect": {
-        "status": "not-checked"
+        "status": "permission-needed",
+        "reason": "Its copyright policy says any use or reproduction of its content requires written consent. robots.txt allows crawling and pages carry recipe data.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -1735,7 +1918,9 @@
       "note": "Lisa Fain's long-running blog of Texan and Tex-Mex home cooking.",
       "region": "americas",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 4 of 4 sampled pages carried recipe data, and nothing against indexing was found on its policy pages. Read its terms by hand and test-crawl before adding.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -1765,7 +1950,9 @@
       "note": "Lana Stuart's blog of Southern home cooking from Georgia.",
       "region": "americas",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 4 of 4 sampled pages carried recipe data, and nothing against indexing was found on its policy pages. Read its terms by hand and test-crawl before adding.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -1780,7 +1967,9 @@
       "note": "Collection of classic Southern recipes on a Southern home cooking blog.",
       "region": "americas",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 3 of 4 sampled pages carried recipe data, and no terms or policy page was found. robots.txt blocks 1 AI or other crawlers by name, not us. Read its terms by hand and test-crawl before adding.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -1797,7 +1986,9 @@
       "note": "Cajun and Creole recipes from a New Orleans-based cook and video creator.",
       "region": "americas",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 4 of 4 sampled pages carried recipe data, and nothing against indexing was found on its policy pages. robots.txt blocks 28 AI or other crawlers by name, not us. Read its terms by hand and test-crawl before adding.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -1812,7 +2003,9 @@
       "note": "Shaunda Necole's blog of soul food and Southern recipes.",
       "region": "americas",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "Kyle to decide: Its FAQ says it does not allow republication of posts without prior consent. robots.txt allows us and pages carry recipe data.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -1827,7 +2020,9 @@
       "note": "Soul food recipe site that also covers cookbooks by Black authors.",
       "region": "americas",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 4 of 4 sampled pages carried recipe data, and nothing against indexing was found on its policy pages. Read its terms by hand and test-crawl before adding.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -1842,7 +2037,9 @@
       "note": "Hawaii-based blog of local-style recipes.",
       "region": "americas",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 2 of 4 sampled pages carried recipe data, and nothing against indexing was found on its policy pages. Read its terms by hand and test-crawl before adding.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -1858,7 +2055,9 @@
       "note": "Chinese American takeout-style recipes on an Asian home cooking blog.",
       "region": "americas",
       "collect": {
-        "status": "not-checked"
+        "status": "permission-needed",
+        "reason": "Its terms forbid exploiting the content in any way and any use for developing, training or operating AI. robots.txt allows crawling and pages carry recipe data.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -1906,7 +2105,9 @@
       "note": "Costa Rica-focused family site with traditional Costa Rican recipes and its own cookbook.",
       "region": "americas",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 3 of 4 sampled pages carried recipe data, and nothing against indexing was found on its policy pages. Read its terms by hand and test-crawl before adding.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -1937,7 +2138,9 @@
       "note": "Guatemalan recipes and stories on a Latino family cooking site.",
       "region": "americas",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 4 of 4 sampled pages carried recipe data, and nothing against indexing was found on its policy pages. Read its terms by hand and test-crawl before adding.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -1952,7 +2155,9 @@
       "note": "Bolivian-American Lizet Bowen's bilingual blog of Bolivian recipes.",
       "region": "americas",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 3 of 4 sampled pages carried recipe data, and no terms or policy page was found. Read its terms by hand and test-crawl before adding.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -1982,7 +2187,9 @@
       "note": "Brazilian recipe collection from a Brazilian-born home cook based in the US.",
       "region": "americas",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 4 of 4 sampled pages carried recipe data, and nothing against indexing was found on its policy pages. Read its terms by hand and test-crawl before adding.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -1997,7 +2204,9 @@
       "note": "Bilingual blog with a large collection of traditional Chilean recipes.",
       "region": "americas",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 4 of 4 sampled pages carried recipe data, and nothing against indexing was found on its policy pages. Read its terms by hand and test-crawl before adding.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -2012,22 +2221,9 @@
       "note": "Chilean home cooking blog by Pilar Hernández.",
       "region": "americas",
       "collect": {
-        "status": "not-checked"
-      }
-    },
-    {
-      "id": "mycolombianrecipes",
-      "name": "My Colombian Recipes",
-      "url": "https://www.mycolombianrecipes.com/about/",
-      "kind": "site",
-      "vetted": false,
-      "cuisines": [
-        "Colombian cuisine"
-      ],
-      "note": "Medellín-born Erica Dinho's blog of traditional Colombian recipes.",
-      "region": "americas",
-      "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 3 of 4 sampled pages carried recipe data, and nothing against indexing was found on its policy pages. Read its terms by hand and test-crawl before adding.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -2042,7 +2238,9 @@
       "note": "Ecuadorian-born Layla Pujol's blog, strong on Ecuadorian and Latin American dishes.",
       "region": "americas",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: recipes are under /recipes/ with their own sitemap (/recipes/sitemap_index.xml, about 550 posts); both pages sampled carried recipe data; only a privacy policy was found. Read its terms by hand and test-crawl before adding. Kyle looked on 2026-11-18 and left it out for now.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -2057,7 +2255,9 @@
       "note": "Guyanese-born Althea Brown's blog of Guyanese and Caribbean recipes.",
       "region": "americas",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 4 of 4 sampled pages carried recipe data, and nothing against indexing was found on its policy pages. Read its terms by hand and test-crawl before adding.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -2073,7 +2273,9 @@
       "note": "Blog of Guyanese home recipes.",
       "region": "americas",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 4 of 4 sampled pages carried recipe data, and no terms or policy page was found. Read its terms by hand and test-crawl before adding.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -2088,7 +2290,9 @@
       "note": "Paraguayan recipe roundup on a Latin American home cooking blog.",
       "region": "americas",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 4 of 4 sampled pages carried recipe data, and nothing against indexing was found on its policy pages. Read its terms by hand and test-crawl before adding.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -2120,7 +2324,9 @@
       "note": "Guide to Peruvian dishes and ingredients with a recipe section.",
       "region": "americas",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 4 of 4 sampled pages carried recipe data, and nothing against indexing was found on its policy pages. robots.txt blocks 1 AI or other crawlers by name, not us. Read its terms by hand and test-crawl before adding.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -2167,7 +2373,9 @@
       "note": "Surinamese recipes section on a Dutch food blogger's site.",
       "region": "americas",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 4 of 4 sampled pages carried recipe data, and nothing against indexing was found on its policy pages. Read its terms by hand and test-crawl before adding.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -2197,7 +2405,9 @@
       "note": "Roundup of Venezuelan recipes on a Venezuelan-born food writer's blog.",
       "region": "americas",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "Kyle to decide: Its policy says content may not be reproduced in part or in full without written consent. Mostly in Spanish. robots.txt allows us and pages carry recipe data.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -2257,7 +2467,9 @@
       "note": "Long-running blog of everyday Jamaican home recipes.",
       "region": "americas",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 3 of 4 sampled pages carried recipe data, and no terms or policy page was found. Read its terms by hand and test-crawl before adding.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -2272,7 +2484,9 @@
       "note": "Recipe site focused on traditional Jamaican dishes.",
       "region": "americas",
       "collect": {
-        "status": "not-checked"
+        "status": "permission-needed",
+        "reason": "Its terms forbid reproducing, copying or exploiting any portion of the site without written permission; robots.txt blocks several AI crawlers. robots.txt allows crawling and pages carry recipe data.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -2287,7 +2501,9 @@
       "note": "Jannese Torres's blog of Puerto Rican and Latin recipes.",
       "region": "americas",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 4 of 4 sampled pages carried recipe data, and nothing against indexing was found on its policy pages. Read its terms by hand and test-crawl before adding.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -2302,7 +2518,9 @@
       "note": "Food blog with a large Puerto Rican recipe category.",
       "region": "americas",
       "collect": {
-        "status": "not-checked"
+        "status": "permission-needed",
+        "reason": "Its terms forbid scraping, harvesting or systematically collecting content for another website, database or AI system without written permission. robots.txt allows crawling and pages carry recipe data.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -2318,7 +2536,9 @@
       "note": "Trinidadian home recipes from Ria Mathura.",
       "region": "americas",
       "collect": {
-        "status": "not-checked"
+        "status": "permission-needed",
+        "reason": "Its recipe sharing policy forbids copying or rewording without written permission, and its privacy policy forbids automated systems using the content for AI. robots.txt allows crawling and pages carry recipe data.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -2379,7 +2599,9 @@
       "note": "Long-running Dominican recipe site run by Clara González.",
       "region": "americas",
       "collect": {
-        "status": "not-checked"
+        "status": "permission-needed",
+        "reason": "Its terms say the material cannot be used without prior written consent, and forbid any use for developing, training or operating AI; robots.txt blocks several AI crawlers. Pages carry full recipe data.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -2394,7 +2616,9 @@
       "note": "Blog of Dominican home recipes.",
       "region": "americas",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 3 of 4 sampled pages carried recipe data, and nothing against indexing was found on its policy pages. Read its terms by hand and test-crawl before adding.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -2409,7 +2633,9 @@
       "note": "Elaine's blog of Chinese home recipes with a strong Sichuan focus.",
       "region": "asia-east",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 4 of 4 sampled pages carried recipe data, and nothing against indexing was found on its policy pages. robots.txt blocks 7 AI or other crawlers by name, not us. Read its terms by hand and test-crawl before adding.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -2424,7 +2650,9 @@
       "note": "Taiwanese home recipes from Edwina, who grew up in Taiwan.",
       "region": "asia-east",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 4 of 4 sampled pages carried recipe data, and nothing against indexing was found on its policy pages. Read its terms by hand and test-crawl before adding.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -2529,7 +2757,9 @@
       "note": "Hmong food and storytelling site by Cindy Her, a pastry chef in the Pacific Northwest.",
       "region": "asia-east",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 4 of 4 sampled pages carried recipe data, and nothing against indexing was found on its policy pages. robots.txt blocks 7 AI or other crawlers by name, not us. Read its terms by hand and test-crawl before adding.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -2578,7 +2808,9 @@
       "note": "Japanese Chinese recipe category on Marc Matsumoto's food site.",
       "region": "asia-east",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 4 of 4 sampled pages carried recipe data, and nothing against indexing was found on its policy pages. Read its terms by hand and test-crawl before adding.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -2593,7 +2825,9 @@
       "note": "UK-based cook Hari Ghotra's recipe library and videos of home-style Indian dishes.",
       "region": "asia-rest",
       "collect": {
-        "status": "not-checked"
+        "status": "no-recipe-data",
+        "reason": "Recipe pages carry no schema.org Recipe data the crawler can read (four pages sampled). Its terms also forbid copying or exploiting any portion without written permission.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -2608,22 +2842,9 @@
       "note": "Bangkok-born writer Leela Punyaratabandhu's blog on Thai home cooking.",
       "region": "asia-rest",
       "collect": {
-        "status": "not-checked"
-      }
-    },
-    {
-      "id": "panlasangpinoy",
-      "name": "Panlasang Pinoy",
-      "url": "https://panlasangpinoy.com/filipino-food/",
-      "kind": "site",
-      "vetted": false,
-      "cuisines": [
-        "Filipino cuisine"
-      ],
-      "note": "Vanjo Merano's large library of Filipino recipes and cooking videos.",
-      "region": "asia-rest",
-      "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 3 of 4 sampled pages carried recipe data, and no terms or policy page was found. Read its terms by hand and test-crawl before adding.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -2638,7 +2859,9 @@
       "note": "Lalaine Manalo's blog of Filipino home cooking.",
       "region": "asia-rest",
       "collect": {
-        "status": "not-checked"
+        "status": "permission-needed",
+        "reason": "Its Privacy & Terms page says not to use its content without written consent. robots.txt allows crawling and pages carry full recipe data.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -2653,22 +2876,9 @@
       "note": "Indonesian home cook Anita's blog with a large archive of Indonesian recipes.",
       "region": "asia-rest",
       "collect": {
-        "status": "not-checked"
-      }
-    },
-    {
-      "id": "rasamalaysia",
-      "name": "Rasa Malaysia",
-      "url": "https://rasamalaysia.com/nyonya-recipes/",
-      "kind": "site",
-      "vetted": false,
-      "cuisines": [
-        "Malaysian cuisine"
-      ],
-      "note": "Penang-born Bee Yinn Low's recipe site, including Malaysian and Nyonya dishes.",
-      "region": "asia-rest",
-      "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 4 of 4 sampled pages carried recipe data, and no terms or policy page was found. Read its terms by hand and test-crawl before adding. Kyle looked on 2026-11-18 and left it out for now.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -2683,7 +2893,9 @@
       "note": "Russian-born home cook Olga's blog, with a dedicated Russian recipes category.",
       "region": "asia-rest",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 3 of 4 sampled pages carried recipe data, and nothing against indexing was found on its policy pages. Read its terms by hand and test-crawl before adding.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -2863,7 +3075,9 @@
       "note": "New Zealand-born baker Erin Clarkson's blog, with a section of Kiwi classics.",
       "region": "asia-rest",
       "collect": {
-        "status": "not-checked"
+        "status": "permission-needed",
+        "reason": "Its copyright policy says any unauthorized use of its recipes and content is not permitted. robots.txt allows crawling and pages carry recipe data.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -2879,7 +3093,9 @@
       "note": "Kerala section of Aarthi's large South Indian home cooking blog.",
       "region": "asia-rest",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 4 of 4 sampled pages carried recipe data, and no terms or policy page was found. Read its terms by hand and test-crawl before adding.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -2934,24 +3150,6 @@
       }
     },
     {
-      "id": "spiceupthecurry",
-      "name": "Spice Up The Curry (Gujarat)",
-      "url": "https://www.spiceupthecurry.com/category/recipes-by-region/gujarat/",
-      "kind": "site",
-      "vetted": false,
-      "cuisines": [
-        "Gujarati cuisine",
-        "Andhra cuisine",
-        "Telugu cuisine",
-        "Jain vegetarianism"
-      ],
-      "note": "Gujarati section of Kanan Patel's Indian vegetarian recipe blog.",
-      "region": "asia-rest",
-      "collect": {
-        "status": "not-checked"
-      }
-    },
-    {
       "id": "parsicuisine",
       "name": "ParsiCuisine.com",
       "url": "https://www.parsicuisine.com/parsicuisine-com/",
@@ -2984,7 +3182,9 @@
       "note": "Chettinad-tagged recipes on Archana Doshi's large Indian recipe site.",
       "region": "asia-rest",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "Kyle to decide: robots.txt says search=yes, ai-train=no and blocks about 40 AI and SEO crawlers by name; terms forbid copying or publication without written consent. About 10,000 pages, with Hindi copies to leave out. robots.txt allows us and pages carry recipe data. Kyle looked on 2026-11-18 and left it out for now.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -3002,7 +3202,9 @@
       "note": "Khaleeji section of a Middle Eastern home cooking blog.",
       "region": "asia-rest",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 3 of 4 sampled pages carried recipe data, and nothing against indexing was found on its policy pages. Read its terms by hand and test-crawl before adding.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -3032,7 +3234,9 @@
       "note": "Tamil Nadu section of a South Indian vegetarian home cooking blog.",
       "region": "asia-rest",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 3 of 4 sampled pages carried recipe data, and nothing against indexing was found on its policy pages. Read its terms by hand and test-crawl before adding.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -3048,7 +3252,9 @@
       "note": "Chennai-based home cook's blog of everyday Tamil vegetarian recipes.",
       "region": "asia-rest",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 4 of 4 sampled pages carried recipe data, and nothing against indexing was found on its policy pages. robots.txt blocks 18 AI or other crawlers by name, not us. Read its terms by hand and test-crawl before adding.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -3063,7 +3269,9 @@
       "note": "Rajasthani section of Anupama Paliwal's Indian home cooking blog.",
       "region": "asia-rest",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 4 of 4 sampled pages carried recipe data, and no terms or policy page was found. Read its terms by hand and test-crawl before adding.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -3095,7 +3303,9 @@
       "note": "Maharashtrian section of an Indian home cooking blog.",
       "region": "asia-rest",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 4 of 4 sampled pages carried recipe data, and nothing against indexing was found on its policy pages. Read its terms by hand and test-crawl before adding.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -3110,7 +3320,9 @@
       "note": "Maharashtrian category on Tarla Dalal's long-running recipe site.",
       "region": "asia-rest",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 4 of 4 sampled pages carried recipe data, and nothing against indexing was found on its policy pages. robots.txt blocks 18 AI or other crawlers by name, not us. Read its terms by hand and test-crawl before adding.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -3218,7 +3430,9 @@
       "note": "Mangalorean Catholic home cook's blog of Mangalorean and Konkani recipes.",
       "region": "asia-rest",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 3 of 4 sampled pages carried recipe data, and nothing against indexing was found on its policy pages. Read its terms by hand and test-crawl before adding.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -3248,7 +3462,9 @@
       "note": "Blog dedicated to traditional Udupi and coastal Karnataka vegetarian dishes.",
       "region": "asia-rest",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 4 of 4 sampled pages carried recipe data, and nothing against indexing was found on its policy pages. Read its terms by hand and test-crawl before adding.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -3278,7 +3494,9 @@
       "note": "Assyrian home cook Hilda Sterner's blog, with a dedicated Assyrian recipes category.",
       "region": "asia-rest",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 4 of 4 sampled pages carried recipe data, and nothing against indexing was found on its policy pages. Read its terms by hand and test-crawl before adding.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -3293,7 +3511,9 @@
       "note": "Filipino home cooking blog with an Ilocano recipes tag.",
       "region": "asia-rest",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 3 of 4 sampled pages carried recipe data, and nothing against indexing was found on its policy pages. Read its terms by hand and test-crawl before adding.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -3323,7 +3543,9 @@
       "note": "Overview of Kodava (Coorgi) cooking with recipes on Sailaja's Indian food blog.",
       "region": "asia-rest",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 4 of 4 sampled pages carried recipe data, and nothing against indexing was found on its policy pages. robots.txt blocks 4 AI or other crawlers by name, not us. Read its terms by hand and test-crawl before adding.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -3338,7 +3560,9 @@
       "note": "Bengali section of Kankana Saxena's home cooking blog.",
       "region": "asia-rest",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "Kyle to decide: Its policy says content may not be republished in part or whole without permission and credit. robots.txt allows us and pages carry recipe data.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -3353,22 +3577,9 @@
       "note": "Family-run blog of traditional Tamil and South Indian vegetarian recipes.",
       "region": "asia-rest",
       "collect": {
-        "status": "not-checked"
-      }
-    },
-    {
-      "id": "hebbarskitchen",
-      "name": "Hebbar's Kitchen (North Indian)",
-      "url": "https://hebbarskitchen.com/cuisines/north-indian/",
-      "kind": "site",
-      "vetted": false,
-      "cuisines": [
-        "North Indian cuisine"
-      ],
-      "note": "North Indian section of Archana Hebbar's large vegetarian recipe site.",
-      "region": "asia-rest",
-      "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 2 of 4 sampled pages carried recipe data, and nothing against indexing was found on its policy pages. Read its terms by hand and test-crawl before adding.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -3383,7 +3594,9 @@
       "note": "Blog dedicated to Malaysian Chinese home cooking, with recipes and videos.",
       "region": "asia-rest",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "Kyle to decide: Its copyright page forbids using protected material without permission; robots.txt blocks several AI crawlers. robots.txt allows us and pages carry recipe data.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -3535,7 +3748,9 @@
       "note": "Audrey Le Goff, a French cook, shares classic and regional French home recipes.",
       "region": "europe",
       "collect": {
-        "status": "not-checked"
+        "status": "no-recipe-data",
+        "reason": "Recipe pages have schema.org Recipe data, but each group of ingredients is run together as one line, so ingredient names can't be read. robots.txt allows crawling; no terms page beyond a privacy policy.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -3565,22 +3780,9 @@
       "note": "Albert Bevia's video channel and site of traditional and everyday Spanish recipes.",
       "region": "europe",
       "collect": {
-        "status": "not-checked"
-      }
-    },
-    {
-      "id": "dimitrasdishes",
-      "name": "Dimitra's Dishes",
-      "url": "https://dimitrasdishes.com",
-      "kind": "site",
-      "vetted": false,
-      "cuisines": [
-        "Greek cuisine"
-      ],
-      "note": "Dimitra Alfieris's video channel and blog focused on classic Greek home cooking.",
-      "region": "europe",
-      "collect": {
-        "status": "not-checked"
+        "status": "permission-needed",
+        "reason": "Its policy says the site's content may not be reproduced, displayed, downloaded or otherwise used without express written permission. robots.txt allows crawling and pages carry full recipe data.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -3611,7 +3813,9 @@
       "note": "Blog of German and Bavarian recipes, from main dishes to holiday baking.",
       "region": "europe",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 4 of 4 sampled pages carried recipe data, and nothing against indexing was found on its policy pages. Read its terms by hand and test-crawl before adding.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -3626,7 +3830,9 @@
       "note": "Portuguese-run recipe site and video channel of traditional Portuguese dishes.",
       "region": "europe",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 4 of 4 sampled pages carried recipe data, and nothing against indexing was found on its policy pages. Read its terms by hand and test-crawl before adding.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -3686,7 +3892,9 @@
       "note": "Ukrainian-born home cook Nataliia Savas's section of family Ukrainian recipes.",
       "region": "europe",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "Kyle to decide: Terms say not to reproduce, distribute or republish any content without permission. robots.txt allows us and pages carry recipe data.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -3746,7 +3954,9 @@
       "note": "Viennese food blog of Austrian home cooking and pastries, with English-language recipes.",
       "region": "europe",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 4 of 4 sampled pages carried recipe data, and nothing against indexing was found on its policy pages. Read its terms by hand and test-crawl before adding.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -3761,7 +3971,9 @@
       "note": "Austrian recipes from Ursula and David, two Austrians living in Boston.",
       "region": "europe",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "Kyle to decide: Its FAQ says recipes may not be republished without prior consent. robots.txt allows us and pages carry recipe data.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -3776,7 +3988,9 @@
       "note": "English-language blog of traditional Czech home recipes by a Czech cook.",
       "region": "europe",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 4 of 4 sampled pages carried recipe data, and no terms or policy page was found. Read its terms by hand and test-crawl before adding.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -3821,7 +4035,9 @@
       "note": "Croatian baking and dessert blog with English versions of its recipes.",
       "region": "europe",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 2 of 4 sampled pages carried recipe data, and no terms or policy page was found. Read its terms by hand and test-crawl before adding.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -3839,7 +4055,9 @@
       "note": "Balkan home cooking blog with a section of Serbian dishes.",
       "region": "europe",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 4 of 4 sampled pages carried recipe data, and nothing against indexing was found on its policy pages. Read its terms by hand and test-crawl before adding.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -3854,7 +4072,9 @@
       "note": "Long-running blog of Greek and Cypriot home recipes.",
       "region": "europe",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 2 of 4 sampled pages carried recipe data, and nothing against indexing was found on its policy pages. Read its terms by hand and test-crawl before adding.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -3884,7 +4104,9 @@
       "note": "English-language blog of traditional Latvian recipes, including a project cooking through old Latvian cookbooks.",
       "region": "europe",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 4 of 4 sampled pages carried recipe data, and no terms or policy page was found. Read its terms by hand and test-crawl before adding.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -3899,7 +4121,9 @@
       "note": "English-language blog dedicated to Estonian home recipes.",
       "region": "europe",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 2 of 4 sampled pages carried recipe data, and no terms or policy page was found. Read its terms by hand and test-crawl before adding.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -3944,7 +4168,9 @@
       "note": "Blog working through traditional Scottish dishes one recipe at a time.",
       "region": "europe",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 3 of 4 sampled pages carried recipe data, and no terms or policy page was found. Read its terms by hand and test-crawl before adding.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -3959,7 +4185,9 @@
       "note": "Scottish home baking and cooking section of a UK food blog.",
       "region": "europe",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "Kyle to decide: Its policy says recipes may not be republished without permission and photos may not be used without permission. robots.txt allows us and pages carry recipe data.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -3974,7 +4202,9 @@
       "note": "Traditional Welsh baking recipes such as Welsh cakes and bara brith.",
       "region": "europe",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "Kyle to decide: Its disclaimer forbids copying substantial text without written permission and commercial use of photos. robots.txt allows us and pages carry recipe data.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -3989,7 +4219,9 @@
       "note": "Tuscan cook and author Giulia Scarpaleggia's blog of Tuscan home recipes.",
       "region": "europe",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 3 of 4 sampled pages carried recipe data, and no terms or policy page was found. Read its terms by hand and test-crawl before adding.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -4049,7 +4281,9 @@
       "note": "German food blogger's collection of Swabian dishes such as Maultaschen and Spätzle.",
       "region": "europe",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 4 of 4 sampled pages carried recipe data, and nothing against indexing was found on its policy pages. Read its terms by hand and test-crawl before adding.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -4110,7 +4344,9 @@
       "note": "Italy-based pasta blog's section on regional pasta dishes from Abruzzo.",
       "region": "europe",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "Kyle to decide: Its copyright page prohibits reproduction, adaptation or translation without permission. robots.txt allows us and pages carry recipe data.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -4215,7 +4451,9 @@
       "note": "Italian home-cooking blog's dedicated section of dishes from Basilicata.",
       "region": "europe",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 4 of 4 sampled pages carried recipe data, and nothing against indexing was found on its policy pages. Read its terms by hand and test-crawl before adding.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -4230,7 +4468,9 @@
       "note": "Regional category of Corfiot dishes such as pastitsada on a Greek recipe site.",
       "region": "europe",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 3 of 4 sampled pages carried recipe data, and nothing against indexing was found on its policy pages. Read its terms by hand and test-crawl before adding.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -4245,7 +4485,9 @@
       "note": "Sara McCleary's collection of Australian classics such as Anzac biscuits, pavlova, sausage rolls and native-ingredient bakes.",
       "region": "oceania-other",
       "collect": {
-        "status": "not-checked"
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 3 of 4 sampled pages carried recipe data, and nothing against indexing was found on its policy pages. Read its terms by hand and test-crawl before adding.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -4305,7 +4547,9 @@
       "note": "Tori Avey's Jewish recipe index, often paired with notes on each dish's history.",
       "region": "oceania-other",
       "collect": {
-        "status": "not-checked"
+        "status": "permission-needed",
+        "reason": "Its terms forbid reproducing, downloading or storing any material from the site, and using it for AI or machine learning. robots.txt allows crawling and pages carry recipe data.",
+        "checked": "2026-11-18"
       }
     },
     {

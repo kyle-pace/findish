@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { robotsFor, robotsForNames } from '../lib/robots.mjs';
 import { parseSitemap, readSitemaps } from '../lib/sitemap.mjs';
-import { extractRecipe } from '../lib/extract.mjs';
+import { extractRecipe, firstName } from '../lib/extract.mjs';
 import { ingredientName } from '../lib/ingredients.mjs';
 import { toMinutes } from '../lib/text.mjs';
 import { toVideo, seconds, fetchChannelVideos } from '../lib/youtube.mjs';
@@ -323,4 +323,14 @@ test('rules for the old name still apply after the rename to FindishBot', () => 
   assert.equal(newOnly.allowed('/recipes/x'), true);
   assert.equal(robotsForNames('', names).allowed('/x'), true);
   assert.equal(robotsForNames('', names).crawlDelay, null);
+});
+
+test('a name written as several search phrases keeps the first, only for a source that asks', () => {
+  assert.equal(firstName('methi paratha recipe | methi ka paratha | fenugreek paratha recipe', ' | '), 'Methi Paratha Recipe');
+  assert.equal(firstName('Paneer Tikka | Restaurant Style', ' | '), 'Paneer Tikka');
+  assert.equal(firstName('Indonesian Mie Goreng | Wok-Fried Egg Noodles', undefined), 'Indonesian Mie Goreng | Wok-Fried Egg Noodles');
+  assert.equal(firstName('Dal Makhani', ' | '), 'Dal Makhani');
+  const page = '<script type="application/ld+json">{"@type":"Recipe","name":"dal tadka recipe | yellow dal tadka","recipeIngredient":["1 cup toor dal","2 tsp ghee"]}</script>';
+  assert.equal(extractRecipe(page, 'https://x.com/dal/', { nameSplit: ' | ' }).n, 'Dal Tadka Recipe');
+  assert.equal(extractRecipe(page, 'https://x.com/dal/').n, 'dal tadka recipe | yellow dal tadka');
 });

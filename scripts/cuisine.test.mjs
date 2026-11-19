@@ -18,6 +18,7 @@ test('labels as sites write them fold into one name', () => {
 test('typos are fixed, and "ish" is only cut when it was added', () => {
   assert.equal(foldCuisine('Snanish'), 'Spanish');
   assert.equal(foldCuisine('Turkish Cuisine'), 'Turkish');
+  assert.equal(foldCuisine('Thai Recipes'), 'Thai');
   assert.equal(foldCuisine('Turkish Regional Cuisine - Antakya Cuisine'), 'Turkish');
   assert.equal(foldCuisine('asian fusioin'), 'Asian');
   assert.equal(foldCuisine('Spanish'), 'Spanish');

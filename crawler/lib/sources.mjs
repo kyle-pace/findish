@@ -25,7 +25,7 @@ export function adapt(list) {
   const recipes = list
     .filter((s) => s.crawl && ['crawl', 'paused'].includes(s.collect.status))
     .map((s) => {
-      const { sitemap, include, format, default_cuisine, delay_seconds, photos } = s.crawl;
+      const { sitemap, include, format, default_cuisine, name_split, delay_seconds, photos } = s.crawl;
       return clean({
         id: s.id,
         name: s.name,
@@ -34,6 +34,7 @@ export function adapt(list) {
         include,
         format,
         default_cuisine,
+        name_split,
         delay_seconds,
         photos,
         paused: s.collect.status === 'paused' ? s.collect.reason : undefined,

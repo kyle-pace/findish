@@ -165,7 +165,7 @@ async function crawlSite(src) {
       state[u] = { m: lastmod, r: 0, f: today };
       continue;
     }
-    const recipe = extractRecipe(res.text, u, { format: src.format, defaultCuisine: src.default_cuisine });
+    const recipe = extractRecipe(res.text, u, { format: src.format, defaultCuisine: src.default_cuisine, nameSplit: src.name_split });
     state[u] = { m: lastmod, r: recipe ? 1 : 0, f: today };
     if (!recipe) {
       out.noRecipe++;

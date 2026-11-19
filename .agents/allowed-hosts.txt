@@ -74,3 +74,24 @@ www.hungryhuy.com
 
 # Some of Hungry Huy's recipe photos are served by its image CDN (ShortPixel), on its own results, lazily and with no referrer. Added under the content-image rule, 2026-11-18.
 cdn.shortpixel.ai
+
+# Recipe photos from Hebbar's Kitchen, on its own results, lazily and with no referrer. Added under the content-image rule, 2026-11-18.
+hebbarskitchen.com
+
+# Recipe photos from Spice Up The Curry, on its own results, lazily and with no referrer. Added under the content-image rule, 2026-11-18.
+www.spiceupthecurry.com
+
+# Recipe photos from Panlasang Pinoy, on its own results, lazily and with no referrer. Added under the content-image rule, 2026-11-18.
+panlasangpinoy.com
+
+# Recipe photos from Rasa Malaysia, on its own results, lazily and with no referrer. Added under the content-image rule, 2026-11-18.
+rasamalaysia.com
+
+# Recipe photos from Dimitra's Dishes, on its own results, lazily and with no referrer. Added under the content-image rule, 2026-11-18.
+www.dimitrasdishes.com
+
+# Recipe photos from My Colombian Recipes, on its own results, lazily and with no referrer. Added under the content-image rule, 2026-11-18.
+www.mycolombianrecipes.com
+
+# Recipe photos from Taste of Maroc, on its own results, lazily and with no referrer. Added under the content-image rule, 2026-11-18.
+tasteofmaroc.com

@@ -48,6 +48,7 @@ const HEDGE = /(\s*\(ish\)|-ish|[\s-]*esque|[\s-]+(style|syle|inspired|influence
 /** A cuisine name from a site's label, or '' when it isn't one. */
 export function foldCuisine(label) {
   let key = String(label || '').split(/[,;|]/)[0].trim().toLowerCase();
+  key = key.replace(/\s+recipes?$/, ''); // Rasa Malaysia: "Thai Recipes", "American Recipes"
   if (!key || NOT_A_CUISINE.test(key)) return '';
   if (FOLD[key]) return FOLD[key];
   key = key.replace(/^(modern|contemporary)\s+/, '').replace(HEDGE, '').replace(/\s+-\s+.*$/, '').trim();

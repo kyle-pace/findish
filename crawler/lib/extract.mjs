@@ -10,14 +10,14 @@ import { ingredientNames } from './ingredients.mjs';
 // whose ingredient list is empty, like Maangchi's older ones).
 const KEEP = ['n', 'u', 't', 'c', 'k', 'y', 'i', 'img', 'kw'];
 
-export function extractRecipe(html, pageUrl, { format = 'json-ld', defaultCuisine } = {}) {
+export function extractRecipe(html, pageUrl, { format = 'json-ld', defaultCuisine, nameSplit } = {}) {
   let raw = null;
   if (format === 'microdata') raw = fromMicrodata(html) || fromJsonLd(html);
   else raw = fromJsonLd(html) || fromMicrodata(html);
   if (!raw || !raw.name) return null;
 
   const recipe = {
-    n: clean(raw.name),
+    n: firstName(clean(raw.name), nameSplit),
     u: pageUrl,
     t: toMinutes(raw.totalTime) ?? sumTimes(raw.prepTime, raw.cookTime),
     c: first(raw.recipeCuisine) || defaultCuisine || null,
@@ -35,6 +35,16 @@ export function extractRecipe(html, pageUrl, { format = 'json-ld', defaultCuisin
     out[key] = v;
   }
   return out;
+}
+
+// A site that writes a name as several search phrases in a row ("methi paratha recipe |
+// methi ka paratha | fenugreek paratha recipe", Hebbar's Kitchen) gets the first one, and
+// capitals if it had none. Only for sources that ask (crawl.name_split): other sites use
+// " | " in real names ("Indonesian Mie Goreng | Wok-Fried Egg Noodles").
+export function firstName(name, split) {
+  if (!split || !name || !name.includes(split)) return name;
+  const part = name.split(split)[0].trim() || name;
+  return part === part.toLowerCase() ? part.replace(/(^|[\s(-])(\p{L})/gu, (m, a, b) => a + b.toUpperCase()) : part;
 }
 
 // ---- JSON-LD

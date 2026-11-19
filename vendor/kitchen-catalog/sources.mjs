@@ -12,13 +12,13 @@ const here = dirname(fileURLToPath(import.meta.url));
 export const SOURCES_PATH = join(here, "..", "recipe-sources", "sources.json");
 
 export const KINDS = ["site", "channel", "magazine"];
-export const STATUSES = ["crawl", "paused", "link-only", "youtube-only", "permission-needed", "not-checked"];
+export const STATUSES = ["crawl", "paused", "link-only", "youtube-only", "permission-needed", "no-recipe-data", "ready", "not-checked"];
 export const REGIONS = ["africa", "americas", "asia-east", "asia-rest", "europe", "oceania-other"];
 export const FORMATS = ["json-ld", "microdata"];
 
 const FIELDS = ["id", "name", "url", "kind", "vetted", "cuisines", "note", "region", "youtube", "collect", "crawl", "feed", "search", "search_label", "search_note", "support"];
 const FEED_FIELDS = ["url", "default_cuisine", "photos", "notes"];
-const CRAWL_FIELDS = ["sitemap", "include", "format", "default_cuisine", "delay_seconds", "photos", "size", "notes"];
+const CRAWL_FIELDS = ["sitemap", "include", "format", "default_cuisine", "name_split", "delay_seconds", "photos", "size", "notes"];
 
 export function loadSources(path = SOURCES_PATH) {
   return JSON.parse(readFileSync(path, "utf8"));
@@ -73,6 +73,7 @@ export function validateSources(data) {
       }
       if ("delay_seconds" in k && !(typeof k.delay_seconds === "number" && k.delay_seconds > 0)) bad("crawl.delay_seconds must be a positive number");
       if ("photos" in k && typeof k.photos !== "boolean") bad("crawl.photos must be true or false");
+      if ("name_split" in k && !text(k.name_split)) bad("crawl.name_split must be the text that separates a name's parts");
       if ("notes" in k && !(Array.isArray(k.notes) && k.notes.every(text))) bad("crawl.notes must be a list of lines");
     }
 

@@ -212,7 +212,7 @@ check('nothing found: a word the index knows is not respelt, and all the filters
   await page.locator('#fixes button', { hasText: 'without the filters' }).click();
   await page.waitForTimeout(250);
   assert.equal(await page.evaluate(() => location.search), '?q=mapo+tofu');
-  const diet = await open('/?q=beef+rendang&diet=vegetarian');
+  const diet = await open('/?q=beef+rendang&diet=vegetarian&show=recipes');
   const said = await diet.evaluate(() => document.getElementById('fixes').textContent);
   assert.match(said, /any diet \(\d+ recipes?\)/);
   assert.doesNotMatch(said, /leaving nothing out/);

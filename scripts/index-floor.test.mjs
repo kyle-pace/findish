@@ -116,11 +116,12 @@ test('build-index exits non-zero when a site’s recipes are gone, and --allow-d
     for (const s of Object.values(status.sources)) {
       const file = join(dir, 'data', `${s.id}.json`);
       if (!existsSync(file)) continue;
-      // One row a name: the build shows a name a site repeats once, which isn't a drop.
-      const names = new Set();
-      const rows = JSON.parse(readFileSync(file, 'utf8')).filter((r) => !names.has(r.n) && names.add(r.n)).slice(0, 40);
+      // Names a site repeats stay in (Seonkyoung Longest's first 40 rows hold 14 strays): rows
+      // the build leaves out on purpose are not a drop.
+      const rows = JSON.parse(readFileSync(file, 'utf8')).slice(0, 40);
       writeFileSync(file, JSON.stringify(rows));
       s.count = rows.length;
+      s.previous = rows.length;
     }
     writeFileSync(join(dir, 'data/status.json'), JSON.stringify(status));
     const run = (...args) => spawnSync(process.execPath, [join(dir, 'scripts/build-index.mjs'), ...args], { encoding: 'utf8', env: { ...process.env, ALLOW_INDEX_DROP: '' } });

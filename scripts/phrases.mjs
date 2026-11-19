@@ -8,6 +8,9 @@ const EDGE = new Set('with and or of the a an in on for to from by my our your h
 /** Words that say how it's made or served, not what it is: too vague to lead a search. */
 const VAGUE = new Set('one pot pan sheet instant slow cooker air fryer minute minutes ingredient ingredients step way ways made make new favorite favourite ft feat 0'.split(' '));
 
+/** Words that end an ingredient's name, so never start a dish's: "(soy) sauce chicken". */
+const TAILS = new Set(['sauce', 'paste', 'powder']);
+
 /** Words that join two halves of one name: "sweet and sour", "salt & pepper". */
 const JOINS = new Set(['and', 'n']);
 /** What can follow a dish's name in a recipe's name: "Mapo Tofu with Pork", "Pad Thai Recipe". */
@@ -57,6 +60,9 @@ export function dishPhrases(names, { max = 1500, min = 3, minOne = 6, ends = 0.2
         if (stems.some((s) => !s)) continue;
         // Filler ("easy", "best") never leads or ends a phrase, and a pair is never filler at all.
         if (size < 4 && (isFiller(stems[0]) || isFiller(stems.at(-1)) || (size === 2 && stems.some(isFiller)))) continue;
+        // "sauce chicken" and "sauce noodles" are the tail of soy, oyster or fish sauce (2026-11-19:
+        // with 35 sites no one word comes before them most of the time, so the rule below missed them).
+        if (TAILS.has(stems[0])) continue;
         const key = stems.join(' ');
         if (mine.has(key)) continue;
         mine.add(key);

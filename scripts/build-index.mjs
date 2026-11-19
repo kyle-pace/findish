@@ -75,6 +75,7 @@ const courseCount = new Map();
 const recipes = [];
 const seenName = new Map(); // "<source>|<name>" -> position in recipes, to fold twins
 let folded = 0;
+const leftOut = {};
 // How often each recipe was opened lately, by "<source id>:<url as stored>"
 // (data/popularity.json, written daily by scripts/popularity.mjs from Amplitude).
 const popFile = join(root, 'data/popularity.json');
@@ -106,6 +107,7 @@ for (const s of sources.recipes) {
   // Mushroom", read off 74 pages that aren't it) is kept only at the link that carries its
   // name. Only when one name is at three or more links and one of them is plainly its own.
   const strays = new Set();
+  leftOut[s.id] = 0; // rows this build leaves out on purpose; the floor counts them as there
   const links = new Map();
   for (const r of rows) links.set(r.n, [...(links.get(r.n) || []), r.u]);
   for (const [n, us] of links) {
@@ -117,7 +119,7 @@ for (const s of sources.recipes) {
   if (strays.size) console.log(`Strays: ${strays.size} pages of ${s.name} that only showed another page's recipe, left out`);
 
   for (const r of rows) {
-    if (isNotRecipe(s.id, r.u) || strays.has(r.u)) continue; // scripts/not-recipes.mjs
+    if (isNotRecipe(s.id, r.u) || strays.has(r.u)) { leftOut[s.id]++; continue; } // scripts/not-recipes.mjs
     const ids = new Set();
     const direct = new Set();
     const name = decode(r.n);
@@ -177,6 +179,7 @@ for (const s of sources.recipes) {
       const better = row[9] - old[9] || Number(!!row[7]) - Number(!!old[7]) || row[11].localeCompare(old[11]) || row[2].length - old[2].length;
       if (better > 0) recipes[twin] = row;
       folded++;
+      leftOut[s.id]++;
       continue;
     }
     seenName.set(`${srcIdx}|${name.toLowerCase()}`, recipes.length);
@@ -333,8 +336,10 @@ const index = {
 {
   const problems = floorProblems({
     status,
-    // Every site that's crawled, with 0 for one whose data file is missing or empty.
-    recipes: Object.fromEntries(sources.recipes.filter((s) => !s.paused).map((s) => [s.id, srcList.find((x) => x.id === s.id)?.count || 0])),
+    // Every site that's crawled, with 0 for one whose data file is missing or empty. Rows the
+    // build left out itself (twins, strays, not-recipes) count: the crawl kept them, and the
+    // floor is about data going missing (Seonkyoung Longest, 131 strays of 611, 2026-11-19).
+    recipes: Object.fromEntries(sources.recipes.filter((s) => !s.paused).map((s) => [s.id, (srcList.find((x) => x.id === s.id)?.count || 0) + (leftOut[s.id] || 0)])),
     videos: videoRows,
     // Switched off on purpose in the list of sources: not a source that went missing.
     paused: [...sources.recipes, ...(sources.videos || [])].filter((s) => s.paused).map((s) => s.id),

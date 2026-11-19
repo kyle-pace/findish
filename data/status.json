@@ -1,5 +1,5 @@
 {
- "run": "2026-11-19T07:21:13.393Z",
+ "run": "2026-11-19T12:48:15.629Z",
  "options": {
   "limit": null,
   "delayMs": 4000
@@ -634,6 +634,72 @@
    "noRecipe": 0,
    "httpErrors": {},
    "error": "HTTP 403 on robots.txt"
+  },
+  "kingarthur-yt": {
+   "id": "kingarthur-yt",
+   "name": "King Arthur Baking",
+   "result": "ok",
+   "count": 731
+  },
+  "pepin": {
+   "id": "pepin",
+   "name": "Jacques Pépin",
+   "result": "ok",
+   "count": 154
+  },
+  "sohla": {
+   "id": "sohla",
+   "name": "Sohla and Ham",
+   "result": "ok",
+   "count": 97
+  },
+  "matty": {
+   "id": "matty",
+   "name": "Matty Matheson",
+   "result": "ok",
+   "count": 826
+  },
+  "mexicoinmykitchen-yt": {
+   "id": "mexicoinmykitchen-yt",
+   "name": "Mexico in My Kitchen",
+   "result": "ok",
+   "count": 14
+  },
+  "patijinich-yt": {
+   "id": "patijinich-yt",
+   "name": "Pati Jinich",
+   "result": "ok",
+   "count": 566
+  },
+  "hebbarskitchen-yt": {
+   "id": "hebbarskitchen-yt",
+   "name": "Hebbar's Kitchen",
+   "result": "ok",
+   "count": 3335
+  },
+  "panlasangpinoy-yt": {
+   "id": "panlasangpinoy-yt",
+   "name": "Panlasang Pinoy",
+   "result": "ok",
+   "count": 1558
+  },
+  "dimitrasdishes-yt": {
+   "id": "dimitrasdishes-yt",
+   "name": "Dimitra's Dishes",
+   "result": "ok",
+   "count": 1688
+  },
+  "seonkyounglongest-yt": {
+   "id": "seonkyounglongest-yt",
+   "name": "Seonkyoung Longest",
+   "result": "ok",
+   "count": 853
+  },
+  "preppykitchen-yt": {
+   "id": "preppykitchen-yt",
+   "name": "Preppy Kitchen",
+   "result": "ok",
+   "count": 1574
   }
  },
  "alerts": [

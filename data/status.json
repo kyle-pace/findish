@@ -5,258 +5,118 @@
   "delayMs": 4000
  },
  "sources": {
-  "hebbarskitchen": {
-   "id": "hebbarskitchen",
-   "name": "Hebbar's Kitchen",
+  "koreanbapsang": {
+   "id": "koreanbapsang",
+   "name": "Korean Bapsang",
    "result": "ok",
-   "fetched": 1802,
-   "added": 1097,
+   "fetched": 275,
+   "added": 254,
    "updated": 0,
    "removed": 0,
-   "noRecipe": 705,
+   "noRecipe": 21,
    "httpErrors": {},
-   "sitemapPages": 1802,
+   "sitemapPages": 275,
    "waiting": 0,
-   "count": 1097
+   "count": 254
   },
-  "spiceupthecurry": {
-   "id": "spiceupthecurry",
-   "name": "Spice Up The Curry",
+  "mexicoinmykitchen": {
+   "id": "mexicoinmykitchen",
+   "name": "Mexico in My Kitchen",
+   "result": "error",
+   "error": "HTTP 403 for https://www.mexicoinmykitchen.com/post-sitemap.xml"
+  },
+  "patijinich": {
+   "id": "patijinich",
+   "name": "Pati Jinich",
+   "result": "ok",
+   "fetched": 972,
+   "added": 780,
+   "updated": 0,
+   "removed": 0,
+   "noRecipe": 192,
+   "httpErrors": {},
+   "sitemapPages": 972,
+   "waiting": 0,
+   "count": 780
+  },
+  "recipesfromitaly": {
+   "id": "recipesfromitaly",
+   "name": "Recipes from Italy",
    "result": "blocked",
-   "fetched": 499,
-   "added": 480,
-   "updated": 0,
-   "removed": 0,
-   "noRecipe": 16,
-   "httpErrors": {
-    "429": 3
-   },
-   "sitemapPages": 896,
-   "waiting": 397,
-   "error": "HTTP 429 three times in a row",
-   "count": 480
-  },
-  "panlasangpinoy": {
-   "id": "panlasangpinoy",
-   "name": "Panlasang Pinoy",
-   "result": "ok",
-   "fetched": 2746,
-   "added": 1811,
-   "updated": 0,
-   "removed": 0,
-   "noRecipe": 599,
-   "httpErrors": {
-    "429": 335,
-    "503": 1
-   },
-   "sitemapPages": 2746,
-   "waiting": 0,
-   "count": 1811
-  },
-  "rasamalaysia": {
-   "id": "rasamalaysia",
-   "name": "Rasa Malaysia",
-   "result": "blocked",
-   "fetched": 503,
-   "added": 492,
-   "updated": 0,
-   "removed": 0,
-   "noRecipe": 8,
-   "httpErrors": {
-    "429": 3
-   },
-   "sitemapPages": 1424,
-   "waiting": 921,
-   "error": "HTTP 429 three times in a row",
-   "count": 492
-  },
-  "dimitrasdishes": {
-   "id": "dimitrasdishes",
-   "name": "Dimitra's Dishes",
-   "result": "ok",
-   "fetched": 1201,
-   "added": 1095,
-   "updated": 0,
-   "removed": 0,
-   "noRecipe": 102,
-   "httpErrors": {
-    "429": 4
-   },
-   "sitemapPages": 1201,
-   "waiting": 0,
-   "count": 1095
-  },
-  "mycolombianrecipes": {
-   "id": "mycolombianrecipes",
-   "name": "My Colombian Recipes",
-   "result": "ok",
-   "fetched": 1211,
-   "added": 933,
-   "updated": 0,
-   "removed": 0,
-   "noRecipe": 185,
-   "httpErrors": {
-    "429": 93
-   },
-   "sitemapPages": 1211,
-   "waiting": 0,
-   "count": 933
-  },
-  "tasteofmaroc": {
-   "id": "tasteofmaroc",
-   "name": "Taste of Maroc",
-   "result": "ok",
-   "fetched": 122,
-   "added": 90,
-   "updated": 0,
-   "removed": 0,
-   "noRecipe": 32,
-   "httpErrors": {},
-   "sitemapPages": 122,
-   "waiting": 0,
-   "count": 90
-  },
-  "obviouslyfrench": {
-   "id": "obviouslyfrench",
-   "name": "Obviously French",
-   "result": "ok",
-   "fetched": 222,
-   "added": 135,
-   "updated": 0,
-   "removed": 0,
-   "noRecipe": 87,
-   "httpErrors": {},
-   "sitemapPages": 222,
-   "waiting": 0,
-   "count": 135
-  },
-  "seonkyounglongest": {
-   "id": "seonkyounglongest",
-   "name": "Seonkyoung Longest",
-   "result": "ok",
-   "fetched": 553,
-   "added": 553,
+   "fetched": 8,
+   "added": 2,
    "updated": 0,
    "removed": 0,
    "noRecipe": 0,
-   "httpErrors": {},
-   "sitemapPages": 611,
-   "waiting": 58,
-   "stoppedEarly": true,
-   "count": 553
+   "httpErrors": {
+    "403": 6
+   },
+   "sitemapPages": 547,
+   "waiting": 539,
+   "error": "HTTP 403 three times in a row",
+   "count": 2
   },
-  "vickypham": {
-   "id": "vickypham",
-   "name": "Vicky Pham",
-   "result": "ok",
-   "fetched": 512,
-   "added": 458,
-   "updated": 0,
-   "removed": 0,
-   "noRecipe": 54,
-   "httpErrors": {},
-   "sitemapPages": 512,
-   "waiting": 0,
-   "count": 458
-  },
-  "delightfulplate": {
-   "id": "delightfulplate",
-   "name": "Delightful Plate",
-   "result": "ok",
-   "fetched": 271,
-   "added": 249,
-   "updated": 0,
-   "removed": 0,
-   "noRecipe": 22,
-   "httpErrors": {},
-   "sitemapPages": 271,
-   "waiting": 0,
-   "count": 249
-  },
-  "wokandkin": {
-   "id": "wokandkin",
-   "name": "Wok and Kin",
-   "result": "ok",
-   "fetched": 219,
-   "added": 212,
-   "updated": 0,
-   "removed": 0,
-   "noRecipe": 7,
-   "httpErrors": {},
-   "sitemapPages": 219,
-   "waiting": 0,
-   "count": 212
-  },
-  "iamafoodblog": {
-   "id": "iamafoodblog",
-   "name": "I Am a Food Blog",
-   "result": "ok",
-   "fetched": 1642,
-   "added": 1266,
-   "updated": 0,
-   "removed": 0,
-   "noRecipe": 376,
-   "httpErrors": {},
-   "sitemapPages": 1642,
-   "waiting": 0,
-   "count": 1266
-  },
-  "preppykitchen": {
-   "id": "preppykitchen",
-   "name": "Preppy Kitchen",
+  "maureenabood": {
+   "id": "maureenabood",
+   "name": "Maureen Abood",
    "result": "blocked",
-   "fetched": 505,
-   "added": 468,
+   "fetched": 596,
+   "added": 378,
    "updated": 0,
    "removed": 0,
-   "noRecipe": 34,
+   "noRecipe": 215,
    "httpErrors": {
     "429": 3
    },
-   "sitemapPages": 1354,
-   "waiting": 849,
+   "sitemapPages": 728,
+   "waiting": 132,
    "error": "HTTP 429 three times in a row",
-   "count": 468
+   "count": 378
   },
-  "bakerbynature": {
-   "id": "bakerbynature",
-   "name": "Baker by Nature",
+  "ozlemsturkishtable": {
+   "id": "ozlemsturkishtable",
+   "name": "Ozlem's Turkish Table",
    "result": "ok",
-   "fetched": 1362,
-   "added": 1038,
+   "fetched": 410,
+   "added": 106,
    "updated": 0,
    "removed": 0,
-   "noRecipe": 324,
+   "noRecipe": 304,
    "httpErrors": {},
-   "sitemapPages": 1362,
+   "sitemapPages": 410,
    "waiting": 0,
-   "count": 1038
+   "count": 106
   },
-  "joythebaker": {
-   "id": "joythebaker",
-   "name": "Joy the Baker",
-   "result": "ok",
-   "fetched": 1768,
-   "added": 1002,
-   "updated": 0,
-   "removed": 0,
-   "noRecipe": 766,
-   "httpErrors": {},
-   "sitemapPages": 1768,
-   "waiting": 0,
-   "count": 1002
-  },
-  "susanherrmannloomis": {
-   "id": "susanherrmannloomis",
-   "name": "Susan Herrmann Loomis in Paris",
+  "unicornsinthekitchen": {
+   "id": "unicornsinthekitchen",
+   "name": "Unicorns in the Kitchen",
    "result": "blocked",
-   "fetched": 0,
-   "added": 0,
+   "fetched": 597,
+   "added": 586,
    "updated": 0,
    "removed": 0,
-   "noRecipe": 0,
+   "noRecipe": 6,
+   "httpErrors": {
+    "429": 5
+   },
+   "sitemapPages": 843,
+   "waiting": 246,
+   "error": "HTTP 429 three times in a row",
+   "count": 586
+  },
+  "hungryhuy": {
+   "id": "hungryhuy",
+   "name": "Hungry Huy",
+   "result": "ok",
+   "fetched": 455,
+   "added": 351,
+   "updated": 0,
+   "removed": 0,
+   "noRecipe": 104,
    "httpErrors": {},
-   "error": "HTTP 403 on robots.txt"
+   "sitemapPages": 455,
+   "waiting": 0,
+   "count": 351
   },
   "eatchofood": {
    "id": "eatchofood",
@@ -521,12 +381,269 @@
    "name": "French Cooking Academy",
    "result": "not run",
    "count": 546
+  },
+  "hebbarskitchen": {
+   "id": "hebbarskitchen",
+   "name": "Hebbar's Kitchen",
+   "result": "ok",
+   "fetched": 1802,
+   "added": 1097,
+   "updated": 0,
+   "removed": 0,
+   "noRecipe": 705,
+   "httpErrors": {},
+   "sitemapPages": 1802,
+   "waiting": 0,
+   "count": 1097
+  },
+  "spiceupthecurry": {
+   "id": "spiceupthecurry",
+   "name": "Spice Up The Curry",
+   "result": "blocked",
+   "fetched": 499,
+   "added": 480,
+   "updated": 0,
+   "removed": 0,
+   "noRecipe": 16,
+   "httpErrors": {
+    "429": 3
+   },
+   "sitemapPages": 896,
+   "waiting": 397,
+   "error": "HTTP 429 three times in a row",
+   "count": 480
+  },
+  "panlasangpinoy": {
+   "id": "panlasangpinoy",
+   "name": "Panlasang Pinoy",
+   "result": "ok",
+   "fetched": 2746,
+   "added": 1811,
+   "updated": 0,
+   "removed": 0,
+   "noRecipe": 599,
+   "httpErrors": {
+    "429": 335,
+    "503": 1
+   },
+   "sitemapPages": 2746,
+   "waiting": 0,
+   "count": 1811
+  },
+  "rasamalaysia": {
+   "id": "rasamalaysia",
+   "name": "Rasa Malaysia",
+   "result": "blocked",
+   "fetched": 503,
+   "added": 492,
+   "updated": 0,
+   "removed": 0,
+   "noRecipe": 8,
+   "httpErrors": {
+    "429": 3
+   },
+   "sitemapPages": 1424,
+   "waiting": 921,
+   "error": "HTTP 429 three times in a row",
+   "count": 492
+  },
+  "dimitrasdishes": {
+   "id": "dimitrasdishes",
+   "name": "Dimitra's Dishes",
+   "result": "ok",
+   "fetched": 1201,
+   "added": 1095,
+   "updated": 0,
+   "removed": 0,
+   "noRecipe": 102,
+   "httpErrors": {
+    "429": 4
+   },
+   "sitemapPages": 1201,
+   "waiting": 0,
+   "count": 1095
+  },
+  "mycolombianrecipes": {
+   "id": "mycolombianrecipes",
+   "name": "My Colombian Recipes",
+   "result": "ok",
+   "fetched": 1211,
+   "added": 933,
+   "updated": 0,
+   "removed": 0,
+   "noRecipe": 185,
+   "httpErrors": {
+    "429": 93
+   },
+   "sitemapPages": 1211,
+   "waiting": 0,
+   "count": 933
+  },
+  "tasteofmaroc": {
+   "id": "tasteofmaroc",
+   "name": "Taste of Maroc",
+   "result": "ok",
+   "fetched": 122,
+   "added": 90,
+   "updated": 0,
+   "removed": 0,
+   "noRecipe": 32,
+   "httpErrors": {},
+   "sitemapPages": 122,
+   "waiting": 0,
+   "count": 90
+  },
+  "obviouslyfrench": {
+   "id": "obviouslyfrench",
+   "name": "Obviously French",
+   "result": "ok",
+   "fetched": 222,
+   "added": 135,
+   "updated": 0,
+   "removed": 0,
+   "noRecipe": 87,
+   "httpErrors": {},
+   "sitemapPages": 222,
+   "waiting": 0,
+   "count": 135
+  },
+  "seonkyounglongest": {
+   "id": "seonkyounglongest",
+   "name": "Seonkyoung Longest",
+   "result": "ok",
+   "fetched": 553,
+   "added": 553,
+   "updated": 0,
+   "removed": 0,
+   "noRecipe": 0,
+   "httpErrors": {},
+   "sitemapPages": 611,
+   "waiting": 58,
+   "stoppedEarly": true,
+   "count": 553
+  },
+  "vickypham": {
+   "id": "vickypham",
+   "name": "Vicky Pham",
+   "result": "ok",
+   "fetched": 512,
+   "added": 458,
+   "updated": 0,
+   "removed": 0,
+   "noRecipe": 54,
+   "httpErrors": {},
+   "sitemapPages": 512,
+   "waiting": 0,
+   "count": 458
+  },
+  "delightfulplate": {
+   "id": "delightfulplate",
+   "name": "Delightful Plate",
+   "result": "ok",
+   "fetched": 271,
+   "added": 249,
+   "updated": 0,
+   "removed": 0,
+   "noRecipe": 22,
+   "httpErrors": {},
+   "sitemapPages": 271,
+   "waiting": 0,
+   "count": 249
+  },
+  "wokandkin": {
+   "id": "wokandkin",
+   "name": "Wok and Kin",
+   "result": "ok",
+   "fetched": 219,
+   "added": 212,
+   "updated": 0,
+   "removed": 0,
+   "noRecipe": 7,
+   "httpErrors": {},
+   "sitemapPages": 219,
+   "waiting": 0,
+   "count": 212
+  },
+  "iamafoodblog": {
+   "id": "iamafoodblog",
+   "name": "I Am a Food Blog",
+   "result": "ok",
+   "fetched": 1642,
+   "added": 1266,
+   "updated": 0,
+   "removed": 0,
+   "noRecipe": 376,
+   "httpErrors": {},
+   "sitemapPages": 1642,
+   "waiting": 0,
+   "count": 1266
+  },
+  "preppykitchen": {
+   "id": "preppykitchen",
+   "name": "Preppy Kitchen",
+   "result": "blocked",
+   "fetched": 505,
+   "added": 468,
+   "updated": 0,
+   "removed": 0,
+   "noRecipe": 34,
+   "httpErrors": {
+    "429": 3
+   },
+   "sitemapPages": 1354,
+   "waiting": 849,
+   "error": "HTTP 429 three times in a row",
+   "count": 468
+  },
+  "bakerbynature": {
+   "id": "bakerbynature",
+   "name": "Baker by Nature",
+   "result": "ok",
+   "fetched": 1362,
+   "added": 1038,
+   "updated": 0,
+   "removed": 0,
+   "noRecipe": 324,
+   "httpErrors": {},
+   "sitemapPages": 1362,
+   "waiting": 0,
+   "count": 1038
+  },
+  "joythebaker": {
+   "id": "joythebaker",
+   "name": "Joy the Baker",
+   "result": "ok",
+   "fetched": 1768,
+   "added": 1002,
+   "updated": 0,
+   "removed": 0,
+   "noRecipe": 766,
+   "httpErrors": {},
+   "sitemapPages": 1768,
+   "waiting": 0,
+   "count": 1002
+  },
+  "susanherrmannloomis": {
+   "id": "susanherrmannloomis",
+   "name": "Susan Herrmann Loomis in Paris",
+   "result": "blocked",
+   "fetched": 0,
+   "added": 0,
+   "updated": 0,
+   "removed": 0,
+   "noRecipe": 0,
+   "httpErrors": {},
+   "error": "HTTP 403 on robots.txt"
   }
  },
  "alerts": [
   "spiceupthecurry: blocked (HTTP 429 three times in a row)",
   "rasamalaysia: blocked (HTTP 429 three times in a row)",
   "preppykitchen: blocked (HTTP 429 three times in a row)",
-  "susanherrmannloomis: blocked (HTTP 403 on robots.txt)"
+  "susanherrmannloomis: blocked (HTTP 403 on robots.txt)",
+  "mexicoinmykitchen: failed (HTTP 403 for https://www.mexicoinmykitchen.com/post-sitemap.xml)",
+  "recipesfromitaly: blocked (HTTP 403 three times in a row)",
+  "maureenabood: blocked (HTTP 429 three times in a row)",
+  "unicornsinthekitchen: blocked (HTTP 429 three times in a row)"
  ]
 }

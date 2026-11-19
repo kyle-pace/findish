@@ -1,5 +1,5 @@
 {
- "run": "2026-11-19T12:48:15.629Z",
+ "run": "2026-11-19T12:50:32.997Z",
  "options": {
   "limit": null,
   "delayMs": 4000
@@ -59,19 +59,17 @@
   "maureenabood": {
    "id": "maureenabood",
    "name": "Maureen Abood",
-   "result": "blocked",
-   "fetched": 596,
-   "added": 378,
+   "result": "ok",
+   "fetched": 135,
+   "added": 1,
    "updated": 0,
    "removed": 0,
-   "noRecipe": 215,
-   "httpErrors": {
-    "429": 3
-   },
+   "noRecipe": 134,
+   "httpErrors": {},
    "sitemapPages": 728,
-   "waiting": 132,
-   "error": "HTTP 429 three times in a row",
-   "count": 378
+   "waiting": 0,
+   "count": 379,
+   "previous": 378
   },
   "ozlemsturkishtable": {
    "id": "ozlemsturkishtable",
@@ -90,19 +88,17 @@
   "unicornsinthekitchen": {
    "id": "unicornsinthekitchen",
    "name": "Unicorns in the Kitchen",
-   "result": "blocked",
-   "fetched": 597,
-   "added": 586,
+   "result": "ok",
+   "fetched": 251,
+   "added": 247,
    "updated": 0,
    "removed": 0,
-   "noRecipe": 6,
-   "httpErrors": {
-    "429": 5
-   },
+   "noRecipe": 4,
+   "httpErrors": {},
    "sitemapPages": 843,
-   "waiting": 246,
-   "error": "HTTP 429 three times in a row",
-   "count": 586
+   "waiting": 0,
+   "count": 833,
+   "previous": 586
   },
   "hungryhuy": {
    "id": "hungryhuy",
@@ -399,19 +395,17 @@
   "spiceupthecurry": {
    "id": "spiceupthecurry",
    "name": "Spice Up The Curry",
-   "result": "blocked",
-   "fetched": 499,
-   "added": 480,
+   "result": "ok",
+   "fetched": 400,
+   "added": 388,
    "updated": 0,
    "removed": 0,
-   "noRecipe": 16,
-   "httpErrors": {
-    "429": 3
-   },
+   "noRecipe": 12,
+   "httpErrors": {},
    "sitemapPages": 896,
-   "waiting": 397,
-   "error": "HTTP 429 three times in a row",
-   "count": 480
+   "waiting": 0,
+   "count": 868,
+   "previous": 480
   },
   "panlasangpinoy": {
    "id": "panlasangpinoy",
@@ -433,19 +427,17 @@
   "rasamalaysia": {
    "id": "rasamalaysia",
    "name": "Rasa Malaysia",
-   "result": "blocked",
-   "fetched": 503,
-   "added": 492,
+   "result": "ok",
+   "fetched": 924,
+   "added": 890,
    "updated": 0,
    "removed": 0,
-   "noRecipe": 8,
-   "httpErrors": {
-    "429": 3
-   },
+   "noRecipe": 34,
+   "httpErrors": {},
    "sitemapPages": 1424,
-   "waiting": 921,
-   "error": "HTTP 429 three times in a row",
-   "count": 492
+   "waiting": 0,
+   "count": 1382,
+   "previous": 492
   },
   "dimitrasdishes": {
    "id": "dimitrasdishes",
@@ -511,16 +503,16 @@
    "id": "seonkyounglongest",
    "name": "Seonkyoung Longest",
    "result": "ok",
-   "fetched": 553,
-   "added": 553,
+   "fetched": 58,
+   "added": 58,
    "updated": 0,
    "removed": 0,
    "noRecipe": 0,
    "httpErrors": {},
    "sitemapPages": 611,
-   "waiting": 58,
-   "stoppedEarly": true,
-   "count": 553
+   "waiting": 0,
+   "count": 611,
+   "previous": 553
   },
   "vickypham": {
    "id": "vickypham",
@@ -581,19 +573,17 @@
   "preppykitchen": {
    "id": "preppykitchen",
    "name": "Preppy Kitchen",
-   "result": "blocked",
-   "fetched": 505,
-   "added": 468,
+   "result": "ok",
+   "fetched": 852,
+   "added": 845,
    "updated": 0,
    "removed": 0,
-   "noRecipe": 34,
-   "httpErrors": {
-    "429": 3
-   },
+   "noRecipe": 7,
+   "httpErrors": {},
    "sitemapPages": 1354,
-   "waiting": 849,
-   "error": "HTTP 429 three times in a row",
-   "count": 468
+   "waiting": 0,
+   "count": 1313,
+   "previous": 468
   },
   "bakerbynature": {
    "id": "bakerbynature",
@@ -703,13 +693,8 @@
   }
  },
  "alerts": [
-  "spiceupthecurry: blocked (HTTP 429 three times in a row)",
-  "rasamalaysia: blocked (HTTP 429 three times in a row)",
-  "preppykitchen: blocked (HTTP 429 three times in a row)",
   "susanherrmannloomis: blocked (HTTP 403 on robots.txt)",
   "mexicoinmykitchen: failed (HTTP 403 for https://www.mexicoinmykitchen.com/post-sitemap.xml)",
-  "recipesfromitaly: blocked (HTTP 403 three times in a row)",
-  "maureenabood: blocked (HTTP 429 three times in a row)",
-  "unicornsinthekitchen: blocked (HTTP 429 three times in a row)"
+  "recipesfromitaly: blocked (HTTP 403 three times in a row)"
  ]
 }

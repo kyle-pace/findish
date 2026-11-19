@@ -744,8 +744,8 @@
       "cuisines": [],
       "note": "Michael Ruhlman's biweekly Substack on cooking, recipes, travel and books.",
       "collect": {
-        "status": "crawl",
-        "reason": "Substack newsletter, read through its public RSS feed only (Kyle's 2026-11-11 decision); robots.txt allows /feed.",
+        "status": "paused",
+        "reason": "Substack newsletter, read through its public RSS feed only (Kyle's 2026-11-11 decision); robots.txt allows /feed. Paused 2026-11-19: Substack answers HTTP 403 for robots.txt when the crawler runs on GitHub Actions (the crawl of 2026-11-19), so nothing was read, the same as Susan Herrmann Loomis. Not worked around.",
         "checked": "2026-11-17"
       },
       "feed": {
@@ -778,8 +778,8 @@
       "cuisines": [],
       "note": "Samin Nosrat's Substack on cooking, gardening and reading, with recipes and un-recipes.",
       "collect": {
-        "status": "crawl",
-        "reason": "Substack newsletter, read through its public RSS feed only (Kyle's 2026-11-11 decision); robots.txt allows /feed.",
+        "status": "paused",
+        "reason": "Substack newsletter, read through its public RSS feed only (Kyle's 2026-11-11 decision); robots.txt allows /feed. Paused 2026-11-19: Substack answers HTTP 403 for robots.txt when the crawler runs on GitHub Actions (the crawl of 2026-11-19), so nothing was read, the same as Susan Herrmann Loomis. Not worked around.",
         "checked": "2026-11-17"
       },
       "feed": {
@@ -5751,7 +5751,7 @@
       "note": "Gemma Stafford's baking recipes.",
       "collect": {
         "status": "permission-needed",
-        "reason": "Its terms of use say not to reproduce or otherwise use any of the site's content. Kyle picked it on 2026-11-18; held back on a full read of the terms. robots.txt allows crawling and pages carry recipe data.",
+        "reason": "Its terms of use say not to reproduce or otherwise use any of the site's content. Kyle picked it on 2026-11-18; held back on a full read of the terms. robots.txt allows crawling and pages carry recipe data. Kyle confirmed on 2026-11-19: not added while the terms stand.",
         "checked": "2026-11-18"
       }
     },
@@ -5793,7 +5793,7 @@
       "note": "Baking and dessert recipes.",
       "collect": {
         "status": "permission-needed",
-        "reason": "Its terms grant a license for personal, non-commercial viewing only, and forbid copying the materials or using them for any public display. Kyle picked it on 2026-11-18; held back on a full read of the terms. robots.txt allows crawling and pages carry recipe data.",
+        "reason": "Its terms grant a license for personal, non-commercial viewing only, and forbid copying the materials or using them for any public display. Kyle picked it on 2026-11-18; held back on a full read of the terms. robots.txt allows crawling and pages carry recipe data. Kyle confirmed on 2026-11-19: not added while the terms stand.",
         "checked": "2026-11-18"
       }
     },

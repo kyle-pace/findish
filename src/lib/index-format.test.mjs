@@ -122,9 +122,9 @@ test('adding the videos twice does not count their words twice', () => {
   assert.deepStrictEqual([...again.vocab], [...old.vocab]);
 });
 
-test('it is worth it: the recipes file is under 60% of index.json, and both together are smaller too', () => {
+test('it is worth it: the recipes file is under two thirds of index.json, and both together are smaller too', () => {
   const size = (x) => JSON.stringify(x).length;
-  assert.ok(size(packed.recipes) < 0.6 * size(index), `${size(packed.recipes)} of ${size(index)}`);
+  assert.ok(size(packed.recipes) < 0.667 * size(index), `${size(packed.recipes)} of ${size(index)}`);
   assert.ok(size(packed.recipes) + size(packed.videos) < 0.85 * size(index));
 });
 

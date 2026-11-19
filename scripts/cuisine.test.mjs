@@ -4,6 +4,12 @@ import assert from 'node:assert/strict';
 import { cuisineInName, cuisineOf, foldCuisine } from './cuisine.mjs';
 
 test('labels as sites write them fold into one name', () => {
+  // 2026-11-19: Hebbar's Kitchen's states, cities, Hindi and misspellings; baking sites' "Cake" and "Cookies"
+  for (const label of ['Karnataka', 'Gujurati', 'Mumbai Street Food', 'भारतीय', 'Indain']) assert.equal(foldCuisine(label), 'Indian', label);
+  assert.equal(foldCuisine('दक्षिण भारतीय'), 'South Indian');
+  assert.equal(foldCuisine('Indo-Chinease'), 'Indo Chinese');
+  assert.equal(foldCuisine('Fiipino'), 'Filipino');
+  for (const label of ['Cake', 'Cookies', 'Chocolate', 'Main Course', 'Street Food', 'Instant Pot']) assert.equal(foldCuisine(label), '', label);
   assert.equal(foldCuisine('American/Chinese'), 'Chinese American');
   assert.equal(foldCuisine('Italian-esque'), 'Italian');
   assert.equal(foldCuisine('Thai-ish'), 'Thai');

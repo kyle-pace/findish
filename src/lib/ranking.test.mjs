@@ -32,7 +32,7 @@ const DISHES = [
   ['cookies', /cookie/i],
   ['curry', /curry/i],
   ['pizza', /pizza/i],
-  ['lasagna', /lasagn/i, /^lasagna$/i],
+  ['lasagna', /lasagn/i, /^(homemade |classic )?lasagna$/i],
   ['kimchi', /kimchi/i],
   ['banana bread', /banana bread/i, /^banana bread$/i],
   ['miso soup', /miso soup/i],

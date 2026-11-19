@@ -133,3 +133,6 @@ www.halfbakedharvest.com
 
 # ahnest kitchen's recipe photos, which its recipe cards load from Imgur, on its own results, lazily and with no referrer. Added under the content-image rule, 2026-11-18.
 i.imgur.com
+
+# I Am a Food Blog: recipe photos on its image CDN (content images), added 2026-11-19
+iamafoodblog.b-cdn.net

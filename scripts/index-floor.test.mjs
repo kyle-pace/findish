@@ -116,7 +116,9 @@ test('build-index exits non-zero when a site’s recipes are gone, and --allow-d
     for (const s of Object.values(status.sources)) {
       const file = join(dir, 'data', `${s.id}.json`);
       if (!existsSync(file)) continue;
-      const rows = JSON.parse(readFileSync(file, 'utf8')).slice(0, 40);
+      // One row a name: the build shows a name a site repeats once, which isn't a drop.
+      const names = new Set();
+      const rows = JSON.parse(readFileSync(file, 'utf8')).filter((r) => !names.has(r.n) && names.add(r.n)).slice(0, 40);
       writeFileSync(file, JSON.stringify(rows));
       s.count = rows.length;
     }

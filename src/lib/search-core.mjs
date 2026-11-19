@@ -48,6 +48,8 @@ const IRREGULAR = {
   // Plurals the rules below get wrong, met when Mexican, Italian and French sites joined (2026-11-18).
   chilies: 'chili', chillies: 'chilli', zucchinis: 'zucchini', daiquiris: 'daiquiri', martinis: 'martini', paninis: 'panini', blinis: 'blini',
   herbes: 'herb', leches: 'leche', nopales: 'nopal', tamal: 'tamale',
+  // Colombian and Filipino sites (2026-11-19).
+  colores: 'color', pasteles: 'pastel', camarones: 'camaron', frijoles: 'frijol', chicharrones: 'chicharron', orientales: 'oriental', minis: 'mini', pipis: 'pipi',
 };
 
 /** A word's singular: cookies and cookie -> cooky, pies -> pie, tomatoes -> tomato. Latin words only. */

@@ -105,7 +105,8 @@ function page(kind: Kind, slug: string, name: string, heading: string, search: s
 }
 
 export const CUISINES: Browse[] = (index.cuisines as [string, number][])
-  .filter(([name, count]) => count >= MIN_CUISINE && !SKIP_CUISINES.has(name))
+  // A label with no Latin letters has no address to live at; scripts/cuisine.mjs should fold it.
+  .filter(([name, count]) => count >= MIN_CUISINE && !SKIP_CUISINES.has(name) && slugify(name))
   .map(([name]) =>
     page('cuisine', slugify(name), name, `${name} recipes`, `/?cuisine=${encodeURIComponent(name)}`, index.recipes.filter((r: any) => r[4] === name)),
   );

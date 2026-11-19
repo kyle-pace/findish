@@ -205,7 +205,7 @@ check('links and typed lists: a creator page’s search is read as a sentence, a
 });
 
 check('nothing found: a word the index knows is not respelt, and all the filters can come off at once', async () => {
-  const page = await open('/?q=mapo+tofu&time=15&course=dessert');
+  const page = await open('/?q=mapo+tofu&time=5&course=dessert');
   const fixes = await page.evaluate(() => document.getElementById('fixes').textContent);
   assert.doesNotMatch(fixes, /mayo/);
   assert.match(fixes, /without the filters \(\d+ recipes\)/);

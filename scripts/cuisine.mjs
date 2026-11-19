@@ -44,9 +44,30 @@ const FOLD = {
   'southern turkish': 'Turkish',
   'southern turkish cuisine': 'Turkish',
   'southern turkish cusine': 'Turkish',
+  // Hebbar's Kitchen and Spice Up the Curry label by state, city or in Hindi, with many spellings
+  ...Object.fromEntries(['karnataka', 'north karnataka', 'south canara', 'mangalore', 'udupi', 'gujarati', 'gujarat', 'gujurati', 'punjabi', 'kerala',
+    'andhra', 'andhra pradesh', 'tamil nadu', 'tamil', 'maharashtra', 'maharashtrian', 'bengali', 'hyderabadi', 'rajasthani', 'rajasthan',
+    'kashmiri', 'bihari', 'mumbai', 'goan', 'awadhi', 'sindhi', 'uttar pradesh', 'madhya pradesh', 'mughal', 'indian fusion',
+    'indian street food', 'mumbai street food', 'chaat', 'indain', 'भारतीय', 'भारतीय स्ट्रीट फूड', 'गुजरात', 'राजस्थान', 'आंध्रा', 'हैदराबादी'].map((k) => [k, 'Indian'])),
+  ...Object.fromEntries(['south india', 'south indiain', 'soutn indian', 'दक्षिण भारतीय'].map((k) => [k, 'South Indian'])),
+  ...Object.fromEntries(['north india', 'उत्तर भारतीय'].map((k) => [k, 'North Indian'])),
+  ...Object.fromEntries(['indo chineese', 'indo-chinease', 'indo-chinese', 'इंडो चीनी'].map((k) => [k, 'Indo Chinese'])),
+  ...Object.fromEntries(['interational', 'internatinal', 'internatonal', 'interntional', 'interntaional', 'अंतरराष्ट्रीय'].map((k) => [k, 'International'])),
+  ...Object.fromEntries(['fiipino', 'flipino', 'filipink'].map((k) => [k, 'Filipino'])),
+  'turkih': 'Turkish',
+  'middle easter': 'Middle Eastern',
+  'norwesian': 'Norwegian',
+  'spainish': 'Spanish',
+  'asain': 'Asian',
+  'usa': 'American',
+  'usa (general)': 'American',
+  'colombia': 'Colombian',
+  'cubana': 'Cuban',
+  'south america': 'South American',
+  'american-chinese': 'Chinese American',
 };
 // Labels that aren't a cuisine: the recipe is left without one.
-const NOT_A_CUISINE = /^(christmas|easter|holiday( recipes)?|festive|baking|desserts?|dinner|soups?|dog food|vegan|miscellaneous|universal|anime|bbq|tropical!?|any flavour you want!?)$/;
+const NOT_A_CUISINE = /^(christmas|easter|holiday( recipes)?|festive|baking|desserts?|dinner|soups?|dog food|vegan|cookies|cakes?|cheesecake|candy|chocolate|donuts|doughnuts|pies?|cupcakes|muffins|scones|smoothies?|drinks|seafood|instant pot|bread|basics|french toast|breakfast|beef|egg|main course|street food|summer( dessert)?|modern|brownies|pudding|ice cream|waffles|barbecue|lemon|steak|campfire|cinnamon rolls|miscellaneous|universal|anime|bbq|tropical!?|any flavour you want!?)$/;
 // "Thai-ish", "Greek(ish)", "French-style", "Portuguese inspired", "Mediterranean vibes", "Modern Vietnamese".
 const HEDGE = /(\s*\(ish\)|-ish|[\s-]*esque|[\s-]+(style|syle|inspired|influence|vibes))$/;
 

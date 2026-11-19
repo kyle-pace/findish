@@ -102,8 +102,22 @@ for (const s of sources.recipes) {
   const srcIdx = srcList.length;
   srcList.push({ id: s.id, name: s.name, site, host: new URL(site).hostname.replace(/^www\./, ''), count: 0 });
 
+  // A recipe a site shows in the margin of many pages (Seonkyoung Longest's "Spicy Enoki
+  // Mushroom", read off 74 pages that aren't it) is kept only at the link that carries its
+  // name. Only when one name is at three or more links and one of them is plainly its own.
+  const strays = new Set();
+  const links = new Map();
+  for (const r of rows) links.set(r.n, [...(links.get(r.n) || []), r.u]);
+  for (const [n, us] of links) {
+    if (us.length < 3) continue;
+    const slug = decode(n).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const own = slug && us.filter((u) => u.toLowerCase().includes(slug));
+    if (own && own.length && own.length < us.length) for (const u of us) if (!own.includes(u)) strays.add(u);
+  }
+  if (strays.size) console.log(`Strays: ${strays.size} pages of ${s.name} that only showed another page's recipe, left out`);
+
   for (const r of rows) {
-    if (isNotRecipe(s.id, r.u)) continue; // scripts/not-recipes.mjs
+    if (isNotRecipe(s.id, r.u) || strays.has(r.u)) continue; // scripts/not-recipes.mjs
     const ids = new Set();
     const direct = new Set();
     const name = decode(r.n);

@@ -1304,7 +1304,8 @@
         "sitemap": "/sitemap_index.xml",
         "format": "json-ld",
         "default_cuisine": "Indian",
-        "size": "about 900 posts"
+        "size": "about 900 posts",
+        "delay_seconds": 12
       }
     },
     {
@@ -1333,7 +1334,8 @@
         "size": "about 3,000 posts",
         "notes": [
           "cuisine: not labeled, so the default does the work"
-        ]
+        ],
+        "delay_seconds": 8
       },
       "support": {
         "links": [
@@ -1365,7 +1367,8 @@
         "size": "about 1,000 posts or more",
         "notes": [
           "cuisine: labeled per recipe as \"Thai Recipes\", \"American Recipes\"; many dishes are not Malaysian, so no default"
-        ]
+        ],
+        "delay_seconds": 12
       }
     },
     {
@@ -1429,7 +1432,8 @@
         "notes": [
           "time: often missing",
           "include: leaves out the Spanish copies under /es/"
-        ]
+        ],
+        "delay_seconds": 8
       }
     },
     {
@@ -1632,7 +1636,8 @@
       "crawl": {
         "sitemap": "/sitemap_index.xml",
         "format": "json-ld",
-        "size": "about 1,000 posts or more"
+        "size": "about 1,000 posts or more",
+        "delay_seconds": 12
       },
       "support": {
         "links": [
@@ -1695,8 +1700,8 @@
       ],
       "note": "Newsletter of recipes and stories from Paris by Susan Herrmann Loomis, author of In a French Kitchen and On Rue Tatin.",
       "collect": {
-        "status": "crawl",
-        "reason": "A Substack newsletter, read only through its public RSS feed (robots.txt allows /feed), under Kyle's 2026-11-11 decision on Substack. 7 of its 20 newest posts held a recipe on 2026-11-18. Kyle picked it on 2026-11-18. Her older site, dancingtomatoes.com, now belongs to someone else and is not hers to read.",
+        "status": "paused",
+        "reason": "A Substack newsletter, read only through its public RSS feed (robots.txt allows /feed), under Kyle's 2026-11-11 decision on Substack. 7 of its 20 newest posts held a recipe on 2026-11-18. Kyle picked it on 2026-11-18. Her older site, dancingtomatoes.com, now belongs to someone else and is not hers to read. Paused 2026-11-19: Substack answers HTTP 403 for robots.txt when the crawler runs on GitHub Actions, so nothing was read. Not worked around.",
         "checked": "2026-11-18"
       },
       "feed": {

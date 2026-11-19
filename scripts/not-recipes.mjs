@@ -7,6 +7,9 @@
 export const NOT_RECIPES = new Set([
   // 2026-11-16, Kyle's call: a list of what to buy at an Asian grocery store, not a dish.
   'rte:https://www.recipetineats.com/asian-market-grocery-store-shopping-list/',
+  // 2026-11-19: a stray page on My Colombian Recipes with a Korean address and half a name;
+  // it came first for "fried rice".
+  'mycolombianrecipes:https://www.mycolombianrecipes.com/%ec%b9%98%ec%a6%88-%eb%a7%9b%ec%82%b4-%ec%a3%bc%eb%a8%b9%eb%b0%a5-fried-crab-parmesan-jumokbap/',
 ]);
 
 export const isNotRecipe = (sourceId, url) => NOT_RECIPES.has(`${sourceId}:${url}`);

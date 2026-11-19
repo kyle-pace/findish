@@ -95,3 +95,26 @@ www.mycolombianrecipes.com
 
 # Recipe photos from Taste of Maroc, on its own results, lazily and with no referrer. Added under the content-image rule, 2026-11-18.
 tasteofmaroc.com
+
+# Recipe photos from Seonkyoung Longest, on its own results, lazily and with no referrer. Added under the content-image rule, 2026-11-18.
+seonkyounglongest.com
+
+# Recipe photos from Delightful Plate, on its own results, lazily and with no referrer. Added under the content-image rule, 2026-11-18.
+delightfulplate.com
+
+# Recipe photos from Wok and Kin, on its own results, lazily and with no referrer. Added under the content-image rule, 2026-11-18.
+www.wokandkin.com
+
+# Recipe photos from I Am a Food Blog, on its own results, lazily and with no referrer. Added under the content-image rule, 2026-11-18.
+iamafoodblog.com
+
+# Recipe photos from Preppy Kitchen, on its own results, lazily and with no referrer. Added under the content-image rule, 2026-11-18.
+preppykitchen.com
+
+# Recipe photos from Baker by Nature, on its own results, lazily and with no referrer. Added under the content-image rule, 2026-11-18.
+bakerbynature.com
+
+# Recipe photos from Joy the Baker, on its own results, lazily and with no referrer. Added under the content-image rule, 2026-11-18.
+joythebaker.com
+
+# Vicky Pham and some of Seonkyoung Longest's recipe photos are served from i0.wp.com (listed above). Obviously French is text only: its terms ask not to use its photos. 2026-11-18.

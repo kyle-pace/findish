@@ -1391,6 +1391,212 @@
       }
     },
     {
+      "id": "obviouslyfrench",
+      "name": "Obviously French",
+      "url": "https://obviouslyfrench.com",
+      "kind": "site",
+      "vetted": true,
+      "cuisines": [
+        "French cuisine"
+      ],
+      "note": "Seasonal French recipes from a cook in rural France.",
+      "collect": {
+        "status": "crawl",
+        "reason": "Checked as FindishBot: robots.txt allows it and its recipe posts carry recipe data. Its terms ask not to copy or republish recipes or use its photos without asking first, so results are text only (no photos) and we keep names, ingredient names and a link, never the recipe. Kyle's call, 2026-11-18.",
+        "checked": "2026-11-18"
+      },
+      "crawl": {
+        "sitemap": "/sitemap_index.xml",
+        "format": "json-ld",
+        "default_cuisine": "French",
+        "photos": false,
+        "size": "about 200 posts",
+        "notes": [
+          "photos: off, since its terms ask not to use photos without permission"
+        ]
+      }
+    },
+    {
+      "id": "seonkyounglongest",
+      "name": "Seonkyoung Longest",
+      "url": "https://seonkyounglongest.com",
+      "kind": "site",
+      "vetted": true,
+      "cuisines": [
+        "Korean cuisine"
+      ],
+      "note": "Korean and wider Asian recipes from Seonkyoung Longest.",
+      "collect": {
+        "status": "crawl",
+        "reason": "Checked as FindishBot: robots.txt allows it, it has no terms page and its privacy page has nothing against indexing, and its pages carry recipe data.",
+        "checked": "2026-11-18"
+      },
+      "crawl": {
+        "sitemap": "/sitemap_index.xml",
+        "format": "json-ld",
+        "include": "^https://seonkyounglongest\\.com/.+",
+        "size": "about 600 posts",
+        "notes": [
+          "cuisine: Korean and wider Asian, labeled per recipe or not at all, so no default",
+          "photos: some are served from i0.wp.com",
+          "include: leaves out the home page, which the sitemap lists and which reads as a recipe"
+        ]
+      }
+    },
+    {
+      "id": "vickypham",
+      "name": "Vicky Pham",
+      "url": "https://vickypham.com",
+      "kind": "site",
+      "vetted": true,
+      "cuisines": [
+        "Vietnamese cuisine"
+      ],
+      "note": "Vietnamese home-cooking recipes from Vicky Pham.",
+      "collect": {
+        "status": "crawl",
+        "reason": "Checked as FindishBot: robots.txt allows it, it has no terms page and its privacy policy has nothing against indexing, and its pages carry recipe data. robots.txt blocks one AI crawler by name.",
+        "checked": "2026-11-18"
+      },
+      "crawl": {
+        "sitemap": "/sitemap_index.xml",
+        "format": "json-ld",
+        "default_cuisine": "Vietnamese",
+        "size": "about 500 posts",
+        "notes": [
+          "photos: served from i0.wp.com"
+        ]
+      }
+    },
+    {
+      "id": "delightfulplate",
+      "name": "Delightful Plate",
+      "url": "https://delightfulplate.com",
+      "kind": "site",
+      "vetted": true,
+      "cuisines": [
+        "Vietnamese cuisine"
+      ],
+      "note": "Vietnamese recipes and other Asian dishes.",
+      "collect": {
+        "status": "crawl",
+        "reason": "Checked as FindishBot: robots.txt allows it, it has no terms page and its privacy policy has nothing against indexing, and its pages carry recipe data.",
+        "checked": "2026-11-18"
+      },
+      "crawl": {
+        "sitemap": "/sitemap_index.xml",
+        "format": "json-ld",
+        "default_cuisine": "Vietnamese",
+        "size": "about 270 posts"
+      }
+    },
+    {
+      "id": "wokandkin",
+      "name": "Wok and Kin",
+      "url": "https://www.wokandkin.com",
+      "kind": "site",
+      "vetted": true,
+      "cuisines": [
+        "Vietnamese cuisine"
+      ],
+      "note": "Vietnamese and Chinese family recipes.",
+      "collect": {
+        "status": "crawl",
+        "reason": "Checked as FindishBot: robots.txt allows it, it has no terms page and its privacy policy has nothing against indexing, and its pages carry recipe data.",
+        "checked": "2026-11-18"
+      },
+      "crawl": {
+        "sitemap": "/sitemap_index.xml",
+        "format": "json-ld",
+        "size": "about 220 posts",
+        "notes": [
+          "cuisine: labeled \"Asian\" on Vietnamese and Chinese dishes alike"
+        ]
+      }
+    },
+    {
+      "id": "iamafoodblog",
+      "name": "I Am a Food Blog",
+      "url": "https://iamafoodblog.com",
+      "kind": "site",
+      "vetted": true,
+      "cuisines": [],
+      "note": "Asian-leaning recipes, strong on Vietnamese, Japanese and Chinese dishes.",
+      "collect": {
+        "status": "crawl",
+        "reason": "Checked as FindishBot: robots.txt allows it and its pages carry recipe data. Its FAQ says content needs permission to use, and that sharing a recipe is fine with one image and a link back, which is what a result here is.",
+        "checked": "2026-11-18"
+      },
+      "crawl": {
+        "sitemap": "/sitemap_index.xml",
+        "format": "json-ld",
+        "size": "1,000 posts or more",
+        "notes": [
+          "cuisine: often missing"
+        ]
+      }
+    },
+    {
+      "id": "preppykitchen",
+      "name": "Preppy Kitchen",
+      "url": "https://preppykitchen.com",
+      "kind": "site",
+      "vetted": true,
+      "cuisines": [],
+      "note": "John Kanell's baking and dessert recipes.",
+      "collect": {
+        "status": "crawl",
+        "reason": "Checked as FindishBot: robots.txt allows it, its policy pages (read in full) have nothing against indexing, and its pages carry recipe data.",
+        "checked": "2026-11-18"
+      },
+      "crawl": {
+        "sitemap": "/sitemap_index.xml",
+        "format": "json-ld",
+        "size": "about 1,000 posts or more"
+      }
+    },
+    {
+      "id": "bakerbynature",
+      "name": "Baker by Nature",
+      "url": "https://bakerbynature.com",
+      "kind": "site",
+      "vetted": true,
+      "cuisines": [],
+      "note": "Baking and dessert recipes.",
+      "collect": {
+        "status": "crawl",
+        "reason": "Checked as FindishBot: robots.txt allows it, its policy pages (read in full) have nothing against indexing, and its pages carry recipe data. robots.txt blocks one AI crawler by name.",
+        "checked": "2026-11-18"
+      },
+      "crawl": {
+        "sitemap": "/sitemap_index.xml",
+        "format": "json-ld",
+        "size": "about 1,000 posts or more",
+        "notes": [
+          "cuisine: sometimes \"Baking\", which is not a cuisine"
+        ]
+      }
+    },
+    {
+      "id": "joythebaker",
+      "name": "Joy the Baker",
+      "url": "https://joythebaker.com",
+      "kind": "site",
+      "vetted": true,
+      "cuisines": [],
+      "note": "Joy Wilson's baking blog.",
+      "collect": {
+        "status": "crawl",
+        "reason": "Checked as FindishBot: robots.txt allows it, its policy pages (read in full) have nothing against indexing, and its recipe posts carry recipe data (about half the sampled posts had none).",
+        "checked": "2026-11-18"
+      },
+      "crawl": {
+        "sitemap": "/sitemap_index.xml",
+        "format": "json-ld",
+        "size": "about 1,000 posts or more"
+      }
+    },
+    {
       "id": "kitchenbutterfly",
       "name": "Kitchen Butterfly",
       "url": "https://www.kitchenbutterfly.com/about-2",
@@ -4700,6 +4906,602 @@
       "region": "oceania-other",
       "collect": {
         "status": "not-checked"
+      }
+    },
+    {
+      "id": "myparisiankitchen",
+      "name": "My Parisian Kitchen",
+      "url": "https://myparisiankitchen.com",
+      "kind": "site",
+      "vetted": false,
+      "cuisines": [
+        "French cuisine"
+      ],
+      "note": "Easy French home-cooking recipes with the stories behind the dishes.",
+      "collect": {
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 4 of 4 sampled pages carried recipe data, and no terms or policy page was found. Cuisine labels are in French (\"Française\"). Read its terms by hand and test-crawl before adding. Kyle looked on 2026-11-18 and left it out for now.",
+        "checked": "2026-11-18"
+      }
+    },
+    {
+      "id": "bakinglikeachef",
+      "name": "Baking Like a Chef",
+      "url": "https://bakinglikeachef.com",
+      "kind": "site",
+      "vetted": false,
+      "cuisines": [
+        "French cuisine"
+      ],
+      "note": "French pastry and baking recipes.",
+      "collect": {
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 3 of 4 sampled pages carried recipe data, and no terms or policy page was found. robots.txt blocks 7 AI or other crawlers by name, not us. Read its terms by hand and test-crawl before adding. Kyle looked on 2026-11-18 and left it out for now.",
+        "checked": "2026-11-18"
+      }
+    },
+    {
+      "id": "lechefswife",
+      "name": "Le Chef's Wife",
+      "url": "https://lechefswife.com",
+      "kind": "site",
+      "vetted": false,
+      "cuisines": [
+        "French cuisine"
+      ],
+      "note": "French recipes from Natacha Gajdoczki.",
+      "collect": {
+        "status": "not-checked",
+        "reason": "First pass on 2026-11-18 as FindishBot: only 1 of 4 sampled pages carried recipe data. Needs a second look by hand.",
+        "checked": "2026-11-18"
+      }
+    },
+    {
+      "id": "monpetitfour",
+      "name": "Mon Petit Four",
+      "url": "https://www.monpetitfour.com",
+      "kind": "site",
+      "vetted": false,
+      "cuisines": [
+        "French cuisine"
+      ],
+      "note": "French recipes and pastry.",
+      "collect": {
+        "status": "permission-needed",
+        "reason": "Its terms say no materials may be copied, reproduced, transmitted or distributed in any form without prior written permission. 2 of 4 sampled pages carried recipe data. robots.txt allows crawling.",
+        "checked": "2026-11-18"
+      }
+    },
+    {
+      "id": "chocolateandzucchini",
+      "name": "Chocolate & Zucchini",
+      "url": "https://cnz.to",
+      "kind": "site",
+      "vetted": false,
+      "cuisines": [
+        "French cuisine"
+      ],
+      "note": "Clotilde Dusoulier's long-running Paris food blog.",
+      "collect": {
+        "status": "permission-needed",
+        "reason": "Its terms expressly prohibit data mining, robots and similar data gathering tools, and any reproduction without consent. robots.txt allows crawling.",
+        "checked": "2026-11-18"
+      }
+    },
+    {
+      "id": "everydayfrenchchef",
+      "name": "The Everyday French Chef",
+      "url": "https://everydayfrenchchef.com",
+      "kind": "site",
+      "vetted": false,
+      "cuisines": [
+        "French cuisine"
+      ],
+      "note": "French home-cooking recipes.",
+      "collect": {
+        "status": "not-checked",
+        "reason": "First pass on 2026-11-18 as FindishBot: none of 4 sampled pages carried recipe data. Needs a second look by hand.",
+        "checked": "2026-11-18"
+      }
+    },
+    {
+      "id": "mimithorisson",
+      "name": "Manger (Mimi Thorisson)",
+      "url": "https://mimithorisson.com",
+      "kind": "site",
+      "vetted": false,
+      "cuisines": [
+        "French cuisine"
+      ],
+      "note": "Mimi Thorisson's blog of French country cooking from the Médoc.",
+      "collect": {
+        "status": "not-checked",
+        "reason": "First pass on 2026-11-18 as FindishBot: none of 4 sampled pages carried recipe data. Needs a second look by hand.",
+        "checked": "2026-11-18"
+      }
+    },
+    {
+      "id": "vanillabeancuisine",
+      "name": "Vanilla Bean Cuisine",
+      "url": "https://www.vanillabeancuisine.com",
+      "kind": "site",
+      "vetted": false,
+      "cuisines": [
+        "French cuisine"
+      ],
+      "note": "French-leaning recipes from Molly.",
+      "collect": {
+        "status": "not-checked",
+        "reason": "First pass on 2026-11-18 as FindishBot: its post sitemap came back empty; robots.txt blocks 6 AI crawlers by name. Needs a second look by hand.",
+        "checked": "2026-11-18"
+      }
+    },
+    {
+      "id": "spanishsabores",
+      "name": "Spanish Sabores",
+      "url": "https://spanishsabores.com",
+      "kind": "site",
+      "vetted": false,
+      "cuisines": [
+        "Spanish cuisine"
+      ],
+      "note": "Spanish recipes from Lauren, a trained chef and co-founder of Devour Tours.",
+      "collect": {
+        "status": "not-checked",
+        "reason": "First pass on 2026-11-18 as FindishBot: robots.txt allows us but no sitemap was found at the usual addresses. The best-known Spanish recipe site in English, so worth finding. Needs a second look by hand.",
+        "checked": "2026-11-18"
+      }
+    },
+    {
+      "id": "anniebspain",
+      "name": "Annie B's Spanish Kitchen",
+      "url": "https://anniebspain.com",
+      "kind": "site",
+      "vetted": false,
+      "cuisines": [
+        "Spanish cuisine"
+      ],
+      "note": "Recipes and food writing from a cooking school in Vejer de la Frontera, Andalucia.",
+      "collect": {
+        "status": "not-checked",
+        "reason": "First pass on 2026-11-18 as FindishBot: none of 4 sampled pages carried recipe data. Needs a second look by hand.",
+        "checked": "2026-11-18"
+      }
+    },
+    {
+      "id": "thespanishradish",
+      "name": "The Spanish Radish",
+      "url": "https://thespanishradish.com",
+      "kind": "site",
+      "vetted": false,
+      "cuisines": [
+        "Spanish cuisine"
+      ],
+      "note": "Spanish recipes.",
+      "collect": {
+        "status": "permission-needed",
+        "reason": "Its policy says no part of the site may be copied, reproduced, distributed or displayed in any form without prior written permission. Its post sitemap also came back empty. robots.txt allows crawling.",
+        "checked": "2026-11-18"
+      }
+    },
+    {
+      "id": "simplespanishfood",
+      "name": "Simple Spanish Food",
+      "url": "https://simplespanishfood.com",
+      "kind": "site",
+      "vetted": false,
+      "cuisines": [
+        "Spanish cuisine"
+      ],
+      "note": "Spanish recipes.",
+      "collect": {
+        "status": "not-checked",
+        "reason": "First pass on 2026-11-18 as FindishBot: the site could not be reached. Needs a second look by hand.",
+        "checked": "2026-11-18"
+      }
+    },
+    {
+      "id": "visitsouthernspain",
+      "name": "Visit Southern Spain",
+      "url": "https://visitsouthernspain.com",
+      "kind": "site",
+      "vetted": false,
+      "cuisines": [
+        "Spanish cuisine"
+      ],
+      "note": "Travel site with Andalusian recipes.",
+      "collect": {
+        "status": "not-checked",
+        "reason": "First pass on 2026-11-18 as FindishBot: none of 4 sampled pages carried recipe data. Needs a second look by hand.",
+        "checked": "2026-11-18"
+      }
+    },
+    {
+      "id": "aaronandclaire",
+      "name": "Aaron and Claire",
+      "url": "https://aaronandclaire.com",
+      "kind": "site",
+      "vetted": false,
+      "cuisines": [
+        "Korean cuisine"
+      ],
+      "note": "Korean and Asian home-cooking recipes from Aaron and Claire.",
+      "collect": {
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 3 of 4 sampled pages carried recipe data, and nothing against indexing was found on its policy pages. robots.txt blocks 1 AI or other crawlers by name, not us. Read its terms by hand and test-crawl before adding. Kyle looked on 2026-11-18 and left it out for now.",
+        "checked": "2026-11-18"
+      }
+    },
+    {
+      "id": "chefchrischo",
+      "name": "Chef Chris Cho",
+      "url": "https://chefchrischo.com",
+      "kind": "site",
+      "vetted": false,
+      "cuisines": [
+        "Korean cuisine"
+      ],
+      "note": "Korean recipes from chef Chris Cho.",
+      "collect": {
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 4 of 4 sampled pages carried recipe data, and nothing against indexing was found on its policy pages. Read its terms by hand and test-crawl before adding. Kyle looked on 2026-11-18 and left it out for now.",
+        "checked": "2026-11-18"
+      }
+    },
+    {
+      "id": "kimchimom",
+      "name": "Kimchi Mom",
+      "url": "https://kimchimom.com",
+      "kind": "site",
+      "vetted": false,
+      "cuisines": [
+        "Korean cuisine"
+      ],
+      "note": "Korean home-cooking recipes.",
+      "collect": {
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 2 of 4 sampled pages carried recipe data, and no terms or policy page was found. Read its terms by hand and test-crawl before adding. Kyle looked on 2026-11-18 and left it out for now.",
+        "checked": "2026-11-18"
+      }
+    },
+    {
+      "id": "mykoreankitchen",
+      "name": "My Korean Kitchen",
+      "url": "https://mykoreankitchen.com",
+      "kind": "site",
+      "vetted": false,
+      "cuisines": [
+        "Korean cuisine"
+      ],
+      "note": "Korean recipes from Sue.",
+      "collect": {
+        "status": "permission-needed",
+        "reason": "Its terms say automated tools need prior written permission for bulk copying, scraping or dataset compilation. All 4 sampled pages carried recipe data. robots.txt allows crawling.",
+        "checked": "2026-11-18"
+      }
+    },
+    {
+      "id": "kimchimari",
+      "name": "Kimchimari",
+      "url": "https://kimchimari.com",
+      "kind": "site",
+      "vetted": false,
+      "cuisines": [
+        "Korean cuisine"
+      ],
+      "note": "Korean recipes from JinJoo.",
+      "collect": {
+        "status": "permission-needed",
+        "reason": "Its terms allow personal, non-commercial use only and forbid automated systems using the content for AI. robots.txt allows crawling.",
+        "checked": "2026-11-18"
+      }
+    },
+    {
+      "id": "beyondkimchee",
+      "name": "Beyond Kimchee",
+      "url": "https://www.beyondkimchee.com",
+      "kind": "site",
+      "vetted": false,
+      "cuisines": [
+        "Korean cuisine"
+      ],
+      "note": "Korean recipes from Holly.",
+      "collect": {
+        "status": "permission-needed",
+        "reason": "Its policy prohibits reproduction or distribution without written consent and any use for AI. robots.txt allows crawling.",
+        "checked": "2026-11-18"
+      }
+    },
+    {
+      "id": "crazykoreancooking",
+      "name": "Crazy Korean Cooking",
+      "url": "https://crazykoreancooking.com",
+      "kind": "site",
+      "vetted": false,
+      "cuisines": [
+        "Korean cuisine"
+      ],
+      "note": "Korean recipes and cookware.",
+      "collect": {
+        "status": "permission-needed",
+        "reason": "Its terms say no page may be linked to without prior written consent. Small (about 30 pages in the sitemap). robots.txt allows crawling.",
+        "checked": "2026-11-18"
+      }
+    },
+    {
+      "id": "futuredish",
+      "name": "Future Dish",
+      "url": "https://futuredish.com",
+      "kind": "site",
+      "vetted": false,
+      "cuisines": [
+        "Korean cuisine"
+      ],
+      "note": "Korean home-cooking recipes.",
+      "collect": {
+        "status": "not-checked",
+        "reason": "First pass on 2026-11-18 as FindishBot: robots.txt answered HTTP 202 and no sitemap could be read. Needs a second look by hand.",
+        "checked": "2026-11-18"
+      }
+    },
+    {
+      "id": "thekoreanvegan",
+      "name": "The Korean Vegan",
+      "url": "https://thekoreanvegan.com",
+      "kind": "site",
+      "vetted": false,
+      "cuisines": [
+        "Korean cuisine"
+      ],
+      "note": "Joanne Lee Molinaro's vegan Korean recipes.",
+      "collect": {
+        "status": "not-checked",
+        "reason": "First pass on 2026-11-18 as FindishBot: only 1 of 4 sampled pages carried recipe data. Needs a second look by hand.",
+        "checked": "2026-11-18"
+      }
+    },
+    {
+      "id": "scruffandsteph",
+      "name": "Scruff & Steph",
+      "url": "https://scruffandsteph.com",
+      "kind": "site",
+      "vetted": false,
+      "cuisines": [
+        "Vietnamese cuisine"
+      ],
+      "note": "Vietnamese and Asian family recipes.",
+      "collect": {
+        "status": "permission-needed",
+        "reason": "Its copyright page prohibits unauthorised use or duplication without express written permission. All 4 sampled pages carried recipe data. robots.txt allows crawling.",
+        "checked": "2026-11-18"
+      }
+    },
+    {
+      "id": "runawayrice",
+      "name": "RunAwayRice",
+      "url": "https://runawayrice.com",
+      "kind": "site",
+      "vetted": false,
+      "cuisines": [
+        "Vietnamese cuisine"
+      ],
+      "note": "Vietnamese recipes from Trang.",
+      "collect": {
+        "status": "not-checked",
+        "reason": "First pass on 2026-11-18 as FindishBot: its post sitemap came back empty. Needs a second look by hand.",
+        "checked": "2026-11-18"
+      }
+    },
+    {
+      "id": "helenrecipes",
+      "name": "Helen's Recipes",
+      "url": "https://helenrecipes.com",
+      "kind": "site",
+      "vetted": false,
+      "cuisines": [
+        "Vietnamese cuisine"
+      ],
+      "note": "Vietnamese recipes from Helen Le.",
+      "collect": {
+        "status": "not-checked",
+        "reason": "First pass on 2026-11-18 as FindishBot: none of 4 sampled pages carried recipe data. Needs a second look by hand.",
+        "checked": "2026-11-18"
+      }
+    },
+    {
+      "id": "pickledplum",
+      "name": "Pickled Plum",
+      "url": "https://pickledplum.com",
+      "kind": "site",
+      "vetted": false,
+      "cuisines": [],
+      "note": "Asian recipes from Caroline Caron-Phelps.",
+      "collect": {
+        "status": "not-checked",
+        "reason": "First pass on 2026-11-18 as FindishBot: 2 of 4 sampled pages carried recipe data, and the site has a \"No AI\" page that was not read. Needs a second look by hand.",
+        "checked": "2026-11-18"
+      }
+    },
+    {
+      "id": "carolinescooking",
+      "name": "Caroline's Cooking",
+      "url": "https://www.carolinescooking.com",
+      "kind": "site",
+      "vetted": false,
+      "cuisines": [],
+      "note": "Recipes from around the world, including Spanish and French dishes.",
+      "collect": {
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 4 of 4 sampled pages carried recipe data, and nothing against indexing was found on its policy pages. It has no robots.txt (HTTP 404). Read its terms by hand and test-crawl before adding. Kyle looked on 2026-11-18 and left it out for now.",
+        "checked": "2026-11-18"
+      }
+    },
+    {
+      "id": "biggerbolderbaking",
+      "name": "Bigger Bolder Baking",
+      "url": "https://www.biggerbolderbaking.com",
+      "kind": "site",
+      "vetted": false,
+      "cuisines": [],
+      "note": "Gemma Stafford's baking recipes.",
+      "collect": {
+        "status": "permission-needed",
+        "reason": "Its terms of use say not to reproduce or otherwise use any of the site's content. Kyle picked it on 2026-11-18; held back on a full read of the terms. robots.txt allows crawling and pages carry recipe data.",
+        "checked": "2026-11-18"
+      }
+    },
+    {
+      "id": "butternutbakery",
+      "name": "Butternut Bakery",
+      "url": "https://butternutbakeryblog.com",
+      "kind": "site",
+      "vetted": false,
+      "cuisines": [],
+      "note": "Baking and dessert recipes.",
+      "collect": {
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 4 of 4 sampled pages carried recipe data, and nothing against indexing was found on its policy pages. Read its terms by hand and test-crawl before adding. Kyle looked on 2026-11-18 and left it out for now.",
+        "checked": "2026-11-18"
+      }
+    },
+    {
+      "id": "zoebakes",
+      "name": "Zoë Bakes",
+      "url": "https://zoebakes.com",
+      "kind": "site",
+      "vetted": false,
+      "cuisines": [],
+      "note": "Baking recipes from pastry chef and author Zoë François.",
+      "collect": {
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 3 of 4 sampled pages carried recipe data, and no terms or policy page was found. robots.txt blocks 7 AI or other crawlers by name, not us. Read its terms by hand and test-crawl before adding. Kyle looked on 2026-11-18 and left it out for now.",
+        "checked": "2026-11-18"
+      }
+    },
+    {
+      "id": "mybakingaddiction",
+      "name": "My Baking Addiction",
+      "url": "https://www.mybakingaddiction.com",
+      "kind": "site",
+      "vetted": false,
+      "cuisines": [],
+      "note": "Baking and dessert recipes.",
+      "collect": {
+        "status": "permission-needed",
+        "reason": "Its terms grant a license for personal, non-commercial viewing only, and forbid copying the materials or using them for any public display. Kyle picked it on 2026-11-18; held back on a full read of the terms. robots.txt allows crawling and pages carry recipe data.",
+        "checked": "2026-11-18"
+      }
+    },
+    {
+      "id": "thevanillabeanblog",
+      "name": "The Vanilla Bean Blog",
+      "url": "https://www.thevanillabeanblog.com",
+      "kind": "site",
+      "vetted": false,
+      "cuisines": [],
+      "note": "Baking recipes from cookbook author Sarah Kieffer.",
+      "collect": {
+        "status": "ready",
+        "reason": "First pass as FindishBot: robots.txt allows us, 4 of 4 sampled pages carried recipe data, and nothing against indexing was found on its policy pages. robots.txt blocks 7 AI or other crawlers by name, not us. It says its photographs cannot be used without permission, so it would be added with crawl.photos false (text-only results). Read its terms by hand and test-crawl before adding. Kyle looked on 2026-11-18 and left it out for now.",
+        "checked": "2026-11-18"
+      }
+    },
+    {
+      "id": "sallysbakingaddiction",
+      "name": "Sally's Baking Addiction",
+      "url": "https://sallysbakingaddiction.com",
+      "kind": "site",
+      "vetted": false,
+      "cuisines": [],
+      "note": "Sally McKenney's baking blog, running since 2011.",
+      "collect": {
+        "status": "permission-needed",
+        "reason": "Its terms say not to reproduce, download or store any material from the site. All 4 sampled pages carried recipe data. robots.txt allows crawling.",
+        "checked": "2026-11-18"
+      }
+    },
+    {
+      "id": "janespatisserie",
+      "name": "Jane's Patisserie",
+      "url": "https://www.janespatisserie.com",
+      "kind": "site",
+      "vetted": false,
+      "cuisines": [],
+      "note": "UK baking blog of cakes, bakes and desserts.",
+      "collect": {
+        "status": "permission-needed",
+        "reason": "Its policy says content may not be copied, stored or used in any way without prior written permission. robots.txt allows crawling.",
+        "checked": "2026-11-18"
+      }
+    },
+    {
+      "id": "bromabakery",
+      "name": "Broma Bakery",
+      "url": "https://bromabakery.com",
+      "kind": "site",
+      "vetted": false,
+      "cuisines": [],
+      "note": "Baking and dessert recipes.",
+      "collect": {
+        "status": "permission-needed",
+        "reason": "Its terms say not to reproduce, publish or distribute any part of the site without prior written consent. robots.txt allows crawling.",
+        "checked": "2026-11-18"
+      }
+    },
+    {
+      "id": "sugarspunrun",
+      "name": "Sugar Spun Run",
+      "url": "https://sugarspunrun.com",
+      "kind": "site",
+      "vetted": false,
+      "cuisines": [],
+      "note": "Baking and dessert recipes from Samantha.",
+      "collect": {
+        "status": "permission-needed",
+        "reason": "Its policy prohibits unauthorized use or duplication without express written permission. robots.txt allows crawling.",
+        "checked": "2026-11-18"
+      }
+    },
+    {
+      "id": "theperfectloaf",
+      "name": "The Perfect Loaf",
+      "url": "https://www.theperfectloaf.com",
+      "kind": "site",
+      "vetted": false,
+      "cuisines": [],
+      "note": "Sourdough bread recipes and guides.",
+      "collect": {
+        "status": "permission-needed",
+        "reason": "Its policy forbids automated systems using the content for AI. Only 1 of 4 sampled pages carried recipe data. robots.txt allows crawling.",
+        "checked": "2026-11-18"
+      }
+    },
+    {
+      "id": "handletheheat",
+      "name": "Handle the Heat",
+      "url": "https://handletheheat.com",
+      "kind": "site",
+      "vetted": false,
+      "cuisines": [],
+      "note": "Baking recipes and baking science.",
+      "collect": {
+        "status": "not-checked",
+        "reason": "First pass on 2026-11-18 as FindishBot: it answered HTTP 403 on robots.txt, so it refuses our crawler. Needs a second look by hand.",
+        "checked": "2026-11-18"
+      }
+    },
+    {
+      "id": "browneyedbaker",
+      "name": "Brown Eyed Baker",
+      "url": "https://www.browneyedbaker.com",
+      "kind": "site",
+      "vetted": false,
+      "cuisines": [],
+      "note": "Baking and comfort-food recipes.",
+      "collect": {
+        "status": "not-checked",
+        "reason": "First pass on 2026-11-18 as FindishBot: robots.txt allows us but no sitemap was found at the usual addresses. Needs a second look by hand.",
+        "checked": "2026-11-18"
       }
     }
   ]

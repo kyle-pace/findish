@@ -1,4 +1,7 @@
 name: Crawl
+# The title says which sites a run reads, so another run can tell whether it would read the
+# same ones (crawler/check-turn.mjs).
+run-name: "${{ github.event_name == 'workflow_dispatch' && inputs.sources && format('Crawl: {0}', inputs.sources) || 'Crawl: all sites' }}"
 
 # Weekly: check robots.txt, read sitemaps, fetch only new or changed recipe
 # pages, refresh YouTube videos, and commit the data. Run by hand with a small
@@ -27,9 +30,14 @@ on:
 
 permissions:
   contents: write
+  actions: read
 
+# Crawls of different sites can run side by side (since 2026-11-18): a hand-started crawl of
+# named sources gets a group of its own, and everything else (the weekly run, a push's smoke
+# test, a hand-started crawl of everything) shares one and waits its turn. The first step
+# below stands a run down if another is already reading one of its sites.
 concurrency:
-  group: crawl
+  group: crawl-${{ github.event_name == 'workflow_dispatch' && inputs.sources || 'all' }}
   cancel-in-progress: false
 
 jobs:
@@ -42,9 +50,16 @@ jobs:
         with:
           node-version: 22
           cache: npm
+      - name: Is another crawl reading these sites?
+        id: turn
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_TITLE: "${{ github.event_name == 'workflow_dispatch' && inputs.sources && format('Crawl: {0}', inputs.sources) || 'Crawl: all sites' }}"
+        run: node crawler/check-turn.mjs
       - run: npm ci
       - run: npm test
       - name: Crawl
+        if: steps.turn.outputs.go == 'true'
         env:
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
           LIMIT: ${{ github.event_name == 'push' && '5' || inputs.limit }}
@@ -55,16 +70,17 @@ jobs:
           [ -n "$SOURCES" ] && args="$args --sources $SOURCES"
           [ "${{ github.event_name }}" = "push" ] && args="$args --sample 3"
           node crawler/crawl.mjs $args
+      - name: Note this run's problems
+        if: steps.turn.outputs.go == 'true'
+        run: |
+          node -e "const s=require('./data/status.json'); require('fs').writeFileSync(process.env.RUNNER_TEMP+'/alerts.txt', (s.alerts||[]).join('\n'))"
       - name: Commit the data
-        if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.commit)
+        if: steps.turn.outputs.go == 'true' && (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.commit))
         run: |
           git config user.name "recipe-search crawler"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data state
-          if git diff --cached --quiet; then echo "No changes"; exit 0; fi
-          git commit -m "Crawl $(date -u +%Y-%m-%d)"
-          git pull --rebase origin main
-          git push origin HEAD:main
+          bash crawler/save-crawl.sh
       - name: Report problems
+        if: steps.turn.outputs.go == 'true'
         run: |
-          node -e "const s=require('./data/status.json'); if (s.alerts?.length) { console.log(s.alerts.join('\n')); process.exit(1) }"
+          if [ -s "$RUNNER_TEMP/alerts.txt" ]; then cat "$RUNNER_TEMP/alerts.txt"; exit 1; fi

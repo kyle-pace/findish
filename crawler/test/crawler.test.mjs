@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { robotsFor, robotsForNames } from '../lib/robots.mjs';
 import { parseSitemap, readSitemaps } from '../lib/sitemap.mjs';
 import { extractRecipe, firstName } from '../lib/extract.mjs';
+import { sourcesOf, overlaps, ahead, mergeStatus } from '../lib/turns.mjs';
 import { ingredientName } from '../lib/ingredients.mjs';
 import { toMinutes } from '../lib/text.mjs';
 import { toVideo, seconds, fetchChannelVideos } from '../lib/youtube.mjs';
@@ -333,4 +334,41 @@ test('a name written as several search phrases keeps the first, only for a sourc
   const page = '<script type="application/ld+json">{"@type":"Recipe","name":"dal tadka recipe | yellow dal tadka","recipeIngredient":["1 cup toor dal","2 tsp ghee"]}</script>';
   assert.equal(extractRecipe(page, 'https://x.com/dal/', { nameSplit: ' | ' }).n, 'Dal Tadka Recipe');
   assert.equal(extractRecipe(page, 'https://x.com/dal/').n, 'dal tadka recipe | yellow dal tadka');
+});
+
+test('two crawls run side by side only when they read different sites', () => {
+  assert.deepEqual(sourcesOf('Crawl: woks, sk'), ['woks', 'sk']);
+  assert.equal(sourcesOf('Crawl: all sites'), 'all');
+  assert.equal(sourcesOf('Crawl'), 'all'); // a run from before runs had titles
+  assert.equal(sourcesOf(''), 'all');
+  assert.equal(overlaps(['woks'], ['sk', 'htk']), false);
+  assert.equal(overlaps(['woks', 'sk'], ['sk']), true);
+  assert.equal(overlaps('all', ['sk']), true);
+
+  const runs = [
+    { id: 1, title: 'Crawl: woks,sk', started: '2026-11-19T05:00:00Z' },
+    { id: 2, title: 'Crawl: htk', started: '2026-11-19T05:10:00Z' },
+    { id: 3, title: 'Crawl: sk', started: '2026-11-19T05:20:00Z' },
+    { id: 4, title: 'Crawl: all sites', started: '2026-11-19T05:30:00Z' },
+  ];
+  assert.deepEqual(ahead(runs[1], runs), []); // different sites: go
+  assert.deepEqual(ahead(runs[2], runs).map((r) => r.id), [1]); // sk is being read
+  assert.deepEqual(ahead(runs[3], runs).map((r) => r.id), [1, 2, 3]); // a full crawl waits for all
+  assert.deepEqual(ahead(runs[0], runs), []); // the first one in never stands down for a later one
+  // Started in the same second: the lower id goes.
+  const tie = [{ id: 7, title: 'Crawl: sk', started: 'x' }, { id: 8, title: 'Crawl: sk', started: 'x' }];
+  assert.deepEqual(ahead(tie[0], tie), []);
+  assert.deepEqual(ahead(tie[1], tie).map((r) => r.id), [7]);
+});
+
+test('two crawls that finish apart leave one status file with both', () => {
+  const saved = { run: 'A', sources: { woks: { result: 'ok', count: 10 }, sk: { result: 'blocked', count: 5 } }, alerts: ['sk: blocked (HTTP 403)', 'woks: recipe count dropped from 20 to 10'] };
+  const ours = { run: 'B', options: { limit: null }, sources: { sk: { result: 'ok', count: 7 }, woks: { result: 'not run', count: 3 }, htk: { result: 'ok', count: 2 } }, alerts: [] };
+  const both = mergeStatus(saved, ours);
+  assert.equal(both.run, 'B');
+  assert.equal(both.sources.sk.count, 7); // this run read sk
+  assert.equal(both.sources.woks.count, 10); // the other run's newer count, not our stale copy
+  assert.equal(both.sources.htk.count, 2);
+  assert.deepEqual(both.alerts, ['woks: recipe count dropped from 20 to 10']); // sk's old alert is answered
+  assert.deepEqual(mergeStatus(undefined, ours).sources.woks.count, 3); // nothing saved yet
 });

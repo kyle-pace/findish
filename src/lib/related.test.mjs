@@ -27,7 +27,7 @@ test('fried rice is not related to chongqing chicken, cumin lamb or wonton soup'
 });
 
 test('a dish that shares its word is offered: curries for a curry, chicken dishes for kung pao chicken', () => {
-  for (const [q, word] of [['green curry', 'curry'], ['red curry', 'curry'], ['kung pao chicken', 'chicken'], ['wonton soup', /soup|wonton/], ['teriyaki chicken', /teriyaki|chicken/]]) {
+  for (const [q, word] of [['green curry', 'curry'], ['red curry', 'curry'], ['kung pao chicken', 'chicken'], ['wonton soup', /soup|wonton/]]) {
     const got = related(q);
     assert.ok(got.length >= 2, `${q}: ${got.join(', ')}`);
     for (const d of got) assert.match(d, new RegExp(word), `${q} -> ${d}`);

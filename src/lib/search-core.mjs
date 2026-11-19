@@ -43,7 +43,12 @@ for (const group of [
   for (const w of group) EQUAL[w] = group[0];
 
 // Plurals the rules below get wrong. "fries" stays itself: french fries aren't a stir fry.
-const IRREGULAR = { fries: 'fries', leaves: 'leaf', loaves: 'loaf', halves: 'half', knives: 'knife', quiches: 'quiche', brioches: 'brioche', shoes: 'shoe' };
+const IRREGULAR = {
+  fries: 'fries', leaves: 'leaf', loaves: 'loaf', halves: 'half', knives: 'knife', quiches: 'quiche', brioches: 'brioche', shoes: 'shoe',
+  // Plurals the rules below get wrong, met when Mexican, Italian and French sites joined (2026-11-18).
+  chilies: 'chili', chillies: 'chilli', zucchinis: 'zucchini', daiquiris: 'daiquiri', martinis: 'martini', paninis: 'panini', blinis: 'blini',
+  herbes: 'herb', leches: 'leche', nopales: 'nopal', tamal: 'tamale',
+};
 
 /** A word's singular: cookies and cookie -> cooky, pies -> pie, tomatoes -> tomato. Latin words only. */
 export function stem(w) {

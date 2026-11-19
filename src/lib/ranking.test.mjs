@@ -40,7 +40,8 @@ const DISHES = [
   ['meatballs', /meatball/i],
   ['noodles', /noodle/i],
   ['spring rolls', /spring roll/i],
-  ['chili', /chil[il]/i],
+  // "chile" and "chili" are one word to the search, so chiles rellenos can sit beside a bowl of chili.
+  ['chili', /chil[iel]/i],
 ];
 
 for (const [q, each, first] of DISHES) {

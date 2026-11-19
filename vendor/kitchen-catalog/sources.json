@@ -1597,6 +1597,43 @@
       }
     },
     {
+      "id": "susanherrmannloomis",
+      "name": "Susan Herrmann Loomis in Paris",
+      "url": "https://susanherrmann.substack.com",
+      "kind": "site",
+      "vetted": true,
+      "cuisines": [
+        "French cuisine"
+      ],
+      "note": "Newsletter of recipes and stories from Paris by Susan Herrmann Loomis, author of In a French Kitchen and On Rue Tatin.",
+      "collect": {
+        "status": "crawl",
+        "reason": "A Substack newsletter, read only through its public RSS feed (robots.txt allows /feed), under Kyle's 2026-11-11 decision on Substack. 7 of its 20 newest posts held a recipe on 2026-11-18. Kyle picked it on 2026-11-18. Her older site, dancingtomatoes.com, now belongs to someone else and is not hers to read.",
+        "checked": "2026-11-18"
+      },
+      "feed": {
+        "url": "/feed",
+        "default_cuisine": "French",
+        "notes": [
+          "name: posts are essays, so a recipe often takes the post's title (\"California Wine Country\") when the dish has no heading of its own"
+        ]
+      },
+      "support": {
+        "links": [
+          {
+            "label": "Newsletter",
+            "url": "https://susanherrmann.substack.com"
+          }
+        ],
+        "books": [
+          {
+            "title": "In a French Kitchen",
+            "isbn": "9781592408863"
+          }
+        ]
+      }
+    },
+    {
       "id": "kitchenbutterfly",
       "name": "Kitchen Butterfly",
       "url": "https://www.kitchenbutterfly.com/about-2",

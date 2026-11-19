@@ -5,19 +5,22 @@
 // check:  node -e "…search(ready, { q: 'ramen' })"  or run scripts in the page.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { prepare, search } from './search-core.mjs';
+import { prepare, search, words } from './search-core.mjs';
 import { realIndex } from './test-index.mjs';
 
 const ready = prepare(realIndex());
 const blank = () => ({ q: '', with: [], without: [], notWords: [], sites: new Set(), time: 0, cuisine: '', course: '', fresh: false, diet: '' });
 const top = (f, n = 3) => search(ready, { ...blank(), ...f }).slice(0, n).map((h) => h.r);
 const ing = (id) => ready.ing.findIndex((g) => g[0] === id);
+// A name is exactly the words the way the search reads it: without its bracketed parts and
+// filler, so "Authentic Mapo Tofu (麻婆豆腐)" is "mapo tofu" (r.core, from prepare()).
+const isExactly = (r, q) => r.core.join(' ') === words(q).join(' ');
 
 // [what's typed, a pattern each of the top three names must match, a pattern the first name must match]
 const DISHES = [
   ['ramen', /ramen/i],
   ['fried rice', /fried rice/i, /^(\w+ )?fried rice$/i],
-  ['mapo tofu', /mapo tofu|mabo/i, /^mapo tofu$/i],
+  ['mapo tofu', /mapo tofu|mabo/i, /^(authentic )?mapo tofu( \([^)]*\))?$/i],
   ['pad thai', /pad thai/i, /^(authentic )?pad thai( recipe)?$/i],
   ['dumplings', /dumpling/i],
   ['tacos', /taco/i],
@@ -59,9 +62,11 @@ for (const [q, each, first] of DISHES) {
 
 test('a name that is exactly the words comes before longer names that contain them', () => {
   const rows = top({ q: 'mapo tofu' }, 8);
-  const exact = rows.findIndex((r) => !/^mapo tofu$/i.test(r.name));
+  // Where the longer names start; all eight can be exact once the index holds that many.
+  const longer = rows.findIndex((r) => !isExactly(r, 'mapo tofu'));
+  const exact = longer === -1 ? rows.length : longer;
   assert.ok(exact >= 2, rows.map((r) => r.name).join(' | '));
-  for (const r of rows.slice(exact)) assert.ok(!/^mapo tofu$/i.test(r.name), 'no exact name after a longer one');
+  for (const r of rows.slice(exact)) assert.ok(!isExactly(r, 'mapo tofu'), 'no exact name after a longer one');
 });
 
 test('asking for a sauce, a drink or a how-to brings them back to the top', () => {

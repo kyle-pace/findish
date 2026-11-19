@@ -1042,6 +1042,10 @@
         "Mexican cuisine"
       ],
       "note": "Mely Martínez's long-running blog of Mexican home-style recipes.",
+      "youtube": {
+        "id": "mexicoinmykitchen-yt",
+        "url": "https://www.youtube.com/@Mexicoinmykitchen"
+      },
       "collect": {
         "status": "crawl",
         "reason": "Checked as FindishBot: robots.txt allows it and blocks only OpenAI's bots (GPTBot, ChatGPT-User); its legal page is a privacy policy with nothing against indexing; pages carry full recipe data.",
@@ -1056,6 +1060,14 @@
           "format: full schema.org Recipe (WP Recipe Maker)",
           "course: often the main ingredient (\"Chicken\"), not a course"
         ]
+      },
+      "support": {
+        "links": [
+          {
+            "label": "YouTube",
+            "url": "https://www.youtube.com/@Mexicoinmykitchen"
+          }
+        ]
       }
     },
     {
@@ -1068,6 +1080,10 @@
         "Mexican cuisine"
       ],
       "note": "Recipe archive from the Mexican-born chef and host of the PBS series Pati's Mexican Table.",
+      "youtube": {
+        "id": "patijinich-yt",
+        "url": "https://www.youtube.com/@patijinich"
+      },
       "collect": {
         "status": "crawl",
         "reason": "Checked as FindishBot: robots.txt allows it, its terms say nothing against crawling or indexing, and its pages carry full recipe data.",
@@ -1082,6 +1098,14 @@
         "notes": [
           "sitemap: the index lists its child sitemaps with http:// addresses",
           "include: posts sit at the top level; the sitemap also lists dish, meal, region and series pages, which are left out"
+        ]
+      },
+      "support": {
+        "links": [
+          {
+            "label": "YouTube",
+            "url": "https://www.youtube.com/@patijinich"
+          }
         ]
       }
     },
@@ -1223,6 +1247,10 @@
         "North Indian cuisine"
       ],
       "note": "Archana Hebbar's large Indian vegetarian recipe site.",
+      "youtube": {
+        "id": "hebbarskitchen-yt",
+        "url": "https://www.youtube.com/@hebbars.kitchen"
+      },
       "collect": {
         "status": "crawl",
         "reason": "Checked as FindishBot: robots.txt allows it, its policy pages have nothing against indexing, and its pages carry full recipe data.",
@@ -1238,6 +1266,14 @@
         "notes": [
           "include: top-level posts only; leaves out the Hindi and Kannada copies (/hi/, /kn/) and the template and grouping pages the sitemap also lists",
           "name_split: names are three search phrases in a row"
+        ]
+      },
+      "support": {
+        "links": [
+          {
+            "label": "YouTube",
+            "url": "https://www.youtube.com/@hebbars.kitchen"
+          }
         ]
       }
     },
@@ -1277,6 +1313,10 @@
         "Filipino cuisine"
       ],
       "note": "Vanjo Merano's large library of Filipino recipes and cooking videos.",
+      "youtube": {
+        "id": "panlasangpinoy-yt",
+        "url": "https://www.youtube.com/@panlasangpinoy"
+      },
       "collect": {
         "status": "crawl",
         "reason": "Checked as FindishBot: robots.txt allows it, its policy pages have nothing against indexing, and its recipe posts carry recipe data (about half the sampled posts were articles with none).",
@@ -1289,6 +1329,14 @@
         "size": "about 3,000 posts",
         "notes": [
           "cuisine: not labeled, so the default does the work"
+        ]
+      },
+      "support": {
+        "links": [
+          {
+            "label": "YouTube",
+            "url": "https://www.youtube.com/@panlasangpinoy"
+          }
         ]
       }
     },
@@ -1326,6 +1374,10 @@
         "Greek cuisine"
       ],
       "note": "Dimitra Alfieris's video channel and blog focused on classic Greek home cooking.",
+      "youtube": {
+        "id": "dimitrasdishes-yt",
+        "url": "https://www.youtube.com/@DimitrasDishes"
+      },
       "collect": {
         "status": "crawl",
         "reason": "Checked as FindishBot: robots.txt allows it, its privacy policy (the only policy page) has nothing against indexing, and its pages carry full recipe data.",
@@ -1338,6 +1390,14 @@
         "size": "about 2,000 posts",
         "notes": [
           "cuisine: older posts have none, and some say \"Dessert\""
+        ]
+      },
+      "support": {
+        "links": [
+          {
+            "label": "YouTube",
+            "url": "https://www.youtube.com/@DimitrasDishes"
+          }
         ]
       }
     },
@@ -1426,6 +1486,10 @@
         "Korean cuisine"
       ],
       "note": "Korean and wider Asian recipes from Seonkyoung Longest.",
+      "youtube": {
+        "id": "seonkyounglongest-yt",
+        "url": "https://www.youtube.com/@SeonkyoungLongest"
+      },
       "collect": {
         "status": "crawl",
         "reason": "Checked as FindishBot: robots.txt allows it, it has no terms page and its privacy page has nothing against indexing, and its pages carry recipe data.",
@@ -1440,6 +1504,14 @@
           "cuisine: Korean and wider Asian, labeled per recipe or not at all, so no default",
           "photos: some are served from i0.wp.com",
           "include: leaves out the home page, which the sitemap lists and which reads as a recipe"
+        ]
+      },
+      "support": {
+        "links": [
+          {
+            "label": "YouTube",
+            "url": "https://www.youtube.com/@SeonkyoungLongest"
+          }
         ]
       }
     },
@@ -1544,6 +1616,10 @@
       "vetted": true,
       "cuisines": [],
       "note": "John Kanell's baking and dessert recipes.",
+      "youtube": {
+        "id": "preppykitchen-yt",
+        "url": "https://www.youtube.com/@PreppyKitchen"
+      },
       "collect": {
         "status": "crawl",
         "reason": "Checked as FindishBot: robots.txt allows it, its policy pages (read in full) have nothing against indexing, and its pages carry recipe data.",
@@ -1553,6 +1629,14 @@
         "sitemap": "/sitemap_index.xml",
         "format": "json-ld",
         "size": "about 1,000 posts or more"
+      },
+      "support": {
+        "links": [
+          {
+            "label": "YouTube",
+            "url": "https://www.youtube.com/@PreppyKitchen"
+          }
+        ]
       }
     },
     {

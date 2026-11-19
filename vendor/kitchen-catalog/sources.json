@@ -1951,6 +1951,48 @@
       }
     },
     {
+      "id": "happydonabelife",
+      "name": "Happy Donabe Life",
+      "url": "https://happydonabelife.com",
+      "kind": "site",
+      "vetted": true,
+      "cuisines": [
+        "Japanese cuisine"
+      ],
+      "note": "Naoko Takei Moore's (Mrs. Donabe's) Japanese clay pot recipes, the recipe site of her Los Angeles shop TOIRO.",
+      "youtube": {
+        "id": "happydonabelife-yt",
+        "url": "https://www.youtube.com/@NaokosHappyDonabeLife"
+      },
+      "collect": {
+        "status": "no-recipe-data",
+        "reason": "robots.txt allows us, but its recipe pages carry no recipe data, it has no sitemap, and its RSS feed holds titles only (empty post bodies), so there is nothing our crawler can read. Its YouTube channel is read instead. The site has no terms page; TOIRO's shop (toirokitchen.com) has terms that bar crawling, and we don't read it. Kyle picked it on 2026-11-18.",
+        "checked": "2026-11-18"
+      },
+      "support": {
+        "links": [
+          {
+            "label": "TOIRO shop",
+            "url": "https://toirokitchen.com"
+          },
+          {
+            "label": "YouTube",
+            "url": "https://www.youtube.com/@NaokosHappyDonabeLife"
+          }
+        ],
+        "books": [
+          {
+            "title": "Simply Donabe",
+            "isbn": "9781837834464"
+          },
+          {
+            "title": "Donabe",
+            "isbn": "9781607746997"
+          }
+        ]
+      }
+    },
+    {
       "id": "kitchenbutterfly",
       "name": "Kitchen Butterfly",
       "url": "https://www.kitchenbutterfly.com/about-2",

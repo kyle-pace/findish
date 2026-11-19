@@ -37,6 +37,8 @@ const FOLD = {
   'english': 'British',
   'louisiana': 'Cajun',
   'basque country': 'Basque',
+  'turkish regional': 'Turkish', // Ozlem's Turkish Table: "Turkish Regional Cuisine - Antakya Cuisine"
+  'turkish regional cuisine': 'Turkish',
 };
 // Labels that aren't a cuisine: the recipe is left without one.
 const NOT_A_CUISINE = /^(christmas|easter|holiday( recipes)?|festive|baking|desserts?|dinner|soups?|dog food|vegan|miscellaneous|universal|anime|bbq|tropical!?|any flavour you want!?)$/;

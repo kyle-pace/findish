@@ -47,3 +47,30 @@ substackcdn.com
 
 # Recipe photos from Eat Cho Food, served by Squarespace's image CDN, on its own results, lazily and with no referrer. Added under the content-image rule, 2026-11-17.
 images.squarespace-cdn.com
+
+# Recipe photos from Korean Bapsang, on its own results, lazily and with no referrer. Added under the content-image rule, 2026-11-18.
+www.koreanbapsang.com
+
+# Recipe photos from Mexico in My Kitchen, on its own results, lazily and with no referrer. Added under the content-image rule, 2026-11-18.
+www.mexicoinmykitchen.com
+
+# Recipe photos from Pati Jinich, on its own results, lazily and with no referrer. Added under the content-image rule, 2026-11-18.
+patijinich.com
+
+# Recipe photos from Recipes from Italy, on its own results, lazily and with no referrer. Added under the content-image rule, 2026-11-18.
+www.recipesfromitaly.com
+
+# Recipe photos from Maureen Abood, on its own results, lazily and with no referrer. Added under the content-image rule, 2026-11-18.
+maureenabood.com
+
+# Recipe photos from Ozlem's Turkish Table, on its own results, lazily and with no referrer. Added under the content-image rule, 2026-11-18.
+ozlemsturkishtable.com
+
+# Recipe photos from Unicorns in the Kitchen, on its own results, lazily and with no referrer. Added under the content-image rule, 2026-11-18.
+www.unicornsinthekitchen.com
+
+# Recipe photos from Hungry Huy, on its own results, lazily and with no referrer. Added under the content-image rule, 2026-11-18.
+www.hungryhuy.com
+
+# Some of Hungry Huy's recipe photos are served by its image CDN (ShortPixel), on its own results, lazily and with no referrer. Added under the content-image rule, 2026-11-18.
+cdn.shortpixel.ai

@@ -982,6 +982,237 @@
       }
     },
     {
+      "id": "koreanbapsang",
+      "name": "Korean Bapsang",
+      "url": "https://www.koreanbapsang.com",
+      "kind": "site",
+      "vetted": true,
+      "cuisines": [
+        "Korean cuisine",
+        "Korean Chinese cuisine",
+        "South Korean cuisine"
+      ],
+      "note": "Home-style Korean recipes from Hyosun, a Korean-American mom.",
+      "collect": {
+        "status": "crawl",
+        "reason": "Checked as FindishBot: robots.txt allows it, no terms page forbids indexing (the site has a privacy policy only), and its pages carry full recipe data.",
+        "checked": "2026-11-18"
+      },
+      "crawl": {
+        "sitemap": "/sitemap_index.xml",
+        "format": "json-ld",
+        "default_cuisine": "Korean",
+        "size": "about 275 posts",
+        "notes": [
+          "format: full schema.org Recipe (WP Recipe Maker)"
+        ]
+      }
+    },
+    {
+      "id": "indianhealthyrecipes",
+      "name": "Swasthi's Recipes",
+      "url": "https://www.indianhealthyrecipes.com",
+      "kind": "site",
+      "vetted": true,
+      "cuisines": [
+        "Indian cuisine"
+      ],
+      "note": "Swasthi Shreekanth's long-running blog of everyday Indian home cooking from across the regions.",
+      "collect": {
+        "status": "paused",
+        "reason": "robots.txt allows us and nothing in its policies forbids indexing, but its firewall (Sucuri) answers our crawler's requests for both post sitemaps with an empty page (HTTP 200, no content; checked 2026-11-18), so there is nothing to read. Needs the sitemaps to come back, or the site to allow us.",
+        "checked": "2026-11-18"
+      },
+      "crawl": {
+        "sitemap": "/sitemap_index.xml",
+        "format": "json-ld",
+        "default_cuisine": "Indian",
+        "notes": [
+          "sitemap: /post-sitemap.xml and /post-sitemap2.xml"
+        ]
+      }
+    },
+    {
+      "id": "mexicoinmykitchen",
+      "name": "Mexico in My Kitchen",
+      "url": "https://www.mexicoinmykitchen.com",
+      "kind": "site",
+      "vetted": true,
+      "cuisines": [
+        "Mexican cuisine"
+      ],
+      "note": "Mely Martínez's long-running blog of Mexican home-style recipes.",
+      "collect": {
+        "status": "crawl",
+        "reason": "Checked as FindishBot: robots.txt allows it and blocks only OpenAI's bots (GPTBot, ChatGPT-User); its legal page is a privacy policy with nothing against indexing; pages carry full recipe data.",
+        "checked": "2026-11-18"
+      },
+      "crawl": {
+        "sitemap": "/sitemap_index.xml",
+        "format": "json-ld",
+        "default_cuisine": "Mexican",
+        "size": "about 570 posts",
+        "notes": [
+          "format: full schema.org Recipe (WP Recipe Maker)",
+          "course: often the main ingredient (\"Chicken\"), not a course"
+        ]
+      }
+    },
+    {
+      "id": "patijinich",
+      "name": "Pati Jinich",
+      "url": "https://patijinich.com",
+      "kind": "site",
+      "vetted": true,
+      "cuisines": [
+        "Mexican cuisine"
+      ],
+      "note": "Recipe archive from the Mexican-born chef and host of the PBS series Pati's Mexican Table.",
+      "collect": {
+        "status": "crawl",
+        "reason": "Checked as FindishBot: robots.txt allows it, its terms say nothing against crawling or indexing, and its pages carry full recipe data.",
+        "checked": "2026-11-18"
+      },
+      "crawl": {
+        "sitemap": "/sitemap_index.xml",
+        "format": "json-ld",
+        "include": "^https?://patijinich\\.com/[^/]+/?$",
+        "default_cuisine": "Mexican",
+        "size": "about 880 posts",
+        "notes": [
+          "sitemap: the index lists its child sitemaps with http:// addresses",
+          "include: posts sit at the top level; the sitemap also lists dish, meal, region and series pages, which are left out"
+        ]
+      }
+    },
+    {
+      "id": "recipesfromitaly",
+      "name": "Recipes from Italy",
+      "url": "https://www.recipesfromitaly.com",
+      "kind": "site",
+      "vetted": true,
+      "cuisines": [
+        "Italian cuisine"
+      ],
+      "note": "Traditional Italian recipes written by Italian home cooks, organized by region and course.",
+      "collect": {
+        "status": "crawl",
+        "reason": "Checked as FindishBot: robots.txt allows it, no terms page forbids indexing (the site has a privacy policy only), and its pages carry full recipe data.",
+        "checked": "2026-11-18"
+      },
+      "crawl": {
+        "sitemap": "/sitemap_index.xml",
+        "format": "json-ld",
+        "default_cuisine": "Italian",
+        "size": "about 550 posts",
+        "notes": [
+          "format: full schema.org Recipe (WP Recipe Maker)"
+        ]
+      }
+    },
+    {
+      "id": "maureenabood",
+      "name": "Maureen Abood",
+      "url": "https://maureenabood.com",
+      "kind": "site",
+      "vetted": true,
+      "cuisines": [
+        "Lebanese cuisine"
+      ],
+      "note": "Lebanese-American writer Maureen Abood's blog of classic and modern Lebanese recipes.",
+      "collect": {
+        "status": "crawl",
+        "reason": "Checked as FindishBot: robots.txt allows it, no terms page forbids indexing (the site has a privacy policy only), and its recipe posts carry recipe data (story posts carry none and are skipped).",
+        "checked": "2026-11-18"
+      },
+      "crawl": {
+        "sitemap": "/sitemap_index.xml",
+        "format": "json-ld",
+        "size": "about 730 posts",
+        "notes": [
+          "cuisine: often left empty, and not every recipe is Lebanese, so no default"
+        ]
+      }
+    },
+    {
+      "id": "ozlemsturkishtable",
+      "name": "Ozlem's Turkish Table",
+      "url": "https://ozlemsturkishtable.com",
+      "kind": "site",
+      "vetted": true,
+      "cuisines": [
+        "Turkish cuisine"
+      ],
+      "note": "Turkish-born cook and teacher Ozlem Warren's blog of home-style Turkish recipes.",
+      "collect": {
+        "status": "crawl",
+        "reason": "Checked as FindishBot: robots.txt allows search (Content-Signal: search=yes) and says no to AI training (ai-train=no), and blocks about 30 AI crawlers by name, not us. No terms page. Indexing for search is within what it asks; its recipes must not be used to train a model. Newer posts carry recipe data; older ones don't and are skipped. Kyle's call, 2026-11-18.",
+        "checked": "2026-11-18"
+      },
+      "crawl": {
+        "sitemap": "/wp-sitemap.xml",
+        "format": "json-ld",
+        "include": "/\\d{4}/\\d{2}/[^/]+/?$",
+        "default_cuisine": "Turkish",
+        "size": "about 410 posts",
+        "notes": [
+          "sitemap: WordPress core sitemap (wp-sitemap.xml), not Yoast",
+          "cuisine: written long (\"Turkish Regional Cuisine - Antakya Cuisine\")",
+          "time: often missing",
+          "include: dated posts only; the home page repeats several recipes and reads as one muddled recipe"
+        ]
+      }
+    },
+    {
+      "id": "unicornsinthekitchen",
+      "name": "Unicorns in the Kitchen",
+      "url": "https://www.unicornsinthekitchen.com",
+      "kind": "site",
+      "vetted": true,
+      "cuisines": [
+        "Iranian cuisine"
+      ],
+      "note": "Iranian-born Shadi HasanzadeNemati's blog with a large Persian recipe section.",
+      "collect": {
+        "status": "crawl",
+        "reason": "Checked as FindishBot: robots.txt allows it, no terms page forbids indexing (the site has a privacy policy only), and its pages carry full recipe data.",
+        "checked": "2026-11-18"
+      },
+      "crawl": {
+        "sitemap": "/sitemap_index.xml",
+        "format": "json-ld",
+        "size": "about 840 posts",
+        "notes": [
+          "cuisine: Persian, Greek, Turkish and Mediterranean, labeled per recipe, so no default"
+        ]
+      }
+    },
+    {
+      "id": "hungryhuy",
+      "name": "Hungry Huy",
+      "url": "https://www.hungryhuy.com",
+      "kind": "site",
+      "vetted": true,
+      "cuisines": [
+        "Vietnamese cuisine"
+      ],
+      "note": "Vietnamese-American Huy Vu's recipes for home-style Vietnamese dishes.",
+      "collect": {
+        "status": "crawl",
+        "reason": "Checked as FindishBot: robots.txt allows it, no terms page forbids indexing (the site has a privacy policy only), and its pages carry full recipe data.",
+        "checked": "2026-11-18"
+      },
+      "crawl": {
+        "sitemap": "/sitemap_index.xml",
+        "format": "json-ld",
+        "size": "about 455 posts",
+        "notes": [
+          "photos: served from cdn.shortpixel.ai",
+          "cuisine: Vietnamese, Filipino, Japanese, American and more, labeled per recipe, so no default"
+        ]
+      }
+    },
+    {
       "id": "kitchenbutterfly",
       "name": "Kitchen Butterfly",
       "url": "https://www.kitchenbutterfly.com/about-2",
@@ -1462,36 +1693,6 @@
       }
     },
     {
-      "id": "mexicoinmykitchen",
-      "name": "Mexico in My Kitchen",
-      "url": "https://www.mexicoinmykitchen.com/",
-      "kind": "site",
-      "vetted": false,
-      "cuisines": [
-        "Mexican cuisine"
-      ],
-      "note": "Mely Martínez's long-running blog of Mexican home-style recipes.",
-      "region": "americas",
-      "collect": {
-        "status": "not-checked"
-      }
-    },
-    {
-      "id": "patijinich",
-      "name": "Pati Jinich",
-      "url": "https://patijinich.com/recipes/",
-      "kind": "site",
-      "vetted": false,
-      "cuisines": [
-        "Mexican cuisine"
-      ],
-      "note": "Recipe archive from the Mexican-born chef and host of the PBS series Pati's Mexican Table.",
-      "region": "americas",
-      "collect": {
-        "status": "not-checked"
-      }
-    },
-    {
       "id": "muybuenoblog",
       "name": "Muy Bueno",
       "url": "https://muybuenoblog.com/?p=24",
@@ -1673,7 +1874,9 @@
       "note": "Andrea Nguyen's long-running site on Vietnamese cooking in American kitchens.",
       "region": "americas",
       "collect": {
-        "status": "not-checked"
+        "status": "permission-needed",
+        "reason": "Its Permission + Credit page asks for permission first and a credit line. robots.txt allows crawling; the posts sampled carried no recipe data.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -2195,23 +2398,6 @@
       }
     },
     {
-      "id": "koreanbapsang",
-      "name": "Korean Bapsang",
-      "url": "https://www.koreanbapsang.com/category/recipes/",
-      "kind": "site",
-      "vetted": false,
-      "cuisines": [
-        "Korean cuisine",
-        "Korean Chinese cuisine",
-        "South Korean cuisine"
-      ],
-      "note": "Home-style Korean recipes from Hyosun, a Korean-American mom.",
-      "region": "asia-east",
-      "collect": {
-        "status": "not-checked"
-      }
-    },
-    {
       "id": "chinasichuanfood",
       "name": "China Sichuan Food",
       "url": "https://www.chinasichuanfood.com/",
@@ -2396,21 +2582,6 @@
       }
     },
     {
-      "id": "indianhealthyrecipes",
-      "name": "Swasthi's Recipes",
-      "url": "https://www.indianhealthyrecipes.com/about/",
-      "kind": "site",
-      "vetted": false,
-      "cuisines": [
-        "Indian cuisine"
-      ],
-      "note": "Swasthi Shreekanth's long-running blog of everyday Indian home cooking from across the regions.",
-      "region": "asia-rest",
-      "collect": {
-        "status": "not-checked"
-      }
-    },
-    {
       "id": "harighotra",
       "name": "Hari Ghotra",
       "url": "https://www.harighotra.co.uk/indian-recipes",
@@ -2435,51 +2606,6 @@
         "Thai cuisine"
       ],
       "note": "Bangkok-born writer Leela Punyaratabandhu's blog on Thai home cooking.",
-      "region": "asia-rest",
-      "collect": {
-        "status": "not-checked"
-      }
-    },
-    {
-      "id": "hungryhuy",
-      "name": "Hungry Huy",
-      "url": "https://www.hungryhuy.com/vietnamese/",
-      "kind": "site",
-      "vetted": false,
-      "cuisines": [
-        "Vietnamese cuisine"
-      ],
-      "note": "Vietnamese-American Huy Vu's recipes for home-style Vietnamese dishes.",
-      "region": "asia-rest",
-      "collect": {
-        "status": "not-checked"
-      }
-    },
-    {
-      "id": "ozlemsturkishtable",
-      "name": "Ozlem's Turkish Table",
-      "url": "https://ozlemsturkishtable.com/tag/turkish-recipes/page/9",
-      "kind": "site",
-      "vetted": false,
-      "cuisines": [
-        "Turkish cuisine"
-      ],
-      "note": "Turkish-born cook and teacher Ozlem Warren's blog of home-style Turkish recipes.",
-      "region": "asia-rest",
-      "collect": {
-        "status": "not-checked"
-      }
-    },
-    {
-      "id": "maureenabood",
-      "name": "Maureen Abood",
-      "url": "https://maureenabood.com/blog/",
-      "kind": "site",
-      "vetted": false,
-      "cuisines": [
-        "Lebanese cuisine"
-      ],
-      "note": "Lebanese-American writer Maureen Abood's blog of classic and modern Lebanese recipes.",
       "region": "asia-rest",
       "collect": {
         "status": "not-checked"
@@ -2540,21 +2666,6 @@
         "Malaysian cuisine"
       ],
       "note": "Penang-born Bee Yinn Low's recipe site, including Malaysian and Nyonya dishes.",
-      "region": "asia-rest",
-      "collect": {
-        "status": "not-checked"
-      }
-    },
-    {
-      "id": "unicornsinthekitchen",
-      "name": "Unicorns in the Kitchen",
-      "url": "https://www.unicornsinthekitchen.com/persian-recipes",
-      "kind": "site",
-      "vetted": false,
-      "cuisines": [
-        "Iranian cuisine"
-      ],
-      "note": "Iranian-born Shadi HasanzadeNemati's blog with a large Persian recipe section.",
       "region": "asia-rest",
       "collect": {
         "status": "not-checked"
@@ -2801,7 +2912,9 @@
       "note": "Punjabi section of Dassana Amit's large Indian vegetarian recipe blog.",
       "region": "asia-rest",
       "collect": {
-        "status": "not-checked"
+        "status": "permission-needed",
+        "reason": "Its terms ask that nothing on the site (photos, text or other work) be used in a website or app without written permission (vegrecipesofindia@gmail.com). robots.txt allows crawling and pages carry full recipe data.",
+        "checked": "2026-11-18"
       }
     },
     {
@@ -3390,21 +3503,6 @@
         "Italian cuisine"
       ],
       "note": "Vicky Bennison's long-running video series filming Italian grandmothers making regional pasta by hand.",
-      "region": "europe",
-      "collect": {
-        "status": "not-checked"
-      }
-    },
-    {
-      "id": "recipesfromitaly",
-      "name": "Recipes from Italy",
-      "url": "https://recipesfromitaly.com",
-      "kind": "site",
-      "vetted": false,
-      "cuisines": [
-        "Italian cuisine"
-      ],
-      "note": "Traditional Italian recipes written by Italian home cooks, organized by region and course.",
       "region": "europe",
       "collect": {
         "status": "not-checked"

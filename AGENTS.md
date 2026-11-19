@@ -214,6 +214,8 @@ Findish (findish.now; called Recipe search until 2026-11-16, when it moved off k
 - YouTube only through the official YouTube Data API. Refresh stored video data at least every 30 days (the weekly run does), drop removed or private videos, and label video results clearly as YouTube.
 - The YouTube key lives in the GitHub Actions secret `YOUTUBE_API_KEY`. Never in code, the site, or a chat.
 - Adding a source means checking robots.txt, terms and whether it publishes recipe data first, and recording the result in KitchenCatalog's `recipe-sources/sources.json` and Confluence. To add or change a source, edit that file in kyle-pace/kitchen-catalog (`node js/test.mjs` checks it), push it, then run `npm run sync-catalog` here and commit the copy. Only `vetted: true` sources are used.
+- **A site that says no to AI training** (Ozlem's Turkish Table's robots.txt: `Content-Signal: search=yes, ai-train=no`; added 2026-11-18, Kyle's call) is fine to index for search. Never use the index to train or tune a model, and check a site's signal before any new use of its recipes beyond finding and linking to them.
+- A test crawl comes before a new site's first full one: `node crawler/crawl.mjs --sources <id> --limit 6 --dry-run --no-videos --sample 2`. Look for a sitemap that lists pages that aren't recipes (give the source an `include` pattern in KitchenCatalog; Pati Jinich's lists dish and series pages, Ozlem's its home page) and for one that comes back empty (Swasthi's Recipes, paused 2026-11-18).
 - Serious Eats is not crawled (its owner requires written permission). It's a link-out only, unless permission is given.
 
 ### Shared App Projects rules

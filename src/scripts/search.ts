@@ -71,6 +71,8 @@ type Index = {
 };
 
 const PAGE = 24;
+/** How many videos sit under the recipes before "Show all". */
+const VIDEOS_UNDER = 6;
 const MOST_SHOWN = 20 * PAGE; // as far as Back will reopen "Show more"
 // The tab's title could name the search ("mapo tofu: Findish"), which helps tell tabs and
 // history apart. It stays off: Amplitude copies the page's title onto every page view and
@@ -580,12 +582,16 @@ function render() {
   renderRelated(hits, q);
   if (!hits.length && !videos.length && state.show !== 'videos') renderEmpty();
   // Six videos under the recipes; a page at a time when there are only videos (a
-  // YouTube-only creator like Kenji).
+  // YouTube-only creator like Kenji, or "videos only"). Under the recipes, the button
+  // turns on "videos only", so every video for the search is a tap away.
   const only = !hits.length;
-  renderVideos(videos.slice(0, only ? state.shown : 6), q, only);
+  renderVideos(videos.slice(0, only ? state.shown : VIDEOS_UNDER), q, only);
   const moreV = $<HTMLButtonElement>('more-videos');
-  moreV.hidden = !only || videos.length <= state.shown;
-  moreV.textContent = `Show ${Math.min(PAGE, videos.length - state.shown)} more of ${(videos.length - state.shown).toLocaleString()}`;
+  moreV.hidden = only ? videos.length <= state.shown : videos.length <= VIDEOS_UNDER;
+  moreV.toggleAttribute('data-all', !only);
+  moreV.textContent = only
+    ? `Show ${Math.min(PAGE, videos.length - state.shown)} more of ${(videos.length - state.shown).toLocaleString()}`
+    : `Show all ${videos.length.toLocaleString()} videos`;
   renderAlso();
 }
 
@@ -2276,6 +2282,13 @@ for (const id of ['lucky', 'lucky-results', 'lucky-again']) $(id).addEventListen
 
 for (const [btn, list] of [[moreBtn, resultsEl], [$('more-videos'), $('video-results')]] as const) {
   btn.addEventListener('click', () => {
+    // Under the recipes: switch to videos only, and land on the first video.
+    if (btn.hasAttribute('data-all')) {
+      state.show = 'videos';
+      filtersMoved('show', 'videos');
+      list.querySelector<HTMLAnchorElement>('.row :is(h3, h4) a')?.focus();
+      return;
+    }
     const first = state.shown;
     state.shown += PAGE;
     entryShown = state.shown;

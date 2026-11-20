@@ -50,6 +50,11 @@ const FROM_NAME = [
 // dressings and pastes under "Salads" and "Main Course", and jellies under "Sides".
 const OVERRIDES = new Set(['sauce', 'dessert', 'drink']);
 
+// A kimchi is a side dish (banchan), though some sites shelve it under "Condiments" or "Pantry".
+// Only a name that is the kimchi itself ("Easy Kimchi Recipe", "Kkakdugi"), not a dish made
+// with it ("Kimchi Stew", "Kimchi Fried Rice") or a paste for it ("Kimchi Paste").
+const KIMCHI = /\b(kimchi|kimchee|kimuchi|kkakdugi)( recipe)?$/;
+
 const clean = (s) =>
   String(s || '')
     .toLowerCase()
@@ -71,6 +76,7 @@ export function courseOf(label, name) {
   if (l)
     for (const [id, re] of FROM_LABEL)
       if (re.test(l)) {
+        if (id === 'sauce' && KIMCHI.test(n)) return 'side';
         const named = id === 'main' || id === 'side' ? byName() : '';
         return OVERRIDES.has(named) ? named : id;
       }

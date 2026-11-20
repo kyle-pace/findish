@@ -46,3 +46,11 @@ test('a plain name beats a main or side label', () => {
 test('every course has a label', () => {
   for (const [id, label] of COURSES) assert.ok(id && label);
 });
+
+test('a kimchi filed under condiments or pantry is a side, but a kimchi paste or stew is not', () => {
+  assert.equal(courseOf('Condiment', 'Authentic and Easy Kimchi Recipe (One Cabbage Only)'), 'side');
+  assert.equal(courseOf('Pantry', 'Kkakdugi (Cubed Radish Kimchi)'), 'side');
+  assert.equal(courseOf('Condiment', 'Kimchi Paste'), 'sauce');
+  assert.equal(courseOf('Sauces', 'Kimchi Stew (Kimchi Jigae Recipe)'), 'sauce'); // goes by its label, as before
+  assert.equal(courseOf('Sauces & Condiments', 'Pesto'), 'sauce');
+});

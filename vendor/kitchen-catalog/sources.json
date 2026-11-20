@@ -982,6 +982,32 @@
       }
     },
     {
+      "id": "japanesecookingchannel",
+      "name": "Japanese Cooking Channel",
+      "url": "https://www.youtube.com/@JapaneseCookingChannel",
+      "kind": "channel",
+      "vetted": true,
+      "cuisines": [
+        "Japanese cuisine"
+      ],
+      "note": "Everyday Japanese home cooking on a budget from Sayaka, who lives in Tokyo.",
+      "collect": {
+        "status": "youtube-only",
+        "reason": "No recipe site to index: misosoup.site, linked from the channel, is for business inquiries. Her channel is read through the YouTube Data API.",
+        "checked": "2026-11-19"
+      },
+      "search": "https://www.youtube.com/@JapaneseCookingChannel/search?query={q}",
+      "search_label": "All of Sayaka's videos",
+      "support": {
+        "links": [
+          {
+            "label": "YouTube",
+            "url": "https://www.youtube.com/@JapaneseCookingChannel"
+          }
+        ]
+      }
+    },
+    {
       "id": "koreanbapsang",
       "name": "Korean Bapsang",
       "url": "https://www.koreanbapsang.com",

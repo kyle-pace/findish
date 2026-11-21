@@ -17,7 +17,7 @@ this repo only; the app repo links to it rather than keeping a copy.
 | Search and ranking (typo fixing, dish-first order, diets, related rules) | `src/lib/search-core.mjs` | Bundled into the app with `src/lib/related.mjs` by `App/update-search.sh` (`App/Resources/findish-search.js`) and run on the device in JavaScriptCore |
 | Which sites are in Findish and how to back each creator | `sources.yaml` and the index's `support` | Through the index; the app has no list of its own |
 | Analytics events | The Findish Amplitude project's tracking plan | Both send to the same project with the same event names |
-| Name, wordmark, colors | `design/PLAN.md` here | The app follows it (its colors still need moving over from the old Recipe Search look) |
+| Name, wordmark, colors | `design/PLAN.md` here | The app uses the same colors, wordmark and favicon-based icon (`Theme.swift`, `Wordmark.swift`, `design/app-icon.html`) |
 
 Nothing about search, ranking or the recipe data is ever written twice. If the app needs a search
 behavior the site doesn't have, it goes in `search-core.mjs` behind an option, not in Swift.

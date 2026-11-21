@@ -228,6 +228,15 @@ Findish (findish.now; called Recipe search until 2026-11-16, when it moved off k
 - Ingredient names come from KitchenCatalog (kyle-pace/kitchen-catalog, which has a JS matcher), so ids match Grocery Deals and Maitake.
 - Pantry data never comes to this site. "Use what I have" in the app belongs in Maitake, reading this site's static index; on the web it's typed in. The one exception is Grocery Deals' list lookup (next section), which Kyle approved on 2026-11-14: a few catalog ids, never typed text, answered and forgotten.
 
+### The app (findish-app) stays in step
+
+Findish also has an iPhone and iPad app, `kyle-pace/findish-app` (private), checked out next to this repo. It reads `https://findish.now/index.json` and runs this repo's `src/lib/search-core.mjs` on the device, bundled by its `App/update-search.sh`. [docs/web-and-app.md](docs/web-and-app.md) is the agreement between the two: what they share, the rules, and a table of which features each side has. In short:
+
+- Search and ranking change here only. After a merge that changes `search-core.mjs`, rebundle the app (`App/update-search.sh` there) and commit it.
+- `index.json` only grows: add fields, never remove, rename, reorder or retype one until an app version that copes is out.
+- A pull request that adds or changes a feature people see updates the feature table in `docs/web-and-app.md`.
+- Same event names and the same on-screen words on both sides.
+
 ### Layout
 
 - Sources: every source, how it's collected, the result of its last check and ways to support its creator live in KitchenCatalog (`recipe-sources/sources.json`, field reference in `recipe-sources/schema.md`), vendored to `vendor/kitchen-catalog/sources.json`. `crawler/lib/sources.mjs` turns it into the crawl jobs, YouTube channels, link-outs and support links the crawler and `scripts/build-index.mjs` use.

@@ -14,7 +14,7 @@ this repo only; the app repo links to it rather than keeping a copy.
 | Piece | Source of truth | How the other side gets it |
 | --- | --- | --- |
 | The recipes, videos, creators, support links, cuisines, courses | `public/index.json`, built by `scripts/build-index.mjs` | The app downloads `https://findish.now/index.json` and reads it in `App/Sources/Index/RecipeIndex.swift` |
-| Search and ranking (typo fixing, dish-first order, diets, related rules) | `src/lib/search-core.mjs` | Bundled into the app by `App/update-search.sh` (`App/Resources/findish-search.js`) and run on the device in JavaScriptCore |
+| Search and ranking (typo fixing, dish-first order, diets, related rules) | `src/lib/search-core.mjs` | Bundled into the app with `src/lib/related.mjs` by `App/update-search.sh` (`App/Resources/findish-search.js`) and run on the device in JavaScriptCore |
 | Which sites are in Findish and how to back each creator | `sources.yaml` and the index's `support` | Through the index; the app has no list of its own |
 | Analytics events | The Findish Amplitude project's tracking plan | Both send to the same project with the same event names |
 | Name, wordmark, colors | `design/PLAN.md` here | The app follows it (its colors still need moving over from the old Recipe Search look) |
@@ -62,7 +62,7 @@ behavior the site doesn't have, it goes in `search-core.mjs` behind an option, n
 
 ## Feature table
 
-Last checked: 2026-11-21 (web at recipe-search `e589af7`, app 0.6.0).
+Last checked: 2026-11-21 (web at recipe-search `7774072`, app 0.6.0 after the parity pass).
 
 | Feature | Web | App | Notes |
 | --- | --- | --- | --- |
@@ -71,17 +71,17 @@ Last checked: 2026-11-21 (web at recipe-search `e589af7`, app 0.6.0).
 | Filters: cuisine, time, sites | Yes | Yes | |
 | Filter: course | Yes | Yes | App added in 0.6.0 |
 | Vegetarian | Yes | Yes | |
-| Vegan, "no dairy" and other groups | Yes | Not yet | The search supports it; the app's Edit sheet doesn't offer it |
+| Vegan, "no dairy" and other groups | Yes | Yes | App: Diet and Leave out in the Edit sheet |
 | Leave out an ingredient | Yes | Yes | |
-| Videos from creators' channels | Yes | Yes | |
+| Videos from creators' channels | Yes | Yes | Both show six under the recipes with "Show all N videos"; the app plays them in an in-app browser |
 | Ways to back each creator | Yes (creator pages) | Yes (Creators tab) | Same `support` data |
 | A page per creator | Yes | Partly | App has a row per creator in Creators, not a full page |
 | Starred creators ranked first | No | Yes | App only for now: stars live on the device |
-| Ask in your own words | Experiment (`?chat=1`) | Yes | Different engines on purpose (rule 6) |
+| Ask in your own words | Experiment (`?chat=1`) | Yes | Different engines on purpose (rule 6). Without Apple Intelligence the app reads the sentence with the site's own `understand()` |
 | Moods ("comforting", "light") | No | Yes | App only for now; candidates for `search-core.mjs` |
-| Sides to go with a main | Yes | Not yet | |
-| Related dishes | Yes | Not yet | |
-| New this week | Yes (footer) | Not yet | |
+| Sides to go with a main | Yes | Yes | App shows it once per cuisine on the page |
+| Related dishes | Yes | Yes | App bundles `related.mjs` with the search |
+| New this week | Yes (footer) | Yes | App: a home shortcut and a filter |
 | Browse pages by cuisine, course, ingredient | Yes | No | Web only: they're there for search engines |
 | World cuisine notes on cuisine searches | Yes (link) | Not yet | |
 | Recently opened, saved recipes | Yes (this browser) | Yes (Saved, offline) | |

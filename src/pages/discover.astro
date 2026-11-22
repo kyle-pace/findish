@@ -17,15 +17,15 @@ const { shelves } = DISCOVER;
 ---
 
 <LabLayout
-  favicon="/favicon-v3.svg"
+  favicon="/favicon-v4.svg"
   site={SITE}
   bar={false}
   lab={{ name: 'the search', href: '/' }}
   about="/about/"
-  title="Discover recipes on Findish: this week’s shelves"
+  title="Discover recipes on finDish: this week’s shelves"
   description={`Recipes from independent cooks, grouped for the week: ${shelves.slice(0, 3).map((s) => s.title.toLowerCase()).join(', ')} and more. Every one opens on the cook’s own site.`}
   image="/og.png"
-  imageAlt="Findish: a search box holding ginger and tofu. Recipes from The Woks of Life, Hot Thai Kitchen, Smitten Kitchen and more."
+  imageAlt="finDish: a search box holding ginger and tofu. Recipes from The Woks of Life, Hot Thai Kitchen, Smitten Kitchen and more."
   themeColor={{ light: '#fbf5ec', dark: '#1d1714' }}
   noindex={!DISCOVER_LISTED}
 >

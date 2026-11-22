@@ -83,7 +83,7 @@ Last checked: 2026-11-21 (web at recipe-search `7774072`, app 0.6.0 after the pa
 | Related dishes | Yes | Yes | App bundles `related.mjs` with the search |
 | New this week | Yes (footer) | Yes | App: a home shortcut and a filter |
 | Browse pages by cuisine, course, ingredient | Yes | No | Web only: they're there for search engines |
-| Discover shelves (collections) | Unlisted (`/discover/`) | Not yet | Built from `/discover.json`, which the app can read as is when it gets a Discover tab; same shelf ids and event names |
+| Discover shelves (collections) | Unlisted (`/discover/`) | Not yet | Built from `/discover.json`, which the app can read as is when it gets a Discover tab; "See all" is the search held to a shelf (`collection=`, keys in `/discover/keys.json`); same shelf ids and event names |
 | World cuisine notes on cuisine searches | Yes (link) | Not yet | |
 | Recently opened, saved recipes | Yes (this browser) | Yes (Saved, offline) | |
 | Clean recipe card, scaling, cook mode | No | Yes | App only: reads the creator's page inside the app |

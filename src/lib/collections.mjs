@@ -94,7 +94,7 @@ export const COLLECTIONS = [
     staples: true,
     maxMinutes: 30,
     // Made from the pantry, but not a meal.
-    notWords: ['sauce', 'dip', 'butter', 'dressing', 'seasoning', 'paste', 'syrup', 'spread'],
+    notWords: ['sauce', 'dip', 'butter', 'dressing', 'soup base', 'stock', 'broth', 'seasoning', 'paste', 'syrup', 'spread'],
     courses: ['main', 'side', 'soup', 'breakfast'],
   },
   {
@@ -240,6 +240,17 @@ function choose(index, list, { pin = [], show, seed }) {
   return out;
 }
 
+/** A shelf's whole list in the order "See all" shows it: what the shelf shows first, then the rest with creators taking turns, so one big site doesn't fill the first page. */
+function seeAllOrder(index, list, shown, seed) {
+  const rest = list.filter((r) => !shown.includes(r)).sort(byOpens(index, seed));
+  const bySource = new Map();
+  for (const r of rest) (bySource.get(r[0]) || bySource.set(r[0], []).get(r[0])).push(r);
+  const queues = [...bySource.values()];
+  const out = [...shown];
+  for (let turn = 0; out.length < list.length; turn++) for (const q of queues) if (q[turn]) out.push(q[turn]);
+  return out.map((r) => keyOf(index, r));
+}
+
 /**
  * Every collection to show on the build date, in order.
  * @param {any} index public/index.json
@@ -298,6 +309,9 @@ export function buildCollections(index, catalog, opts = {}) {
       count: list.length,
       search: c.search || '',
       rows: rows.map((r) => rowOut(index, r)),
+      // Every recipe on the shelf, for "See all" (/discover/keys.json and /?collection=<id>),
+      // in the order "See all" shows them: the shelf's own first, then creators taking turns.
+      keys: seeAllOrder(index, list, rows, seed),
     });
   }
   return { week, built: index.built, shelves };

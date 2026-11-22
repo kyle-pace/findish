@@ -158,8 +158,9 @@ const state = {
   notWords: [] as string[], // words to leave out by title, for things that aren't one ingredient ("no peas")
   diet: '' as '' | 'vegetarian' | 'vegan',
   sort: '' as '' | 'quickest' | 'newest', // the order results come in; '' is best match
-  keep: '' as '' | 'saved' | 'list', // only recipes saved on this device, or the ones a shared link lists
-  listKeys: [] as string[], // the recipe keys a shared link lists (#list= in the address)
+  keep: '' as '' | 'saved' | 'list' | 'collection', // only recipes saved on this device, the ones a shared link lists, or a Discover shelf's
+  listKeys: [] as string[], // the recipe keys a shared link lists (#list= in the address), or a Discover shelf holds
+  collection: '', // the Discover shelf a search is held to (&collection= in the address)
   exact: false, // search the words as typed, without fixing typos
   list: false, // a comma just made an ingredient tag, so what's typed next carries on the list
   shown: PAGE,
@@ -197,6 +198,7 @@ async function load() {
   recipes.forEach((r) => keyIndex.set(r.key, r.i));
   buildFilters();
   buildStart();
+  await loadShelves();
   readUrl();
   // A link that is only words (/?q=quick+vegetarian+dinner, what the site's SearchAction
   // hands out) is read as a typed sentence, so it finds what typing it would. Only on
@@ -210,6 +212,8 @@ async function load() {
   // Arriving at the saved view or a shared list from a link (the footer's "Saved" is one).
   if (history.state == null && state.keep === 'saved') track('Opened Saved Recipes', { opened_from: 'link', saved_count: stored.read('saved').length });
   if (history.state == null && state.keep === 'list') track('Opened Shared List', { recipe_count: state.listKeys.length });
+  // "See all" on a Discover shelf, or a link to one.
+  if (history.state == null && state.keep === 'collection') track('Opened Collection Search', { collection_id: state.collection, recipe_count: state.listKeys.length });
   state.shown = entryShown = shownFrom(history.state);
   app.dataset.state = 'ready';
   // Enter was pressed before the recipes had loaded: search for what's in the box now.
@@ -231,6 +235,28 @@ async function load() {
       videosLanded();
     });
 }
+/**
+ * The Discover shelves' recipe keys (/discover/keys.json, built with the site), for "See all"
+ * on a shelf: /?collection=curries holds the search to that shelf's recipes, the way the saved
+ * view holds it to saved ones. Fetched only when the address, or a recent search, names a shelf.
+ */
+const shelves = new Map<string, { title: string; keys: string[] }>();
+async function loadShelves() {
+  const wanted = new URLSearchParams(location.search).has('collection') || stored.read('recent').some((k) => k.includes('collection='));
+  if (!wanted) return;
+  try {
+    const got = await fetch('/discover/keys.json').then((r) => (r.ok ? r.json() : null));
+    for (const c of got?.shelves || []) if (typeof c.id === 'string' && Array.isArray(c.keys)) shelves.set(c.id, { title: String(c.title || c.id), keys: c.keys });
+  } catch {
+    // Not this time: a shelf's link reads as every recipe, and the page says nothing is held.
+  }
+}
+/** A shelf's name as a tag: "easy curries". */
+const shelfLabel = (id: string) => {
+  const t = shelves.get(id)?.title || id;
+  return t[0].toLowerCase() + t.slice(1);
+};
+
 /** Enter was pressed before the recipes had loaded; the search runs as soon as they have. */
 let submitWaiting = false;
 /** Something was typed before the recipes had loaded. */
@@ -314,7 +340,7 @@ function searchVideos(opts: { q?: string; skip?: Skip } = {}): VideoRow[] {
 }
 
 /** The recipe keys a search is held to: the saved ones, or a shared link's list. Null when it isn't. */
-const keepKeys = (s: { keep: string; listKeys: string[] }) => (s.keep === 'saved' ? stored.read('saved') : s.keep === 'list' ? s.listKeys : null);
+const keepKeys = (s: { keep: string; listKeys: string[] }) => (s.keep === 'saved' ? stored.read('saved') : s.keep === 'list' || s.keep === 'collection' ? s.listKeys : null);
 
 /** Only the saved recipes (or a shared list's), when the search is held to them. */
 function kept(hits: Hit[], s: { keep: string; listKeys: string[] }): Hit[] {
@@ -561,6 +587,8 @@ function render() {
   const onlyKept = state.keep && hits.length && !q.length && isBlank2();
   if (onlyKept && state.keep === 'saved')
     statusEl.innerHTML = `${count} saved ${hits.length === 1 ? 'recipe' : 'recipes'}, kept on this device. <button type="button" data-copy-list="1">Copy this list as a link</button>.`;
+  if (onlyKept && state.keep === 'collection')
+    statusEl.innerHTML = `${count} ${hits.length === 1 ? 'recipe' : 'recipes'} on Discover’s “${esc(shelves.get(state.collection)?.title || '')}” shelf this week. <a href="/discover/#${esc(state.collection)}">Back to Discover</a>.`;
   if (onlyKept && state.keep === 'list')
     statusEl.innerHTML = `${count} ${hits.length === 1 ? 'recipe' : 'recipes'} from a list someone shared. <button type="button" data-save-all="1">Save ${hits.length === 1 ? 'it' : 'them all'} on this device</button>.`;
   // A word nothing here has was left out of the search: say which.
@@ -601,12 +629,12 @@ type Tag = { key: string; label: string; kind: string };
  * Every tag in the box, in the order it was added. Backspace in an empty box takes the
  * last one off, whatever kind it is ("new this week" and "no pork" included).
  */
-type Asked = Pick<typeof state, 'q' | 'with' | 'sites' | 'time' | 'cuisine' | 'course' | 'fresh' | 'sidesFor' | 'show' | 'without' | 'notWords' | 'diet' | 'sort' | 'keep' | 'listKeys' | 'exact'>;
+type Asked = Pick<typeof state, 'q' | 'with' | 'sites' | 'time' | 'cuisine' | 'course' | 'fresh' | 'sidesFor' | 'show' | 'without' | 'notWords' | 'diet' | 'sort' | 'keep' | 'listKeys' | 'collection' | 'exact'>;
 
 /** The tags a search has, in the page's usual order. */
 function tagsOf(s: Asked): Tag[] {
   return [
-    ...(s.keep ? [{ key: 'keep', label: s.keep === 'saved' ? 'saved' : 'shared list', kind: 'diet' }] : []),
+    ...(s.keep ? [{ key: 'keep', label: s.keep === 'saved' ? 'saved' : s.keep === 'collection' ? shelfLabel(s.collection) : 'shared list', kind: 'diet' }] : []),
     ...[...s.sites].map((id) => ({ key: `site:${id}`, label: `from ${creatorById.get(id)?.name || id}`, kind: 'creator' })),
     ...(s.cuisine ? [{ key: 'cuisine', label: `${s.cuisine} cuisine`, kind: 'cuisine' }] : []),
     ...(s.fresh ? [{ key: 'fresh', label: 'new this week', kind: 'diet' }] : []),
@@ -651,7 +679,7 @@ function removeTag(key: string) {
   else if (kind === 'cuisine') state.cuisine = '';
   else if (kind === 'fresh') state.fresh = false;
   else if (kind === 'diet') state.diet = '';
-  else if (kind === 'keep') [state.keep, state.listKeys] = ['', []];
+  else if (kind === 'keep') [state.keep, state.listKeys, state.collection] = ['', [], ''];
   else if (kind === 'with') state.with = state.with.filter((p) => p !== Number(value));
   else if (kind === 'not') state.without = state.without.filter((p) => p !== Number(value));
   else if (kind === 'word') state.notWords = state.notWords.filter((w) => w !== value);
@@ -713,9 +741,9 @@ function renderEmpty() {
   // Only what's saved (or on a shared list) was searched: offer everything.
   if (state.keep && !isBlank2())
     fixes.push({
-      label: state.keep === 'saved' ? 'every recipe, not just the saved ones' : 'every recipe, not just this list',
+      label: state.keep === 'saved' ? 'every recipe, not just the saved ones' : state.keep === 'collection' ? 'every recipe, not just this shelf' : 'every recipe, not just this list',
       n: countFor({ keep: '' }),
-      apply: () => ([state.keep, state.listKeys] = ['', []]),
+      apply: () => ([state.keep, state.listKeys, state.collection] = ['', [], '']),
     });
   for (const p of state.with) {
     if (state.with.length < 2 && !state.q) continue;
@@ -779,7 +807,9 @@ function renderEmpty() {
       ? 'Nothing is saved yet. “Save” under a recipe keeps it here, on this device.'
       : state.keep === 'list' && isBlank2()
         ? 'None of the recipes on that list are here any more.'
-        : '';
+        : state.keep === 'collection' && isBlank2()
+          ? 'None of the recipes on that shelf are here any more.'
+          : '';
   const lines = [
     nothingKept,
     tries.length ? `Try ${orList([...tries, over])}.` : also.length ? `Try ${orList([...also, over])}.` : state.q ? `Try fewer or different words, or ${over}.` : `Try ${over}.`,
@@ -1908,6 +1938,7 @@ function queryOf(s: Asked): URLSearchParams {
   if (s.diet) p.set('diet', s.diet);
   if (s.sort) p.set('sort', s.sort);
   if (s.keep === 'saved') p.set('saved', '1');
+  if (s.keep === 'collection') p.set('collection', s.collection);
   if (s.exact) p.set('exact', '1');
   if (s.sidesFor) p.set('sidesFor', s.sidesFor);
   return p;
@@ -1928,6 +1959,8 @@ function parse(p: URLSearchParams, hash = ''): Asked {
   const sort = p.get('sort');
   // A shared list (#list=…) holds recipe keys; ones the index no longer has are dropped.
   const listKeys = keysFromHash(hash).filter((k) => keyIndex.has(k));
+  // A Discover shelf (&collection=curries), when its keys loaded; ones the index no longer has are dropped.
+  const shelf = !listKeys.length ? shelves.get(p.get('collection') || '') : undefined;
   return {
     q: cleanQ(p.get('q') || ''),
     with: positions('with'),
@@ -1937,8 +1970,9 @@ function parse(p: URLSearchParams, hash = ''): Asked {
     notWords: (p.get('not') || '').split(',').map((w) => w.trim().toLowerCase()).filter(Boolean),
     diet: diet === 'vegetarian' || diet === 'vegan' ? diet : '',
     sort: sort === 'quickest' || sort === 'newest' ? sort : '',
-    keep: listKeys.length ? 'list' : p.get('saved') === '1' ? 'saved' : '',
-    listKeys,
+    keep: listKeys.length ? 'list' : shelf ? 'collection' : p.get('saved') === '1' ? 'saved' : '',
+    listKeys: shelf ? shelf.keys.filter((k) => keyIndex.has(k)) : listKeys,
+    collection: shelf ? p.get('collection')! : '',
     exact: p.get('exact') === '1',
     cuisine: data.cuisines.some(([name]) => name === c) ? c : '',
     course,
@@ -2259,6 +2293,7 @@ function clearAll() {
   state.sort = '';
   state.keep = '';
   state.listKeys = [];
+  state.collection = '';
   state.exact = false;
   state.list = false;
   state.picked = -1;

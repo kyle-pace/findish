@@ -116,3 +116,14 @@ test('on the real index every shelf is full, varied and fits its own rules', () 
   const curries = shelves.find((s) => s.id === 'curries');
   if (curries) for (const r of curries.rows) assert.ok(r.minutes > 0 && r.minutes <= 45, `${r.name} takes ${r.minutes}`);
 });
+
+test('"See all" holds every recipe on the shelf, the shown ones first, then creators taking turns', () => {
+  const recipes = [...Array(10)].map((_, i) => row(0, `A dish ${i}`, 10, [0])).concat([...Array(3)].map((_, i) => row(1, `B dish ${i}`, 10, [0])));
+  const s = only({ courses: ['main'], show: 2 }, tiny(recipes));
+  assert.equal(s.keys.length, 13);
+  assert.equal(new Set(s.keys).size, 13);
+  assert.deepEqual(s.keys.slice(0, 2), s.rows.map((r) => r.key));
+  // After the shelf's own, the next few alternate rather than running through one creator.
+  const next = s.keys.slice(2, 6).map((k) => k[0]);
+  assert.ok(next.includes('a') && next.includes('b'));
+});

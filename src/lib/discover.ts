@@ -14,6 +14,8 @@ export type Shelf = {
   search: string;
   /** The creator of the week, on their shelf. */
   creator?: string;
+  /** Every recipe on the shelf, by key (not on the creator of the week's shelf, which links to their page). */
+  keys?: string[];
   rows: { name: string; url: string; key: string; source: string; creator: string; minutes: number; cuisine: string; img: string }[];
 };
 

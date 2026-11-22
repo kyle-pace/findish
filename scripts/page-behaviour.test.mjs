@@ -247,3 +247,23 @@ check('desktop: a filter menu opened with the keyboard takes focus, and gives it
   assert.equal(await page.evaluate(() => document.activeElement.id), 'f-cuisine-btn');
   await page.context().close();
 });
+
+check('"See all" on a Discover shelf holds the search to that shelf, as a tag that comes off', async () => {
+  const shelves = JSON.parse(readFileSync(join(dist, 'discover/keys.json'), 'utf8')).shelves;
+  const curries = shelves.find((s) => s.id === 'curries') || shelves[0];
+  const page = await open(`/?collection=${curries.id}`, { width: 1280, height: 900 });
+  const status = await page.evaluate(() => document.getElementById('status').textContent);
+  assert.match(status, new RegExp(`${curries.keys.length.toLocaleString('en-US')} recipes? on Discover`));
+  const tags = await page.evaluate(() => [...document.querySelectorAll('#with-chips button')].map((b) => b.textContent.replace('×', '').trim()));
+  assert.equal(tags.length, 1);
+  // Words narrow inside the shelf, and the address keeps the shelf.
+  await searchFor(page, 'chicken');
+  assert.equal(await page.evaluate(() => new URLSearchParams(location.search).get('collection')), curries.id);
+  const keys = await page.evaluate(() => [...document.querySelectorAll('#results h3 a, #results h4 a')].map((a) => a.dataset.key).filter(Boolean));
+  assert.ok(keys.length && keys.every((k) => curries.keys.includes(k)), 'a result from off the shelf');
+  // Taking the tag off searches everything.
+  await page.click('#with-chips button');
+  await page.waitForTimeout(250);
+  assert.equal(await page.evaluate(() => new URLSearchParams(location.search).get('collection')), null);
+  await page.context().close();
+});

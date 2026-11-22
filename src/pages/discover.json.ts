@@ -5,5 +5,8 @@ import { DISCOVER } from '../lib/discover';
 
 export const prerender = true;
 
+// Each shelf's full list of keys is in /discover/keys.json instead, so this stays small.
 export const GET: APIRoute = () =>
-  new Response(JSON.stringify({ version: 1, ...DISCOVER }), { headers: { 'content-type': 'application/json; charset=utf-8' } });
+  new Response(JSON.stringify({ version: 1, ...DISCOVER, shelves: DISCOVER.shelves.map(({ keys, ...s }) => s) }), {
+    headers: { 'content-type': 'application/json; charset=utf-8' },
+  });

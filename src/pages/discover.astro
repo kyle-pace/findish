@@ -92,10 +92,9 @@ const { shelves } = DISCOVER;
               </a>
             </p>
           ) : (
-            s.search &&
             s.count > s.rows.length && (
               <p class="all">
-                <a href={s.search} data-full-search>
+                <a href={`/?collection=${encodeURIComponent(s.id)}`} data-full-search>
                   See all {n(s.count, 'recipe')}
                 </a>
               </p>

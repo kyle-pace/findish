@@ -234,3 +234,32 @@ Checked against the defaults: no pills or chips (the set filters are a sentence)
 ## A recipe with no photo (2026-11-18)
 
 About 230 recipes have no photo (most are Alton Brown's, whose site shows a stand-in). Their slot used to be a grey box saying "No photo", which Kyle called out as needing something better. Now it holds an empty plate seen from above: a rim and the line of the well, drawn in CSS in the muted ink at low strength. It is the plate from the wordmark's d, so it comes from the subject and not from a stock placeholder; it keeps the rows aligned; and it says "nothing to show here" without a word. A photo that fails to load gets the same plate. It is decoration, hidden from screen readers like the photos' empty alt text, so a screen reader no longer hears "No photo" on each of those rows.
+
+
+## Discover (November 22, 2026)
+
+Shelves of recipes picked by rules from the index: "From the pantry in 30 minutes", "Easy curries", what's in season, a holiday when one is near, and one creator a week. Built at build time (`src/lib/collections.mjs`), so it changes with every Monday crawl and holds still in between. Behind a flag for now: `/discover/` is built but not linked, not in the sitemap and marked noindex until `DISCOVER_LISTED` in `src/lib/site.ts` is turned on.
+
+**Who it's for:** someone who opens Findish without a dish in mind. The search box is for knowing what you want; this is for being handed a few good places to start.
+
+**The one bold thing: the shelf edge.** Each collection's heading sits on a thick tomato rule that runs the width of the page, like the lip of a pantry shelf, and the recipes sit under it. Everything else is the browse pages' clothes: the same rows (photo, name, a plain sentence of time and creator), the same ruled lists, the photos carrying the color.
+
+```
+findish
+
+Discover
+Recipes picked from the 22,037 here, grouped for the week. New shelves every Monday.
+
+On the shelves this week          (a ruled list of jump links, each with a count)
+For Thanksgiving   299 recipes
+Fall produce       1,319 recipes
+
+For Thanksgiving                                  299 recipes
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Stuffing, cranberries, pies and the rest of the table.
+[photo] Sweet Potato Casserole        [photo] Fried Rice Stuffing
+        38 minutes, from Panlasang Pinoy      from Seonkyoung Longest
+See all 299
+```
+
+Checked against the defaults: no cards, pills or eyebrows; the count beside a heading is plain muted text, not a badge; the blurb is one sentence about the food, not about the interface; "See all" is a plain link, and only where the shelf is a search the page can run.

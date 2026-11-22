@@ -57,6 +57,7 @@ npm run preview   # builds, then runs it the way Cloudflare will
 | Sorting support links into join, buy and follow | `scripts/support.mjs` (tests in `scripts/support.test.mjs`) |
 | Cookbook covers | `public/covers/`, fetched from Open Library by `npm run covers` (run it after `npm run sync-catalog` adds books, and commit the covers) |
 | Browse pages (`/browse/`, `/cuisine/<slug>/`, `/course/<id>/`, `/with/<ingredient>/`) | `src/lib/browse.ts` picks them from the index; `src/components/BrowsePage.astro` draws them; pages in `src/pages/cuisine/`, `course/`, `with/` and `browse/` |
+| Discover shelves (`/discover/`, unlisted until `DISCOVER_LISTED` in `src/lib/site.ts`; feed at `/discover.json`) | `src/lib/collections.mjs` has the collections and their rules, with tests in `collections.test.mjs`; `src/lib/discover.ts` builds them once; `src/pages/discover.astro` draws them |
 | Sitemap | `src/pages/sitemap.xml.ts` (hand-written pages in `PAGES`; creator and browse pages from the index, dated by the latest crawl) |
 | Security headers | `public/_headers` |
 | Install as an app | `public/manifest.webmanifest`, icons in `public/icons/` (redraw with `node scripts/app-icons.mjs`) |

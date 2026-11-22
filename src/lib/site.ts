@@ -6,6 +6,11 @@
 // that it shared kylepace.dev's (902556), where its older events stay. The daily popularity
 // job (scripts/popularity.mjs) reads this project with the secrets AMPLITUDE_API_KEY and
 // AMPLITUDE_SECRET_KEY.
+// The Discover page (/discover/, added 2026-11-22) is built but unlisted until this is true:
+// off, it has no footer link, isn't in the sitemap and asks search engines not to index it.
+// Turning it on is this one line.
+export const DISCOVER_LISTED = false;
+
 export const SITE = {
   name: 'Findish',
   analytics: { apiKey: '8c102a3b3b5f8f0206dd6883f2b389cf', liveHosts: ['findish.now'] },
@@ -16,6 +21,7 @@ export const SITE = {
     { href: '/?new=1', label: 'New this week' },
     { href: '/?saved=1', label: 'Saved' },
     { href: '/about/', label: 'About' },
+    ...(DISCOVER_LISTED ? [{ href: '/discover/', label: 'Discover' }] : []),
     { href: '/browse/', label: 'Browse' },
     { href: '/creators/', label: 'Creators' },
     { href: '/assistants/', label: 'For AI assistants' },

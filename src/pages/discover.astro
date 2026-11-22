@@ -1,0 +1,114 @@
+---
+// Discover (/discover/, added 2026-11-22): shelves of recipes picked by rules from the index
+// (src/lib/collections.mjs), new every Monday crawl. Unlisted until DISCOVER_LISTED in
+// src/lib/site.ts is on. Plan: design/PLAN.md, "Discover". Like the browse pages it is a
+// list of links out to the cooks' own sites; never the method, never Recipe markup.
+import LabLayout from 'kp-design/layouts/LabLayout.astro';
+import { SITE, DISCOVER_LISTED } from '../lib/site';
+import SiteHead from '../components/SiteHead.astro';
+import { fmtTime, n, pagePath } from '../lib/creators';
+import { DISCOVER, TOTAL } from '../lib/discover';
+import '../styles/theme.css';
+import '../styles/creators.css';
+import '../styles/browse.css';
+import '../styles/discover.css';
+
+const { shelves } = DISCOVER;
+---
+
+<LabLayout
+  favicon="/favicon-v3.svg"
+  site={SITE}
+  bar={false}
+  lab={{ name: 'the search', href: '/' }}
+  about="/about/"
+  title="Discover recipes on Findish: this week’s shelves"
+  description={`Recipes from independent cooks, grouped for the week: ${shelves.slice(0, 3).map((s) => s.title.toLowerCase()).join(', ')} and more. Every one opens on the cook’s own site.`}
+  image="/og.png"
+  imageAlt="Findish: a search box holding ginger and tofu. Recipes from The Woks of Life, Hot Thai Kitchen, Smitten Kitchen and more."
+  themeColor={{ light: '#fbf5ec', dark: '#1d1714' }}
+  noindex={!DISCOVER_LISTED}
+>
+  <link slot="head" rel="manifest" href="/manifest.webmanifest" />
+  <SiteHead wide />
+
+  <article class="creators-page browse discover" data-page="discover">
+    <h1>Discover</h1>
+    <p class="lede">
+      Recipes picked from the {TOTAL.toLocaleString('en-US')} here, grouped for the week. New shelves every Monday. Or <a href="/">search for anything</a>.
+    </p>
+
+    <nav class="contents" aria-labelledby="contents">
+      <h2 id="contents">On the shelves this week</h2>
+      <ul class="list">
+        {
+          shelves.map((s, k) => (
+            <li>
+              <a href={`#${s.id}`} data-jump={s.id} data-pos={k + 1}>
+                {s.title}
+              </a>
+              <span class="has">{n(s.count, 'recipe')}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    {
+      shelves.map((s) => (
+        <section class="shelf-of" id={s.id} data-collection={s.id} aria-labelledby={`${s.id}-h`}>
+          <header>
+            <h2 id={`${s.id}-h`}>{s.title}</h2>
+            <span class="has">{n(s.count, 'recipe')}</span>
+          </header>
+          <p class="blurb">{s.blurb}</p>
+          <ol class="rows">
+            {s.rows.map((r, k) => (
+              <li>
+                <article class="row">
+                  <div class="text">
+                    <h3>
+                      <a href={r.url} data-src-id={r.source} data-key={r.key} data-pos={k + 1}>
+                        {r.name}
+                      </a>
+                    </h3>
+                    <p class="meta">{[r.minutes ? fmtTime(r.minutes) : '', s.creator ? r.cuisine : `from ${r.creator}`].filter(Boolean).join(', ')}</p>
+                  </div>
+                  <div class="photo">
+                    {r.img ? (
+                      <img src={r.img} alt="" width="320" height="240" loading="lazy" decoding="async" referrerpolicy="no-referrer" />
+                    ) : (
+                      <span class="no-photo" aria-hidden="true" />
+                    )}
+                  </div>
+                </article>
+              </li>
+            ))}
+          </ol>
+          {s.creator ? (
+            <p class="all">
+              <a href={pagePath(s.creator)} data-creator-page={s.creator}>
+                More from {s.rows[0]?.creator}, and ways to back them
+              </a>
+            </p>
+          ) : (
+            s.search &&
+            s.count > s.rows.length && (
+              <p class="all">
+                <a href={s.search} data-full-search>
+                  See all {n(s.count, 'recipe')}
+                </a>
+              </p>
+            )
+          )}
+        </section>
+      ))
+    }
+
+    <p class="more"><a href="/browse/">Browse by cuisine, course or ingredient</a></p>
+  </article>
+
+  <script>
+    import '../scripts/discover';
+  </script>
+</LabLayout>

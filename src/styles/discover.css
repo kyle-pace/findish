@@ -1,0 +1,54 @@
+/*
+  The Discover page (/discover/), added 2026-11-22. It wears the creator and browse pages'
+  styles (creators.css, browse.css); this file only holds the shelves. The one bold thing is
+  the shelf edge: a thick tomato rule under each collection's heading. Plan: design/PLAN.md,
+  "Discover".
+*/
+.discover .shelf-of {
+  margin-top: var(--space-16);
+  scroll-margin-top: var(--space-6);
+}
+
+.discover .shelf-of > header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-1) var(--space-6);
+  padding-bottom: var(--space-2);
+  border-bottom: 0.4rem solid var(--accent-ink);
+}
+
+.discover .shelf-of h2 {
+  margin: 0;
+  font-size: var(--step-2);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.discover .shelf-of .has {
+  color: var(--ink-muted);
+  font-size: var(--step--1);
+  font-variant-numeric: tabular-nums;
+}
+
+.discover .blurb {
+  max-width: 38em;
+  margin: var(--space-3) 0 var(--space-6);
+  color: var(--ink-muted);
+  line-height: 1.55;
+}
+
+.discover .contents {
+  margin-top: var(--space-8);
+}
+
+.discover .contents h2 {
+  margin-top: 0;
+}
+
+@media (min-width: 48rem) {
+  .discover .contents .list {
+    grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  }
+}

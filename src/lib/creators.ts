@@ -1,4 +1,4 @@
-// Every creator in Findish, built at build time from the index (public/index.json) for the
+// Every creator in finDish, built at build time from the index (public/index.json) for the
 // creator pages (/creators/ and /creators/<id>/, added 2026-11-16). A creator is a site, a
 // site and its YouTube channel, or a channel alone (Kenji). Their support links arrive
 // already sorted into join, buy and follow by scripts/build-index.mjs (scripts/support.mjs).

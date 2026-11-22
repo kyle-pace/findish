@@ -38,12 +38,12 @@ test('tags keep the order they were added in, so Backspace takes off the last on
 });
 
 test('each search has its own tab title', () => {
-  const home = 'Findish: one search';
+  const home = 'finDish: one search';
   assert.equal(titleFor([], home), home);
-  assert.equal(titleFor(['mapo tofu'], home), 'mapo tofu: Findish');
-  assert.equal(titleFor(['', 'ginger', 'tofu'], home), 'ginger and tofu: Findish');
-  assert.equal(titleFor(['fried rice', 'egg'], home), 'fried rice, egg: Findish');
-  assert.equal(titleFor(['a', 'b', 'c', 'd'], home), 'a, b, c and more: Findish');
+  assert.equal(titleFor(['mapo tofu'], home), 'mapo tofu: finDish');
+  assert.equal(titleFor(['', 'ginger', 'tofu'], home), 'ginger and tofu: finDish');
+  assert.equal(titleFor(['fried rice', 'egg'], home), 'fried rice, egg: finDish');
+  assert.equal(titleFor(['a', 'b', 'c', 'd'], home), 'a, b, c and more: finDish');
 });
 
 test('a dish name from the address cannot carry markup', () => {

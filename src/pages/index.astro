@@ -1,5 +1,5 @@
 ---
-// Findish: one search across the recipe sites Kyle trusts, from our own index
+// finDish: one search across the recipe sites Kyle trusts, from our own index
 // (public/index.json, built from data/ by scripts/build-index.mjs).
 // src/scripts/search.ts loads the index (packed smaller, in two files under /i/) and
 // searches it in the browser.
@@ -23,7 +23,9 @@ import { prepare } from '../lib/search-core.mjs';
 const index: any = indexJson;
 const count = (n: number, one: string) => `${n.toLocaleString('en-US')} ${n === 1 ? one : one + 's'}`;
 const creators = prepare(index).creators;
-const fromLine = `${count(index.recipes.length, 'recipe')} and ${count(index.videos.rows.length, 'video')} from ${creators.length} creators. Every one opens on its creator’s own site.`;
+// It starts with "Find a dish" so the name's two words are spelled out next to it, here and
+// in the snippet search engines show (Kyle, 2026-11-22).
+const fromLine = `Find a dish from ${creators.length} independent cooks: ${count(index.recipes.length, 'recipe')} and ${count(index.videos.rows.length, 'video')}, each opening on its creator’s own site.`;
 // Creator names by id, for the tags a link to a search shows before the index has loaded.
 const creatorNames = JSON.stringify(Object.fromEntries(creators.map((c: { id: string; name: string }) => [c.id, c.name])));
 const FILTERS = [
@@ -38,16 +40,16 @@ const FILTERS = [
 ---
 
 <LabLayout
-  favicon="/favicon-v3.svg"
+  favicon="/favicon-v4.svg"
   site={SITE}
   bar={false}
   lab={{ name: 'the search', href: '/' }}
   about="/about/"
-  welcome={{ name: "Findish", text: "One search box across The Woks of Life, Hot Thai Kitchen, Smitten Kitchen and the YouTube channels of the cooks I learn from, from a small index of my own. Search by dish, by what you have or by creator; every result opens on the creator’s site." }}
-  title="Findish: one search for recipes from independent cooks"
-  description="Search The Woks of Life, Hot Thai Kitchen, Smitten Kitchen and more at once, by dish, by what you have or by creator. Every recipe opens on its own site."
+  welcome={{ name: "finDish", text: "One search box across The Woks of Life, Hot Thai Kitchen, Smitten Kitchen and the YouTube channels of the cooks I learn from, from a small index of my own. Search by dish, by what you have or by creator; every result opens on the creator’s site." }}
+  title="finDish: find a dish from independent cooks"
+  description="Find a dish from The Woks of Life, Hot Thai Kitchen, Smitten Kitchen and more at once, by dish, by what you have or by creator. Every recipe opens on its own site."
   image="/og.png"
-  imageAlt="Findish: a search box holding ginger and tofu. Recipes from The Woks of Life, Hot Thai Kitchen, Smitten Kitchen and more."
+  imageAlt="finDish: a search box holding ginger and tofu. Recipes from The Woks of Life, Hot Thai Kitchen, Smitten Kitchen and more."
   themeColor={{ light: '#fbf5ec', dark: '#1d1714' }}
 >
   <!-- Verifies findish.now in Google Search Console (2026-11-16). Keep it. -->
@@ -55,7 +57,9 @@ const FILTERS = [
   <script slot="head" type="application/ld+json" set:html={jsonForScript({
     '@context': 'https://schema.org',
     '@type': 'WebSite',
-    name: 'Findish',
+    // The name is finDish (find + dish); the others are how people may type it (Kyle, 2026-11-22).
+    name: 'finDish',
+    alternateName: ['Findish', 'Find Dish'],
     url: 'https://findish.now/',
     description: 'One search box across recipe sites from independent cooks. Every result opens on the creator’s own site.',
     potentialAction: { '@type': 'SearchAction', target: 'https://findish.now/?q={search_term_string}', 'query-input': 'required name=search_term_string' },
@@ -67,6 +71,8 @@ const FILTERS = [
   <link slot="head" rel="preload" href={indexFiles.recipes} as="fetch" crossorigin="anonymous" />
   <script slot="head" type="application/json" id="index-files" set:html={jsonForScript(indexFiles)} />
   <link slot="head" rel="manifest" href="/manifest.webmanifest" />
+  <link slot="head" rel="icon" type="image/png" sizes="96x96" href="/favicon-96.png" />
+  <link slot="head" rel="apple-touch-icon" href="/apple-touch-icon.png" />
   <script slot="head" is:inline>
     // The About section used to live at #about; it's its own page now.
     if (location.hash === '#about') location.replace('/about/');

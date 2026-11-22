@@ -1,6 +1,6 @@
 {
-  "name": "Findish",
-  "short_name": "Findish",
+  "name": "finDish",
+  "short_name": "finDish",
   "description": "One search for recipes from independent cooks. Every recipe opens on its own site.",
   "start_url": "/",
   "scope": "/",

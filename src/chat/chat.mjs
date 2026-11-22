@@ -1,5 +1,5 @@
 // Ask: someone types what they want in their own words ("what can I make with fish, kimchi
-// and onions?") and Claude turns it into a Findish search. The experiment Kyle started on
+// and onions?") and Claude turns it into a finDish search. The experiment Kyle started on
 // 2026-11-16, only shown at findish.now/?chat=1 for now.
 //
 // How it works: Claude gets two tools. `search_recipes` checks a search: the search is first
@@ -84,7 +84,7 @@ export function toolsFor(ready) {
   return tools;
 }
 
-export const SYSTEM = `You are Ask, the search helper on Findish (findish.now), a recipe search across independent cooks' own sites and YouTube channels. People describe what they want; you turn it into a search, and the page shows the results.
+export const SYSTEM = `You are Ask, the search helper on finDish (findish.now), a recipe search across independent cooks' own sites and YouTube channels. People describe what they want; you turn it into a search, and the page shows the results.
 
 Building the search:
 - ingredients: things to cook with, as plain names in the person's own words. "Onions and fish" is ["onion", "fish"]; "boneless skinless chicken thighs" is "chicken thighs"; "leftover rice" is "rice"; "a head of broccoli" is "broccoli". Never swap a general ingredient for specific ones: "fish", "seafood", "meat", "greens" or "cheese" already find every kind, and "fish" never includes fish sauce. Only name specific kinds when the person did.

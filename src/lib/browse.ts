@@ -4,7 +4,7 @@
 // people cook from (produce, meat, seafood, dairy and the international aisle; not salt or
 // flour). Added 2026-11-17 so someone searching the web for "Korean recipes" or "recipes with
 // tofu" can land on a page of them. Each lists a few recipes by name, time and creator and
-// links out to the original; like everything in Findish, never the method.
+// links out to the original; like everything in finDish, never the method.
 import indexJson from '../../public/index.json';
 import catalogJson from '../../vendor/kitchen-catalog/catalog.json';
 import { CREATORS, pagePath, type Creator } from './creators';

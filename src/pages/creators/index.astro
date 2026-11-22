@@ -1,5 +1,5 @@
 ---
-// Every creator in Findish, grouped by the cuisine most of their recipes are, with a filter
+// Every creator in finDish, grouped by the cuisine most of their recipes are, with a filter
 // box. Each links to their own page (/creators/<id>/). Added 2026-11-16, when the About
 // page's list of creators was heading toward a hundred; see design/PLAN.md, "Creator pages".
 import LabLayout from 'kp-design/layouts/LabLayout.astro';
@@ -15,15 +15,15 @@ const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-');
 ---
 
 <LabLayout
-  favicon="/favicon-v3.svg"
+  favicon="/favicon-v4.svg"
   site={SITE}
   bar={false}
   lab={{ name: 'the search', href: '/' }}
   about="/about/"
-  title="Creators: the people behind Findish’s recipes"
-  description={`All ${CREATORS.length} creators whose recipes and videos Findish searches, grouped by cuisine, each with ways to back them: memberships, cookbooks and more.`}
+  title="Creators: the people behind finDish’s recipes"
+  description={`All ${CREATORS.length} creators whose recipes and videos finDish searches, grouped by cuisine, each with ways to back them: memberships, cookbooks and more.`}
   image="/og-creators.png"
-  imageAlt="Findish creators: the people behind the recipes, and how to back them."
+  imageAlt="finDish creators: the people behind the recipes, and how to back them."
   themeColor={{ light: '#fbf5ec', dark: '#1d1714' }}
 >
   <link slot="head" rel="manifest" href="/manifest.webmanifest" />
@@ -34,7 +34,7 @@ const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-');
       '@context': 'https://schema.org',
       '@type': 'BreadcrumbList',
       itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Findish', item: 'https://findish.now/' },
+        { '@type': 'ListItem', position: 1, name: 'finDish', item: 'https://findish.now/' },
         { '@type': 'ListItem', position: 2, name: 'Creators', item: 'https://findish.now/creators/' },
       ],
     })}

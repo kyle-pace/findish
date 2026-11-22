@@ -366,7 +366,7 @@ export function listSources(ready) {
       ...(c.site ? { site: c.site } : {}),
       ...(c.recipes ? { recipes: c.recipes } : {}),
       ...(c.videos ? { videos: c.videos, youtube: c.youtube } : {}),
-      // Their page on Findish gathers every way to back them; support is most helpful first.
+      // Their page on finDish gathers every way to back them; support is most helpful first.
       page: `https://findish.now/creators/${c.id.replace(/-yt$/, '')}/`,
       ...(index.support?.[c.id]?.length
         ? { support: index.support[c.id].map((s) => ({ label: s.book ? `Book: ${s.label}` : s.label, url: s.url, ...(s.kind ? { kind: s.kind } : {}) })) }

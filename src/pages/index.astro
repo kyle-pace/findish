@@ -13,6 +13,7 @@ import LabLayout from 'kp-design/layouts/LabLayout.astro';
 import { jsonForScript } from '../lib/json-script.mjs';
 import { SITE } from '../lib/site';
 import Wordmark from '../components/Wordmark.astro';
+import { DISCOVER } from '../lib/discover';
 import indexFiles from '../../public/index-files.json';
 import '../styles/theme.css';
 // The totals under the name are worked out at build time, so the line is there from the
@@ -27,6 +28,7 @@ const creators = prepare(index).creators;
 // in the snippet search engines show (Kyle, 2026-11-22).
 const fromLine = `Find a dish from ${creators.length} independent cooks: ${count(index.recipes.length, 'recipe')} and ${count(index.videos.rows.length, 'video')}, each opening on its creator’s own site.`;
 // Creator names by id, for the tags a link to a search shows before the index has loaded.
+const shelfNames = JSON.stringify(Object.fromEntries(DISCOVER.shelves.map((x) => [x.id, x.title[0].toLowerCase() + x.title.slice(1)])));
 const creatorNames = JSON.stringify(Object.fromEntries(creators.map((c: { id: string; name: string }) => [c.id, c.name])));
 const FILTERS = [
   ['show', 'Show'],
@@ -82,7 +84,7 @@ const FILTERS = [
     <script is:inline>
       // A link to a search is laid out as results from the first paint (the box at the top,
       // the filters under it), so nothing jumps when the recipes arrive. search.ts takes over.
-      if (/[?&](q|with|site|time|cuisine|course|new|show|without|not|diet|pick|saved)=[^&]/.test(location.search) || /^#list=./.test(location.hash))
+      if (/[?&](q|with|site|time|cuisine|course|new|show|without|not|diet|pick|saved|collection)=[^&]/.test(location.search) || /^#list=./.test(location.hash))
         document.getElementById('page').dataset.mode = 'results';
     </script>
     <div class="app" id="app" data-state="loading">
@@ -95,7 +97,7 @@ const FILTERS = [
         <label class="visually-hidden" for="q">Search recipes by dish, ingredient, cuisine or creator</label>
         <div class="box" id="box">
           <div class="fields">
-          <ul class="tags" id="with-chips" aria-label="Added to your search" data-amp-mask data-amp-mask-attributes="aria-label,title,href" data-creators={creatorNames}></ul>
+          <ul class="tags" id="with-chips" aria-label="Added to your search" data-amp-mask data-amp-mask-attributes="aria-label,title,href" data-creators={creatorNames} data-shelves={shelfNames}></ul>
           <script is:inline>
             // A link to a search with tags (?with=tofu&cuisine=Thai) shows them from the first
             // paint, as plain labels, so the box is already its full height when the recipes
@@ -104,8 +106,10 @@ const FILTERS = [
               var p = new URLSearchParams(location.search);
               var list = document.getElementById('with-chips');
               var names = {};
+              var shelves = {};
               try {
                 names = JSON.parse(list.dataset.creators || '{}');
+                shelves = JSON.parse(list.dataset.shelves || '{}');
               } catch (e) {}
               var ids = function (k) {
                 return (p.get(k) || '').split(',').filter(Boolean);
@@ -127,6 +131,7 @@ const FILTERS = [
                 return id.replace(/[-_]/g, ' ');
               };
               if (/^#list=./.test(location.hash)) add('diet', 'shared list');
+              else if (shelves[p.get('collection')]) add('diet', shelves[p.get('collection')]);
               else if (p.get('saved') === '1') add('diet', 'saved');
               ids('site').forEach(function (id) {
                 if (names[id]) add('creator', 'from ' + names[id]);

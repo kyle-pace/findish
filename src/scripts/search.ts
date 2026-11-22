@@ -176,6 +176,8 @@ const creatorOfChannel = (k: number) => data.videos.sources[k].site || data.vide
 
 async function load() {
   let loaded: Awaited<ReturnType<typeof loadIndex>>;
+  // A Discover shelf's keys come alongside the recipes, not after them.
+  const shelvesLoading = loadShelves();
   try {
     loaded = await loadIndex();
   } catch {
@@ -198,7 +200,7 @@ async function load() {
   recipes.forEach((r) => keyIndex.set(r.key, r.i));
   buildFilters();
   buildStart();
-  await loadShelves();
+  await shelvesLoading;
   readUrl();
   // A link that is only words (/?q=quick+vegetarian+dinner, what the site's SearchAction
   // hands out) is read as a typed sentence, so it finds what typing it would. Only on

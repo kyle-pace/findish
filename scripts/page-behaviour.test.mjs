@@ -267,3 +267,14 @@ check('"See all" on a Discover shelf holds the search to that shelf, as a tag th
   assert.equal(await page.evaluate(() => new URLSearchParams(location.search).get('collection')), null);
   await page.context().close();
 });
+
+check('a shelf\'s "See all" link is laid out as results, with its tag, before the recipes arrive (no flash of the home page)', async () => {
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const page = await context.newPage();
+  // The recipes never arrive, so this is what the first paint looks like.
+  await page.route((url) => url.hostname !== '127.0.0.1' || url.pathname.startsWith('/i/') || url.pathname === '/index.json', (route) => route.abort());
+  await page.goto(origin + '/?collection=curries');
+  assert.equal(await page.evaluate(() => document.getElementById('page').dataset.mode), 'results');
+  assert.match(await page.evaluate(() => document.getElementById('with-chips').textContent), /easy curries/);
+  await context.close();
+});

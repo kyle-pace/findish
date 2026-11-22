@@ -5,7 +5,7 @@
 //
 // Claude doesn't document the add-connector link (tested 2026-11-11), so every page that
 // shows the button also shows the address and the written steps.
-export const NAME = 'Findish';
+export const NAME = 'finDish';
 export const MCP_ADDRESS = 'https://findish.now/mcp';
 export const ASSISTANTS_PAGE = '/assistants/';
 export const PRIVACY_PAGE = '/privacy/';

@@ -23,7 +23,7 @@ const search = `/?site=${encodeURIComponent(c.id)}`;
 const books = c.buy.filter((l) => l.book);
 const shops = c.buy.filter((l) => !l.book);
 const backs = c.join.length + c.buy.length + c.follow.length > 0;
-const description = `${c.name} on Findish: ${lede.replace(/\.$/, '')}. Ways to back them${
+const description = `${c.name} on finDish: ${lede.replace(/\.$/, '')}. Ways to back them${
   c.join.length || books.length ? `, like ${andList([...c.join.map((l) => l.label), ...(books.length ? [books.length === 1 ? 'their cookbook' : 'their cookbooks'] : [])])}` : ''
 }, and a few of their recipes.`;
 // The cuisines they cook that have a browse page, with how many of their recipes each is.
@@ -38,13 +38,13 @@ const ld = {
     {
       '@type': 'ProfilePage',
       url: url(pagePath(c.id)),
-      name: `${c.name} on Findish`,
+      name: `${c.name} on finDish`,
       mainEntity: { '@type': 'Organization', name: c.name, url: c.url, ...(sameAs.length ? { sameAs } : {}) },
     },
     {
       '@type': 'BreadcrumbList',
       itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Findish', item: url('/') },
+        { '@type': 'ListItem', position: 1, name: 'finDish', item: url('/') },
         { '@type': 'ListItem', position: 2, name: 'Creators', item: url('/creators/') },
         { '@type': 'ListItem', position: 3, name: c.name, item: url(pagePath(c.id)) },
       ],
@@ -54,15 +54,15 @@ const ld = {
 ---
 
 <LabLayout
-  favicon="/favicon-v3.svg"
+  favicon="/favicon-v4.svg"
   site={SITE}
   bar={false}
   lab={{ name: 'the search', href: '/' }}
   about="/about/"
-  title={`${c.name} on Findish: recipes and ways to back them`}
+  title={`${c.name} on finDish: recipes and ways to back them`}
   description={description}
   image="/og-creators.png"
-  imageAlt="Findish creators: the people behind the recipes, and how to back them."
+  imageAlt="finDish creators: the people behind the recipes, and how to back them."
   themeColor={{ light: '#fbf5ec', dark: '#1d1714' }}
 >
   <link slot="head" rel="manifest" href="/manifest.webmanifest" />

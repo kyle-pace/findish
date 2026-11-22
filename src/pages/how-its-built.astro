@@ -1,5 +1,5 @@
 ---
-// How Findish is built: the technical version of the About page, for the curious.
+// How finDish is built: the technical version of the About page, for the curious.
 // Diagrams are inline SVG in the lab's own colors, each with a title, a description and
 // the same facts in the text. Counts come from the index.
 import LabLayout from 'kp-design/layouts/LabLayout.astro';
@@ -16,20 +16,20 @@ const creators: number = index.sources.length;
 ---
 
 <LabLayout
-  favicon="/favicon-v3.svg"
+  favicon="/favicon-v4.svg"
   site={SITE}
   bar={false}
   lab={{ name: 'the search', href: '/' }}
   about="/about/"
-  title="How Findish is built"
+  title="How finDish is built"
   description="The technical version: a polite weekly crawler, one small index, and a search that runs in your browser, plus the MCP server and the Grocery Deals lookup that read the same index."
   image="/og-about.png"
-  imageAlt="About Findish: the title beside the three parts of a search engine."
+  imageAlt="About finDish: the title beside the three parts of a search engine."
   themeColor={{ light: '#fbf5ec', dark: '#1d1714' }}
 >
   <SiteHead />
   <article class="page">
-    <h1>How Findish is built</h1>
+    <h1>How finDish is built</h1>
     <p class="lede">
       The <a href="/about/">About page</a> explains it as a small search engine: collect, index, search. This is the
       technical version, with links into <a href="https://github.com/kyle-pace/recipe-search">the code</a>.

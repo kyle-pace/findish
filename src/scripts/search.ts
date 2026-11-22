@@ -1,4 +1,4 @@
-// Findish, in the browser. Loads the index once, then every keystroke searches it locally:
+// finDish, in the browser. Loads the index once, then every keystroke searches it locally:
 // no server and no search service. What's typed stays on the page, unless Ask is on and it
 // reads like a question (see the end of this file).
 //
@@ -74,7 +74,7 @@ const PAGE = 24;
 /** How many videos sit under the recipes before "Show all". */
 const VIDEOS_UNDER = 6;
 const MOST_SHOWN = 20 * PAGE; // as far as Back will reopen "Show more"
-// The tab's title could name the search ("mapo tofu: Findish"), which helps tell tabs and
+// The tab's title could name the search ("mapo tofu: finDish"), which helps tell tabs and
 // history apart. It stays off: Amplitude copies the page's title onto every page view and
 // click it records, so the typed words would leave the browser. Turn it on only once
 // kp-design's analytics strips "[Amplitude] Page Title" the way it strips the address.
@@ -705,7 +705,7 @@ function linkOnlyLine(): string {
 /**
  * Nothing matched. Offer what would: each thing asked for taken off, each typed word on its
  * own ("tacos, 88 recipes"), a closer spelling, and under them the home page's ideas. A
- * site Findish only links to (Serious Eats) is named when it was typed.
+ * site finDish only links to (Serious Eats) is named when it was typed.
  */
 function renderEmpty() {
   const fixes: { label: string; n: number; apply: () => void }[] = [];
@@ -1307,7 +1307,7 @@ const keepPunct = (html: string) => html.replace(/(<button[^>]*>[^<]*<\/button>[
 
 function buildStart() {
   // Totals, not names: the list of creators is under the box and on the About page.
-  $('from').textContent = `${plural(data.recipes.length, 'recipe')} and ${plural(data.videos.sources.reduce((n, c) => n + c.count, 0), 'video')} from ${creators.length} creators. Every one opens on its creator’s own site.`;
+  $('from').textContent = `Find a dish from ${creators.length} independent cooks: ${plural(data.recipes.length, 'recipe')} and ${plural(data.videos.sources.reduce((n, c) => n + c.count, 0), 'video')}, each opening on its creator’s own site.`;
   // Every line is a fresh draw on each visit: four dishes, five of the 18 most-used
   // ingredients and two creators. New this week moved to the footer (Kyle, 2026-11-16).
   const tries: string[] = [];
@@ -1699,7 +1699,7 @@ async function shareSearch(btn: HTMLElement) {
   let how = '';
   if (navigator.share) {
     try {
-      await navigator.share({ title: 'Findish', url });
+      await navigator.share({ title: 'finDish', url });
       how = 'share';
     } catch (e) {
       if ((e as Error).name === 'AbortError') return; // closed without sharing

@@ -41,11 +41,11 @@ export function tagOrder(before, now) {
 const andList = (xs) => (xs.length < 2 ? xs.join('') : `${xs.slice(0, -1).join(', ')} and ${xs.at(-1)}`);
 
 /**
- * The tab's title for a search, so tabs and history can be told apart: "mapo tofu: Findish",
- * "ginger and tofu: Findish". `parts` is the words, then the tags' labels. Nothing searched
+ * The tab's title for a search, so tabs and history can be told apart: "mapo tofu: finDish",
+ * "ginger and tofu: finDish". `parts` is the words, then the tags' labels. Nothing searched
  * gives back `home`.
  */
-export function titleFor(parts, home, name = 'Findish') {
+export function titleFor(parts, home, name = 'finDish') {
   const said = parts.map((p) => String(p || '').trim()).filter(Boolean);
   if (!said.length) return home;
   const text = said.length > 3 ? `${said.slice(0, 3).join(', ')} and more` : said.length > 1 && said[0].includes(' ') ? said.join(', ') : andList(said);
@@ -78,7 +78,7 @@ const fold = (s) =>
     .trim();
 
 /**
- * A site Findish only links to (Serious Eats), when what was typed names it: gives back the
+ * A site finDish only links to (Serious Eats), when what was typed names it: gives back the
  * site and the words left over, to hand to that site's own search. Otherwise null.
  */
 export function linkOnlyTyped(text, sites) {

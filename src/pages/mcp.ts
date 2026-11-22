@@ -1,4 +1,4 @@
-// Findish as an MCP server, at findish.now/mcp: lets an AI assistant
+// finDish as an MCP server, at findish.now/mcp: lets an AI assistant
 // (Claude, ChatGPT, anything that speaks MCP over Streamable HTTP) search the same index the
 // page uses. Read-only, no sign-in, and nothing about the person asking is kept or logged.
 //
@@ -85,7 +85,7 @@ const SOURCES_OUTPUT = z.looseObject({
       recipes: z.number().optional().describe('Written recipes in the index. Missing means none: this creator is videos only.'),
       videos: z.number().optional(),
       youtube: z.string().optional(),
-      page: z.string().optional().describe('Their page on Findish, with every way to back them.'),
+      page: z.string().optional().describe('Their page on finDish, with every way to back them.'),
       support: z.array(z.looseObject({ label: z.string(), url: z.string(), kind: z.string().optional() })).optional(),
     }),
   ),
@@ -103,7 +103,7 @@ const say = (text: string) => ({ messages: [{ role: 'user' as const, content: { 
 
 function createServer(origin: string) {
   const server = new McpServer(
-    { name: 'findish', title: 'Findish', version: VERSION, websiteUrl: 'https://findish.now/' },
+    { name: 'findish', title: 'finDish', version: VERSION, websiteUrl: 'https://findish.now/' },
     {
       // This server keeps nothing between requests, so it can never tell a client that its
       // list of tools or prompts changed. Say so, instead of the SDK's default of "it might".
@@ -166,7 +166,7 @@ function createServer(origin: string) {
     {
       title: 'Sources and cuisines',
       description:
-        'Who is in the recipe index: each creator with their site, how many recipes and videos (a creator with videos and no recipes is a YouTube channel only), ways to support them (memberships and Patreon, cookbooks and shops, then free ways to follow, each marked join, buy or follow) and their page on Findish. Also the cuisines and courses that can be filtered on, with how many recipes carry each label, and sites that are not indexed but can be searched directly.',
+        'Who is in the recipe index: each creator with their site, how many recipes and videos (a creator with videos and no recipes is a YouTube channel only), ways to support them (memberships and Patreon, cookbooks and shops, then free ways to follow, each marked join, buy or follow) and their page on finDish. Also the cuisines and courses that can be filtered on, with how many recipes carry each label, and sites that are not indexed but can be searched directly.',
       inputSchema: z.object({}),
       outputSchema: SOURCES_OUTPUT,
       annotations: READ_ONLY,
@@ -190,7 +190,7 @@ function createServer(origin: string) {
       argsSchema: z.object({ ingredients: z.string().max(300).describe("What you have, separated by commas: 'chicken thighs, bok choy, rice'") }),
     },
     ({ ingredients }) =>
-      say(`Use Findish's search_recipes to find recipes I can cook with: ${ingredients}. Show the ones that use the most of them first, say what else each needs, and link each to its original site.`),
+      say(`Use finDish's search_recipes to find recipes I can cook with: ${ingredients}. Show the ones that use the most of them first, say what else each needs, and link each to its original site.`),
   );
   server.registerPrompt(
     'find_dish',
@@ -199,10 +199,10 @@ function createServer(origin: string) {
       description: 'Find recipes and videos for a dish by name.',
       argsSchema: z.object({ dish: z.string().max(200).describe("The dish: 'mapo tofu'") }),
     },
-    ({ dish }) => say(`Use Findish's search_recipes to find recipes and videos for ${dish}. Give a few from different creators, each with its link and the site it is from. Don't write out the method.`),
+    ({ dish }) => say(`Use finDish's search_recipes to find recipes and videos for ${dish}. Give a few from different creators, each with its link and the site it is from. Don't write out the method.`),
   );
-  server.registerPrompt('whats_new', { title: 'New this week', description: 'The recipes Findish found in the last week.' }, () =>
-    say("Use Findish's search_recipes with new_only true to show me the recipes found this week, each with its link and the site it is from."),
+  server.registerPrompt('whats_new', { title: 'New this week', description: 'The recipes finDish found in the last week.' }, () =>
+    say("Use finDish's search_recipes with new_only true to show me the recipes found this week, each with its link and the site it is from."),
   );
 
   return server;

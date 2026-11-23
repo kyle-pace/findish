@@ -90,3 +90,4 @@ Last checked: 2026-11-21 (web at recipe-search `7774072`, app 0.6.0 after the pa
 | Works offline | No | Yes | App keeps the last index |
 | Assistants (MCP) | Yes | No | Web only: it's a server |
 | Recipes for a shopping list (`/api/with`) | Yes | No | Web only: used by the Grocery Deals app |
+| Send feedback (email to Kyle) | Yes (welcome dialog, footer) | Yes (Settings) | Same words, "Send feedback", and the same event, "Opened Feedback Link" (`opened_from`: welcome, footer, settings). Added 2026-11-23 |

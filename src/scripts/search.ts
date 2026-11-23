@@ -843,7 +843,7 @@ function renderVideos(hits: VideoRow[], q: string[], only: boolean) {
 
 // ---------------------------------------------------------------------------------------
 // When a search is just one cuisine, one quiet line above the results links to that cuisine
-// on World cuisine (kyle-pace/cuisine-explorer). Nothing for ingredients or broader searches.
+// on World cuisine (kyle-pace/world-cuisines). Nothing for ingredients or broader searches.
 // Until 2026-11-16 it was a card with a Wikipedia sentence; Kyle dropped it as filler.
 // The links load (public/notes.json) only the first time the line is needed.
 

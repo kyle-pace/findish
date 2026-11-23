@@ -76,7 +76,7 @@ jobs:
       - name: Commit the data
         if: steps.turn.outputs.go == 'true' && (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.commit))
         run: |
-          git config user.name "recipe-search crawler"
+          git config user.name "Findish crawler"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           bash crawler/save-crawl.sh
       # The search's tests run after the data is saved (Kyle's call, 2026-11-19): a five-hour

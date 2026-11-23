@@ -1,4 +1,4 @@
-// Short notes on cuisines and ingredients from World cuisine (kyle-pace/cuisine-explorer,
+// Short notes on cuisines and ingredients from World cuisine (kyle-pace/world-cuisines,
 // kylepace.dev/world-cuisine/), for the card above results when a search is about exactly
 // one cuisine or one ingredient. World cuisine takes its text from Wikipedia; the card
 // shows the first sentence, credits Wikipedia and links to both.

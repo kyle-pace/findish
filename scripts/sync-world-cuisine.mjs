@@ -1,10 +1,10 @@
-// Refreshes vendor/world-cuisine/notes.json from a clone of kyle-pace/cuisine-explorer
+// Refreshes vendor/world-cuisine/notes.json from a clone of kyle-pace/world-cuisines
 // (World cuisine) next to this repo, or the path given. Only the first sentence of each
 // cuisine's and ingredient's summary is kept (scripts/world-cuisine.mjs). The build copies
 // the notes Findish can use into public/notes.json, which the page loads only when a card
 // shows.
 //
-//   node scripts/sync-world-cuisine.mjs [path-to-cuisine-explorer]
+//   node scripts/sync-world-cuisine.mjs [path-to-world-cuisines]
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { dirname, join, resolve } from 'node:path';
@@ -12,10 +12,11 @@ import { fileURLToPath } from 'node:url';
 import { buildNotes } from './world-cuisine.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const src = resolve(process.argv[2] || join(root, '..', 'cuisine-explorer'));
+// The repo was called cuisine-explorer until 2026-11-22; an old clone by that name still works.
+const src = resolve(process.argv[2] || [join(root, '..', 'world-cuisines'), join(root, '..', 'cuisine-explorer')].find((p) => existsSync(p)) || join(root, '..', 'world-cuisines'));
 const read = (f) => JSON.parse(readFileSync(join(src, 'data', f), 'utf8'));
 if (!existsSync(join(src, 'data/cuisines.json'))) {
-  console.error(`No World cuisine clone at ${src}. Clone kyle-pace/cuisine-explorer there or pass its path.`);
+  console.error(`No World cuisine clone at ${src}. Clone kyle-pace/world-cuisines there or pass its path.`);
   process.exit(2);
 }
 const notes = buildNotes({

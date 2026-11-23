@@ -21,7 +21,8 @@ const DISHES = [
   ['ramen', /ramen/i],
   ['fried rice', /fried rice/i, /^(\w+ )?fried rice$/i],
   ['mapo tofu', /mapo tofu|mabo/i, /^(authentic )?mapo tofu( \([^)]*\))?$/i],
-  ['pad thai', /pad thai/i, /^(authentic )?pad thai( recipe)?$/i],
+  // A bracketed other name is fine, as for mapo tofu: "Pad Thai (Hủ Tiếu/Phở Xào Thái Lan)".
+  ['pad thai', /pad thai/i, /^(authentic )?pad thai( recipe)?( \([^)]*\))?$/i],
   ['dumplings', /dumpling/i],
   ['tacos', /taco/i],
   ['stir fry', /stir[- ]?fry/i],

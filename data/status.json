@@ -1,5 +1,5 @@
 {
- "run": "2026-11-19T12:50:32.997Z",
+ "run": "2026-11-23T22:39:09.856Z",
  "options": {
   "limit": null,
   "delayMs": 4000
@@ -9,281 +9,270 @@
    "id": "koreanbapsang",
    "name": "Korean Bapsang",
    "result": "ok",
-   "fetched": 275,
-   "added": 254,
-   "updated": 0,
+   "fetched": 1,
+   "added": 0,
+   "updated": 1,
    "removed": 0,
-   "noRecipe": 21,
+   "noRecipe": 0,
    "httpErrors": {},
    "sitemapPages": 275,
    "waiting": 0,
-   "count": 254
+   "count": 254,
+   "previous": 254
   },
   "mexicoinmykitchen": {
    "id": "mexicoinmykitchen",
    "name": "Mexico in My Kitchen",
-   "result": "error",
-   "error": "HTTP 403 for https://www.mexicoinmykitchen.com/post-sitemap.xml"
+   "result": "paused",
+   "error": "Its firewall answers HTTP 403 for the post sitemap to the crawler from GitHub Actions (first crawl, 2026-11-19), though robots.txt allows us and the same sitemap loaded in the check on 2026-11-18 from another network. Needs the site to allow us; not worked around."
   },
   "patijinich": {
    "id": "patijinich",
    "name": "Pati Jinich",
    "result": "ok",
-   "fetched": 972,
-   "added": 780,
+   "fetched": 0,
+   "added": 0,
    "updated": 0,
    "removed": 0,
-   "noRecipe": 192,
+   "noRecipe": 0,
    "httpErrors": {},
    "sitemapPages": 972,
    "waiting": 0,
-   "count": 780
+   "count": 780,
+   "previous": 780
   },
   "recipesfromitaly": {
    "id": "recipesfromitaly",
    "name": "Recipes from Italy",
-   "result": "blocked",
-   "fetched": 8,
-   "added": 2,
-   "updated": 0,
-   "removed": 0,
-   "noRecipe": 0,
-   "httpErrors": {
-    "403": 6
-   },
-   "sitemapPages": 547,
-   "waiting": 539,
-   "error": "HTTP 403 three times in a row",
-   "count": 2
+   "result": "paused",
+   "error": "Its firewall answers HTTP 403 to the crawler from GitHub Actions (6 of 8 pages on the first crawl, 2026-11-19), though robots.txt allows us and the same pages loaded in the check on 2026-11-18 from another network. Needs the site to allow us; not worked around.",
+   "previous": 2
   },
   "maureenabood": {
    "id": "maureenabood",
    "name": "Maureen Abood",
    "result": "ok",
-   "fetched": 135,
-   "added": 1,
+   "fetched": 0,
+   "added": 0,
    "updated": 0,
    "removed": 0,
-   "noRecipe": 134,
+   "noRecipe": 0,
    "httpErrors": {},
    "sitemapPages": 728,
    "waiting": 0,
    "count": 379,
-   "previous": 378
+   "previous": 379
   },
   "ozlemsturkishtable": {
    "id": "ozlemsturkishtable",
    "name": "Ozlem's Turkish Table",
    "result": "ok",
-   "fetched": 410,
-   "added": 106,
+   "fetched": 0,
+   "added": 0,
    "updated": 0,
    "removed": 0,
-   "noRecipe": 304,
+   "noRecipe": 0,
    "httpErrors": {},
    "sitemapPages": 410,
    "waiting": 0,
-   "count": 106
+   "count": 106,
+   "previous": 106
   },
   "unicornsinthekitchen": {
    "id": "unicornsinthekitchen",
    "name": "Unicorns in the Kitchen",
    "result": "ok",
-   "fetched": 251,
-   "added": 247,
-   "updated": 0,
+   "fetched": 5,
+   "added": 0,
+   "updated": 5,
    "removed": 0,
-   "noRecipe": 4,
+   "noRecipe": 0,
    "httpErrors": {},
    "sitemapPages": 843,
    "waiting": 0,
    "count": 833,
-   "previous": 586
+   "previous": 833
   },
   "hungryhuy": {
    "id": "hungryhuy",
    "name": "Hungry Huy",
    "result": "ok",
-   "fetched": 455,
-   "added": 351,
-   "updated": 0,
+   "fetched": 2,
+   "added": 0,
+   "updated": 1,
    "removed": 0,
-   "noRecipe": 104,
+   "noRecipe": 1,
    "httpErrors": {},
    "sitemapPages": 455,
    "waiting": 0,
-   "count": 351
+   "count": 351,
+   "previous": 351
   },
   "eatchofood": {
    "id": "eatchofood",
    "name": "Eat Cho Food",
-   "result": "not run",
+   "result": "ok",
    "fetched": 1,
-   "added": 19,
-   "updated": 0,
+   "added": 0,
+   "updated": 19,
    "removed": 0,
    "noRecipe": 1,
    "httpErrors": {},
    "feedPosts": 20,
    "count": 19,
-   "waiting": 0
+   "waiting": 0,
+   "previous": 19
   },
   "ruhlman": {
    "id": "ruhlman",
    "name": "Ruhlman's Newsletter",
-   "result": "not run",
-   "fetched": 1,
-   "added": 1,
-   "updated": 0,
-   "removed": 0,
-   "noRecipe": 19,
-   "httpErrors": {},
-   "feedPosts": 20,
-   "count": 1,
-   "waiting": 0
+   "result": "paused",
+   "error": "Substack newsletter, read through its public RSS feed only (Kyle's 2026-11-11 decision); robots.txt allows /feed. Paused 2026-11-19: Substack answers HTTP 403 for robots.txt when the crawler runs on GitHub Actions (the crawl of 2026-11-19), so nothing was read, the same as Susan Herrmann Loomis. Not worked around.",
+   "previous": 1
   },
   "ciaosamin": {
    "id": "ciaosamin",
    "name": "a grain of salt",
-   "result": "not run",
-   "fetched": 1,
-   "added": 2,
-   "updated": 0,
-   "removed": 0,
-   "noRecipe": 18,
-   "httpErrors": {},
-   "feedPosts": 20,
-   "count": 2,
-   "waiting": 0
+   "result": "paused",
+   "error": "Substack newsletter, read through its public RSS feed only (Kyle's 2026-11-11 decision); robots.txt allows /feed. Paused 2026-11-19: Substack answers HTTP 403 for robots.txt when the crawler runs on GitHub Actions (the crawl of 2026-11-19), so nothing was read, the same as Susan Herrmann Loomis. Not worked around.",
+   "previous": 2
   },
   "woks": {
    "id": "woks",
    "name": "The Woks of Life",
-   "result": "not run",
-   "fetched": 6,
-   "added": 2,
-   "updated": 2,
+   "result": "ok",
+   "fetched": 0,
+   "added": 0,
+   "updated": 0,
    "removed": 0,
-   "noRecipe": 2,
+   "noRecipe": 0,
    "httpErrors": {},
    "sitemapPages": 1592,
    "waiting": 0,
-   "count": 1372
+   "count": 1372,
+   "previous": 1372
   },
   "joc": {
    "id": "joc",
    "name": "Just One Cookbook",
-   "result": "not run",
+   "result": "paused",
    "error": "Cloudflare bot protection blocks automated requests (HTTP 403 on its sitemap from GitHub Actions and from a home connection, with or without our crawler's name; robots.txt allows us; checked 2026-11-08). Needs the site to allow us"
   },
   "htk": {
    "id": "htk",
    "name": "Hot Thai Kitchen",
-   "result": "not run",
-   "fetched": 4,
+   "result": "ok",
+   "fetched": 2,
    "added": 1,
-   "updated": 1,
+   "updated": 0,
    "removed": 0,
-   "noRecipe": 2,
+   "noRecipe": 1,
    "httpErrors": {},
-   "sitemapPages": 475,
+   "sitemapPages": 476,
    "waiting": 0,
-   "count": 415
+   "count": 416,
+   "previous": 415
   },
   "sk": {
    "id": "sk",
    "name": "Smitten Kitchen",
-   "result": "not run",
-   "fetched": 2,
-   "added": 0,
+   "result": "ok",
+   "fetched": 5,
+   "added": 3,
    "updated": 2,
    "removed": 0,
    "noRecipe": 0,
    "httpErrors": {},
    "sitemapPages": 979,
    "waiting": 0,
-   "count": 445
+   "count": 448,
+   "previous": 445
   },
   "maangchi": {
    "id": "maangchi",
    "name": "Maangchi",
-   "result": "not run",
+   "result": "paused",
    "error": "Cloudflare bot protection blocks automated requests (HTTP 403 on its sitemap from GitHub Actions and from a home connection, with or without our crawler's name; robots.txt allows us; checked 2026-11-08). Needs the site to allow us"
   },
   "mala": {
    "id": "mala",
    "name": "The Mala Market",
-   "result": "not run",
-   "fetched": 0,
-   "added": 0,
-   "updated": 0,
+   "result": "ok",
+   "fetched": 3,
+   "added": 1,
+   "updated": 1,
    "removed": 0,
-   "noRecipe": 0,
+   "noRecipe": 1,
    "httpErrors": {},
-   "sitemapPages": 225,
+   "sitemapPages": 226,
    "waiting": 0,
-   "count": 198
+   "count": 199,
+   "previous": 198
   },
   "rte": {
    "id": "rte",
    "name": "RecipeTin Eats",
-   "result": "not run",
-   "fetched": 27,
-   "added": 3,
-   "updated": 23,
+   "result": "ok",
+   "fetched": 73,
+   "added": 1,
+   "updated": 65,
    "removed": 0,
-   "noRecipe": 1,
+   "noRecipe": 7,
    "httpErrors": {},
-   "sitemapPages": 1751,
+   "sitemapPages": 1753,
    "waiting": 0,
-   "count": 1541
+   "count": 1542,
+   "previous": 1541
   },
   "rtj": {
    "id": "rtj",
    "name": "RecipeTin Japan",
-   "result": "not run",
-   "fetched": 0,
-   "added": 0,
+   "result": "ok",
+   "fetched": 2,
+   "added": 1,
    "updated": 0,
    "removed": 0,
-   "noRecipe": 0,
+   "noRecipe": 1,
    "httpErrors": {},
-   "sitemapPages": 441,
+   "sitemapPages": 442,
    "waiting": 0,
-   "count": 430
+   "count": 431,
+   "previous": 430
   },
   "sudachi": {
    "id": "sudachi",
    "name": "Sudachi",
-   "result": "not run",
-   "fetched": 25,
-   "added": 2,
-   "updated": 16,
+   "result": "ok",
+   "fetched": 17,
+   "added": 0,
+   "updated": 15,
    "removed": 0,
-   "noRecipe": 7,
+   "noRecipe": 2,
    "httpErrors": {},
    "sitemapPages": 609,
    "waiting": 0,
-   "count": 493
+   "count": 493,
+   "previous": 493
   },
   "mwl": {
    "id": "mwl",
    "name": "Made With Lau",
-   "result": "not run",
-   "fetched": 198,
-   "added": 1,
+   "result": "ok",
+   "fetched": 197,
+   "added": 0,
    "updated": 197,
    "removed": 0,
    "noRecipe": 0,
    "httpErrors": {},
    "sitemapPages": 198,
    "waiting": 0,
-   "count": 198
+   "count": 198,
+   "previous": 198
   },
   "ab": {
    "id": "ab",
    "name": "Alton Brown",
-   "result": "not run",
+   "result": "ok",
    "fetched": 0,
    "added": 0,
    "updated": 0,
@@ -292,219 +281,233 @@
    "httpErrors": {},
    "sitemapPages": 947,
    "waiting": 0,
-   "count": 946
+   "count": 946,
+   "previous": 946
   },
   "woks-yt": {
    "id": "woks-yt",
    "name": "The Woks of Life",
-   "result": "not run",
-   "count": 406
+   "result": "ok",
+   "count": 409,
+   "previous": 406
   },
   "joc-yt": {
    "id": "joc-yt",
    "name": "Just One Cookbook",
-   "result": "not run",
-   "count": 591
+   "result": "ok",
+   "count": 592,
+   "previous": 591
   },
   "htk-yt": {
    "id": "htk-yt",
    "name": "Hot Thai Kitchen",
-   "result": "not run",
-   "count": 834
+   "result": "ok",
+   "count": 836,
+   "previous": 834
   },
   "sk-yt": {
    "id": "sk-yt",
    "name": "Smitten Kitchen",
-   "result": "not run",
-   "count": 91
+   "result": "ok",
+   "count": 92,
+   "previous": 91
   },
   "maangchi-yt": {
    "id": "maangchi-yt",
    "name": "Maangchi",
-   "result": "not run",
-   "count": 611
+   "result": "ok",
+   "count": 612,
+   "previous": 611
   },
   "rte-yt": {
    "id": "rte-yt",
    "name": "RecipeTin Eats",
-   "result": "not run",
-   "count": 1436
+   "result": "ok",
+   "count": 1438,
+   "previous": 1436
   },
   "rtj-yt": {
    "id": "rtj-yt",
    "name": "RecipeTin Japan",
-   "result": "not run",
-   "count": 75
+   "result": "ok",
+   "count": 75,
+   "previous": 75
   },
   "sudachi-yt": {
    "id": "sudachi-yt",
    "name": "Sudachi",
-   "result": "not run",
-   "count": 574
+   "result": "ok",
+   "count": 576,
+   "previous": 574
   },
   "mwl-yt": {
    "id": "mwl-yt",
    "name": "Made With Lau",
-   "result": "not run",
-   "count": 605
+   "result": "ok",
+   "count": 605,
+   "previous": 605
   },
   "ab-yt": {
    "id": "ab-yt",
    "name": "Alton Brown",
-   "result": "not run",
-   "count": 265
+   "result": "ok",
+   "count": 267,
+   "previous": 265
   },
   "kenji": {
    "id": "kenji",
    "name": "J. Kenji López-Alt",
-   "result": "not run",
-   "count": 878
+   "result": "ok",
+   "count": 893,
+   "previous": 878
   },
   "ccd": {
    "id": "ccd",
    "name": "Chinese Cooking Demystified",
-   "result": "not run",
-   "count": 362
+   "result": "ok",
+   "count": 362,
+   "previous": 362
   },
   "rhs-yt": {
    "id": "rhs-yt",
    "name": "Red House Spice",
-   "result": "not run",
-   "count": 130
+   "result": "ok",
+   "count": 130,
+   "previous": 130
   },
   "fca": {
    "id": "fca",
    "name": "French Cooking Academy",
-   "result": "not run",
-   "count": 546
+   "result": "ok",
+   "count": 550,
+   "previous": 546
   },
   "hebbarskitchen": {
    "id": "hebbarskitchen",
    "name": "Hebbar's Kitchen",
    "result": "ok",
-   "fetched": 1802,
-   "added": 1097,
+   "fetched": 0,
+   "added": 0,
    "updated": 0,
    "removed": 0,
-   "noRecipe": 705,
+   "noRecipe": 0,
    "httpErrors": {},
    "sitemapPages": 1802,
    "waiting": 0,
-   "count": 1097
+   "count": 1097,
+   "previous": 1097
   },
   "spiceupthecurry": {
    "id": "spiceupthecurry",
    "name": "Spice Up The Curry",
    "result": "ok",
-   "fetched": 400,
-   "added": 388,
+   "fetched": 0,
+   "added": 0,
    "updated": 0,
    "removed": 0,
-   "noRecipe": 12,
+   "noRecipe": 0,
    "httpErrors": {},
    "sitemapPages": 896,
    "waiting": 0,
    "count": 868,
-   "previous": 480
+   "previous": 868
   },
   "panlasangpinoy": {
    "id": "panlasangpinoy",
    "name": "Panlasang Pinoy",
    "result": "ok",
-   "fetched": 2746,
-   "added": 1811,
-   "updated": 0,
+   "fetched": 351,
+   "added": 192,
+   "updated": 11,
    "removed": 0,
-   "noRecipe": 599,
-   "httpErrors": {
-    "429": 335,
-    "503": 1
-   },
+   "noRecipe": 148,
+   "httpErrors": {},
    "sitemapPages": 2746,
    "waiting": 0,
-   "count": 1811
+   "count": 2003,
+   "previous": 1811
   },
   "rasamalaysia": {
    "id": "rasamalaysia",
    "name": "Rasa Malaysia",
    "result": "ok",
-   "fetched": 924,
-   "added": 890,
+   "fetched": 2,
+   "added": 1,
    "updated": 0,
    "removed": 0,
-   "noRecipe": 34,
+   "noRecipe": 1,
    "httpErrors": {},
-   "sitemapPages": 1424,
+   "sitemapPages": 1425,
    "waiting": 0,
-   "count": 1382,
-   "previous": 492
+   "count": 1383,
+   "previous": 1382
   },
   "dimitrasdishes": {
    "id": "dimitrasdishes",
    "name": "Dimitra's Dishes",
    "result": "ok",
-   "fetched": 1201,
-   "added": 1095,
-   "updated": 0,
+   "fetched": 6,
+   "added": 3,
+   "updated": 1,
    "removed": 0,
-   "noRecipe": 102,
-   "httpErrors": {
-    "429": 4
-   },
+   "noRecipe": 2,
+   "httpErrors": {},
    "sitemapPages": 1201,
    "waiting": 0,
-   "count": 1095
+   "count": 1098,
+   "previous": 1095
   },
   "mycolombianrecipes": {
    "id": "mycolombianrecipes",
    "name": "My Colombian Recipes",
    "result": "ok",
-   "fetched": 1211,
-   "added": 933,
-   "updated": 0,
+   "fetched": 112,
+   "added": 80,
+   "updated": 14,
    "removed": 0,
-   "noRecipe": 185,
-   "httpErrors": {
-    "429": 93
-   },
-   "sitemapPages": 1211,
+   "noRecipe": 18,
+   "httpErrors": {},
+   "sitemapPages": 1212,
    "waiting": 0,
-   "count": 933
+   "count": 1013,
+   "previous": 933
   },
   "tasteofmaroc": {
    "id": "tasteofmaroc",
    "name": "Taste of Maroc",
    "result": "ok",
-   "fetched": 122,
-   "added": 90,
+   "fetched": 0,
+   "added": 0,
    "updated": 0,
    "removed": 0,
-   "noRecipe": 32,
+   "noRecipe": 0,
    "httpErrors": {},
    "sitemapPages": 122,
    "waiting": 0,
-   "count": 90
+   "count": 90,
+   "previous": 90
   },
   "obviouslyfrench": {
    "id": "obviouslyfrench",
    "name": "Obviously French",
    "result": "ok",
-   "fetched": 222,
-   "added": 135,
-   "updated": 0,
+   "fetched": 6,
+   "added": 1,
+   "updated": 4,
    "removed": 0,
-   "noRecipe": 87,
+   "noRecipe": 1,
    "httpErrors": {},
-   "sitemapPages": 222,
+   "sitemapPages": 223,
    "waiting": 0,
-   "count": 135
+   "count": 136,
+   "previous": 135
   },
   "seonkyounglongest": {
    "id": "seonkyounglongest",
    "name": "Seonkyoung Longest",
    "result": "ok",
-   "fetched": 58,
-   "added": 58,
+   "fetched": 0,
+   "added": 0,
    "updated": 0,
    "removed": 0,
    "noRecipe": 0,
@@ -512,189 +515,325 @@
    "sitemapPages": 611,
    "waiting": 0,
    "count": 611,
-   "previous": 553
+   "previous": 611
   },
   "vickypham": {
    "id": "vickypham",
    "name": "Vicky Pham",
    "result": "ok",
-   "fetched": 512,
-   "added": 458,
-   "updated": 0,
+   "fetched": 6,
+   "added": 2,
+   "updated": 3,
    "removed": 0,
-   "noRecipe": 54,
+   "noRecipe": 1,
    "httpErrors": {},
-   "sitemapPages": 512,
+   "sitemapPages": 513,
    "waiting": 0,
-   "count": 458
+   "count": 460,
+   "previous": 458
   },
   "delightfulplate": {
    "id": "delightfulplate",
    "name": "Delightful Plate",
    "result": "ok",
-   "fetched": 271,
-   "added": 249,
-   "updated": 0,
-   "removed": 0,
-   "noRecipe": 22,
-   "httpErrors": {},
-   "sitemapPages": 271,
-   "waiting": 0,
-   "count": 249
-  },
-  "wokandkin": {
-   "id": "wokandkin",
-   "name": "Wok and Kin",
-   "result": "ok",
-   "fetched": 219,
-   "added": 212,
-   "updated": 0,
-   "removed": 0,
-   "noRecipe": 7,
-   "httpErrors": {},
-   "sitemapPages": 219,
-   "waiting": 0,
-   "count": 212
-  },
-  "iamafoodblog": {
-   "id": "iamafoodblog",
-   "name": "I Am a Food Blog",
-   "result": "ok",
-   "fetched": 1642,
-   "added": 1266,
-   "updated": 0,
-   "removed": 0,
-   "noRecipe": 376,
-   "httpErrors": {},
-   "sitemapPages": 1642,
-   "waiting": 0,
-   "count": 1266
-  },
-  "preppykitchen": {
-   "id": "preppykitchen",
-   "name": "Preppy Kitchen",
-   "result": "ok",
-   "fetched": 852,
-   "added": 845,
-   "updated": 0,
-   "removed": 0,
-   "noRecipe": 7,
-   "httpErrors": {},
-   "sitemapPages": 1354,
-   "waiting": 0,
-   "count": 1313,
-   "previous": 468
-  },
-  "bakerbynature": {
-   "id": "bakerbynature",
-   "name": "Baker by Nature",
-   "result": "ok",
-   "fetched": 1362,
-   "added": 1038,
-   "updated": 0,
-   "removed": 0,
-   "noRecipe": 324,
-   "httpErrors": {},
-   "sitemapPages": 1362,
-   "waiting": 0,
-   "count": 1038
-  },
-  "joythebaker": {
-   "id": "joythebaker",
-   "name": "Joy the Baker",
-   "result": "ok",
-   "fetched": 1768,
-   "added": 1002,
-   "updated": 0,
-   "removed": 0,
-   "noRecipe": 766,
-   "httpErrors": {},
-   "sitemapPages": 1768,
-   "waiting": 0,
-   "count": 1002
-  },
-  "susanherrmannloomis": {
-   "id": "susanherrmannloomis",
-   "name": "Susan Herrmann Loomis in Paris",
-   "result": "blocked",
    "fetched": 0,
    "added": 0,
    "updated": 0,
    "removed": 0,
    "noRecipe": 0,
    "httpErrors": {},
-   "error": "HTTP 403 on robots.txt"
+   "sitemapPages": 271,
+   "waiting": 0,
+   "count": 249,
+   "previous": 249
+  },
+  "wokandkin": {
+   "id": "wokandkin",
+   "name": "Wok and Kin",
+   "result": "ok",
+   "fetched": 0,
+   "added": 0,
+   "updated": 0,
+   "removed": 0,
+   "noRecipe": 0,
+   "httpErrors": {},
+   "sitemapPages": 219,
+   "waiting": 0,
+   "count": 212,
+   "previous": 212
+  },
+  "iamafoodblog": {
+   "id": "iamafoodblog",
+   "name": "I Am a Food Blog",
+   "result": "ok",
+   "fetched": 5,
+   "added": 2,
+   "updated": 1,
+   "removed": 0,
+   "noRecipe": 2,
+   "httpErrors": {},
+   "sitemapPages": 1645,
+   "waiting": 0,
+   "count": 1268,
+   "previous": 1266
+  },
+  "preppykitchen": {
+   "id": "preppykitchen",
+   "name": "Preppy Kitchen",
+   "result": "ok",
+   "fetched": 9,
+   "added": 0,
+   "updated": 9,
+   "removed": 0,
+   "noRecipe": 0,
+   "httpErrors": {},
+   "sitemapPages": 1354,
+   "waiting": 0,
+   "count": 1313,
+   "previous": 1313
+  },
+  "bakerbynature": {
+   "id": "bakerbynature",
+   "name": "Baker by Nature",
+   "result": "ok",
+   "fetched": 1,
+   "added": 0,
+   "updated": 1,
+   "removed": 0,
+   "noRecipe": 0,
+   "httpErrors": {},
+   "sitemapPages": 1362,
+   "waiting": 0,
+   "count": 1038,
+   "previous": 1038
+  },
+  "joythebaker": {
+   "id": "joythebaker",
+   "name": "Joy the Baker",
+   "result": "ok",
+   "fetched": 2,
+   "added": 1,
+   "updated": 0,
+   "removed": 0,
+   "noRecipe": 1,
+   "httpErrors": {},
+   "sitemapPages": 1769,
+   "waiting": 0,
+   "count": 1003,
+   "previous": 1002
+  },
+  "susanherrmannloomis": {
+   "id": "susanherrmannloomis",
+   "name": "Susan Herrmann Loomis in Paris",
+   "result": "paused",
+   "error": "A Substack newsletter, read only through its public RSS feed (robots.txt allows /feed), under Kyle's 2026-11-11 decision on Substack. 7 of its 20 newest posts held a recipe on 2026-11-18. Kyle picked it on 2026-11-18. Her older site, dancingtomatoes.com, now belongs to someone else and is not hers to read. Paused 2026-11-19: Substack answers HTTP 403 for robots.txt when the crawler runs on GitHub Actions, so nothing was read. Not worked around."
   },
   "kingarthur-yt": {
    "id": "kingarthur-yt",
    "name": "King Arthur Baking",
    "result": "ok",
-   "count": 731
+   "count": 734,
+   "previous": 731
   },
   "pepin": {
    "id": "pepin",
    "name": "Jacques Pépin",
    "result": "ok",
-   "count": 154
+   "count": 156,
+   "previous": 154
   },
   "sohla": {
    "id": "sohla",
    "name": "Sohla and Ham",
    "result": "ok",
-   "count": 97
+   "count": 98,
+   "previous": 97
   },
   "matty": {
    "id": "matty",
    "name": "Matty Matheson",
    "result": "ok",
-   "count": 826
+   "count": 828,
+   "previous": 826
   },
   "mexicoinmykitchen-yt": {
    "id": "mexicoinmykitchen-yt",
    "name": "Mexico in My Kitchen",
    "result": "ok",
-   "count": 14
+   "count": 14,
+   "previous": 14
   },
   "patijinich-yt": {
    "id": "patijinich-yt",
    "name": "Pati Jinich",
    "result": "ok",
-   "count": 566
+   "count": 567,
+   "previous": 566
   },
   "hebbarskitchen-yt": {
    "id": "hebbarskitchen-yt",
    "name": "Hebbar's Kitchen",
    "result": "ok",
-   "count": 3335
+   "count": 3340,
+   "previous": 3335
   },
   "panlasangpinoy-yt": {
    "id": "panlasangpinoy-yt",
    "name": "Panlasang Pinoy",
    "result": "ok",
-   "count": 1558
+   "count": 1560,
+   "previous": 1558
   },
   "dimitrasdishes-yt": {
    "id": "dimitrasdishes-yt",
    "name": "Dimitra's Dishes",
    "result": "ok",
-   "count": 1688
+   "count": 1689,
+   "previous": 1688
   },
   "seonkyounglongest-yt": {
    "id": "seonkyounglongest-yt",
    "name": "Seonkyoung Longest",
    "result": "ok",
-   "count": 853
+   "count": 853,
+   "previous": 853
   },
   "preppykitchen-yt": {
    "id": "preppykitchen-yt",
    "name": "Preppy Kitchen",
    "result": "ok",
-   "count": 1574
+   "count": 1576,
+   "previous": 1574
+  },
+  "indianhealthyrecipes": {
+   "id": "indianhealthyrecipes",
+   "name": "Swasthi's Recipes",
+   "result": "paused",
+   "error": "robots.txt allows us and nothing in its policies forbids indexing, but its firewall (Sucuri) answers our crawler's requests for both post sitemaps with an empty page (HTTP 200, no content; checked 2026-11-18), so there is nothing to read. Needs the sitemaps to come back, or the site to allow us."
+  },
+  "japanesecooking101": {
+   "id": "japanesecooking101",
+   "name": "Japanese Cooking 101",
+   "result": "paused",
+   "error": "robots.txt lets every crawler in but the AI bots its ad network (Raptive) blocks, and its posts carry recipe data, but its host's bot check (SiteGround's captcha, HTTP 202) stops our crawler's requests. Its YouTube channel is read instead. Needs the site to allow us. Kyle picked it on 2026-11-18. The AI-bot block means its recipes and videos are for finding and linking only, never for training or tuning a model."
+  },
+  "chopstickchronicles": {
+   "id": "chopstickchronicles",
+   "name": "Chopstick Chronicles",
+   "result": "ok",
+   "fetched": 367,
+   "added": 334,
+   "updated": 0,
+   "removed": 0,
+   "noRecipe": 33,
+   "httpErrors": {},
+   "sitemapPages": 367,
+   "waiting": 0,
+   "count": 334
+  },
+  "okonomikitchen": {
+   "id": "okonomikitchen",
+   "name": "Okonomi Kitchen",
+   "result": "ok",
+   "fetched": 803,
+   "added": 707,
+   "updated": 0,
+   "removed": 0,
+   "noRecipe": 96,
+   "httpErrors": {},
+   "sitemapPages": 803,
+   "waiting": 0,
+   "count": 707
+  },
+  "omnivorescookbook": {
+   "id": "omnivorescookbook",
+   "name": "Omnivore's Cookbook",
+   "result": "ok",
+   "fetched": 785,
+   "added": 728,
+   "updated": 0,
+   "removed": 0,
+   "noRecipe": 57,
+   "httpErrors": {},
+   "sitemapPages": 785,
+   "waiting": 0,
+   "count": 728
+  },
+  "halfbakedharvest": {
+   "id": "halfbakedharvest",
+   "name": "Half Baked Harvest",
+   "result": "blocked",
+   "fetched": 652,
+   "added": 482,
+   "updated": 0,
+   "removed": 0,
+   "noRecipe": 139,
+   "httpErrors": {
+    "429": 31
+   },
+   "sitemapPages": 4521,
+   "waiting": 3869,
+   "error": "HTTP 429 three times in a row",
+   "count": 482
+  },
+  "ahnestkitchen": {
+   "id": "ahnestkitchen",
+   "name": "ahnest kitchen",
+   "result": "ok",
+   "fetched": 264,
+   "added": 70,
+   "updated": 0,
+   "removed": 0,
+   "noRecipe": 194,
+   "httpErrors": {},
+   "sitemapPages": 264,
+   "waiting": 0,
+   "count": 70
+  },
+  "maunikagowardhan": {
+   "id": "maunikagowardhan",
+   "name": "Maunika Gowardhan",
+   "result": "paused",
+   "error": "robots.txt allows us and lists a recipes sitemap, but Cloudflare's bot check blocks our crawler's requests to recipe pages (HTTP 403 challenge). Needs the site to allow us. Kyle picked it on 2026-11-18."
+  },
+  "japanesecookingchannel": {
+   "id": "japanesecookingchannel",
+   "name": "Japanese Cooking Channel",
+   "result": "ok",
+   "count": 478
+  },
+  "japanesecooking101-yt": {
+   "id": "japanesecooking101-yt",
+   "name": "Japanese Cooking 101",
+   "result": "ok",
+   "count": 796
+  },
+  "chopstickchronicles-yt": {
+   "id": "chopstickchronicles-yt",
+   "name": "Chopstick Chronicles",
+   "result": "ok",
+   "count": 138
+  },
+  "okonomikitchen-yt": {
+   "id": "okonomikitchen-yt",
+   "name": "Okonomi Kitchen",
+   "result": "ok",
+   "count": 12
+  },
+  "omnivorescookbook-yt": {
+   "id": "omnivorescookbook-yt",
+   "name": "Omnivore's Cookbook",
+   "result": "ok",
+   "count": 320
+  },
+  "happydonabelife-yt": {
+   "id": "happydonabelife-yt",
+   "name": "Happy Donabe Life",
+   "result": "ok",
+   "count": 22
   }
  },
  "alerts": [
-  "susanherrmannloomis: blocked (HTTP 403 on robots.txt)",
-  "mexicoinmykitchen: failed (HTTP 403 for https://www.mexicoinmykitchen.com/post-sitemap.xml)",
-  "recipesfromitaly: blocked (HTTP 403 three times in a row)"
+  "halfbakedharvest: blocked (HTTP 429 three times in a row)"
  ]
 }

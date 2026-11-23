@@ -30,5 +30,8 @@ export const SITE = {
     { href: 'https://kylepace.dev/', label: 'More by Kyle' },
   ],
   accessibilityHref: 'https://kylepace.dev/accessibility/',
+  // "Send feedback" in the welcome dialog and first in every page's footer (Kyle,
+  // 2026-11-23). Clicks send "Opened Feedback Link" (opened_from: welcome or footer).
+  feedback: 'mailto:mail@kylepace.net?subject=finDish%20feedback',
 };
 

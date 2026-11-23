@@ -47,7 +47,12 @@ const FILTERS = [
   bar={false}
   lab={{ name: 'the search', href: '/' }}
   about="/about/"
-  welcome={{ name: "finDish", text: `One search box across the recipe sites and YouTube channels of ${creators.length} independent cooks, like The Woks of Life, Hot Thai Kitchen and Smitten Kitchen, and growing. Search by dish, by what you have or by creator; every result opens on the creator’s own site. It’s an experiment, and I’d love your feedback at mail@kylepace.net.` }}
+  welcome={{ name: "finDish", text: [
+    `One search across the recipe sites and YouTube channels of ${creators.length} independent cooks, like The Woks of Life, Hot Thai Kitchen and Smitten Kitchen. Search by dish, by what you have or by who made it, and every recipe opens on the creator’s own site.`,
+    // What the experiment is, in Kyle's words from About ("searching them one at a time got
+    // old"), and what feedback helps (Kyle, 2026-11-23: the old line wasn't descriptive).
+    `It’s an early experiment: I wanted to search the cooks I trust all at once, without wading through a regular search engine. I add cooks and tune the results every week, so tell me what you looked for, what worked and who I should add.`,
+  ] }}
   title="finDish: find a dish from independent cooks"
   description="Find a dish from The Woks of Life, Hot Thai Kitchen, Smitten Kitchen and more at once, by dish, by what you have or by creator. Every recipe opens on its own site."
   image="/og.png"

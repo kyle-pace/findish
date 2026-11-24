@@ -9,6 +9,7 @@ import { toMinutes } from '../lib/text.mjs';
 import { toVideo, seconds, fetchChannelVideos } from '../lib/youtube.mjs';
 import { totals } from '../lib/popularity.mjs';
 import { adapt, readSources } from '../lib/sources.mjs';
+import { afterRefusal, afterSuccess, SLOWEST_MS } from '../lib/refusals.mjs';
 
 test('robots: AI-bot blocks leave us alone; wp-json stays off limits', () => {
   const txt = `User-agent: GPTBot\nDisallow: /\n\nUser-agent: CCBot\nDisallow: /\n\nUser-agent: *\nDisallow: /wp-json/\nDisallow: /wp-admin/\nAllow: /wp-admin/admin-ajax.php\n`;
@@ -398,4 +399,38 @@ test('a smoke test never stands a real crawl down: the crawl waits for it, and t
   assert.equal(turn({ ...smoke, id: 4, started: '2026-11-19T07:02:00Z' }, [real]), 'skip');
   assert.equal(turn(weekly, [smoke, real, weekly]), 'stand down'); // a real crawl is ahead too
   assert.equal(turn(real, [real]), 'go');
+});
+
+test('refusals: HTTP 429 slows the crawl down, and only stops it as "slowed" at the slowest pace', () => {
+  const seen = {};
+  let pause = 4000;
+  const paces = [];
+  for (let i = 0; i < 3; i++) {
+    const next = afterRefusal(seen, 429, pause);
+    assert.equal(next.stop, null);
+    assert.ok(next.wait > 0);
+    pause = next.pause;
+    paces.push(pause);
+  }
+  assert.deepEqual(paces, [8000, 16000, SLOWEST_MS]);
+  assert.equal(afterRefusal(seen, 429, pause).stop, null);
+  assert.equal(afterRefusal(seen, 429, pause).stop, null);
+  assert.equal(afterRefusal(seen, 429, pause).stop, 'slowed');
+});
+
+test('refusals: a page that comes back starts the count again', () => {
+  const seen = {};
+  afterRefusal(seen, 429, SLOWEST_MS);
+  afterRefusal(seen, 429, SLOWEST_MS);
+  afterSuccess(seen);
+  assert.equal(afterRefusal(seen, 429, SLOWEST_MS).stop, null);
+});
+
+test('refusals: 401 or 403 three times in a row is still "blocked"', () => {
+  const seen = {};
+  assert.equal(afterRefusal(seen, 403, 4000).stop, null);
+  assert.equal(afterRefusal(seen, 403, 4000).stop, null);
+  const last = afterRefusal(seen, 403, 4000);
+  assert.equal(last.stop, 'blocked');
+  assert.equal(last.pause, 4000);
 });

@@ -136,3 +136,6 @@ i.imgur.com
 
 # I Am a Food Blog: recipe photos on its image CDN (content images), added 2026-11-19
 iamafoodblog.b-cdn.net
+
+# Recipe photos from ahnest kitchen, served by Squarespace's image CDN, on its own results, lazily and with no referrer. Added under the content-image rule, 2026-11-24.
+static1.squarespace.com

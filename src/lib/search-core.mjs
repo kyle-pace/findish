@@ -482,6 +482,13 @@ function countAll(ready, ws, titles = false) {
  *   and listed in `ignored`; when it's all there is, the search finds nothing.
  * Returns { words, terms, fixes: [typed, used][], ignored: string[], none: bool }.
  */
+// True when `short` is `long` with one letter left out ("chiken" from "chicken").
+function missingOne(long, short) {
+  if (long.length !== short.length + 1) return false;
+  for (let i = 0; i < long.length; i++) if (long.slice(0, i) + long.slice(i + 1) === short) return true;
+  return false;
+}
+
 export function queryWords(ready, text, { exact = false, typing = false, lenient = false } = {}) {
   const key = `${exact ? 1 : 0}${typing ? 1 : 0}${lenient ? 1 : 0}|${text}`;
   const hit = ready.cache.get(key);
@@ -531,7 +538,8 @@ export function queryWords(ready, text, { exact = false, typing = false, lenient
           return void out.push(w);
         }
       }
-      const others = ws.filter((_, k) => k !== n).filter(known);
+      // Words before this one as already fixed ("chiken" read as "chicken"), the rest as typed.
+      const others = [...out, ...ws.slice(n + 1)].filter(known);
       const options = [];
       if (!typing || !last) {
         for (let cut = 2; cut <= w.length - 2; cut++) {
@@ -540,6 +548,9 @@ export function queryWords(ready, text, { exact = false, typing = false, lenient
         }
       }
       if (!rare) for (const v of closeWords(ready, w)) options.push([v]);
+      // A word only a title or two has can still be a typo in that title ("Chiken and Vegetable
+      // Stew"): when it is a far commoner word with one letter left out, that word is meant.
+      else for (const v of closeWords(ready, w)) if (missingOne(v, w) && w.length >= 6 && (vocab.get(v) || 0) >= 200 * (vocab.get(w) || 1)) options.push([v]);
       let best = null;
       let bestN = rare ? 2 * countAll(ready, [...others, w]) + 2 : 0;
       for (const o of options) {

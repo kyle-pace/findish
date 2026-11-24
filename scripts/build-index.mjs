@@ -27,6 +27,7 @@ import { pack } from '../src/lib/index-format.mjs';
 import { floorProblems } from './index-floor.mjs';
 import { KINDS, supportKind } from './support.mjs';
 import { dishPhrases } from './phrases.mjs';
+import { allowedHosts, heldBack, heldBackNote, photoHost } from './photo-hosts.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const out = join(root, 'public/index.json');
@@ -36,6 +37,8 @@ const report = process.argv.includes('--report');
 const sources = readSources();
 const catalog = load(join(root, 'vendor/kitchen-catalog/catalog.json'));
 const status = JSON.parse(readFileSync(join(root, 'data/status.json'), 'utf8'));
+const photoHosts = allowedHosts();
+const heldPhotos = [];
 
 const decode = (s) =>
   String(s)
@@ -166,6 +169,8 @@ for (const s of sources.recipes) {
     // Smaller photos where the host can resize (WordPress.com's image CDN takes ?w=).
     let img = s.photos === false ? '' : r.img || '';
     if (img.startsWith('https://i0.wp.com/')) img = img.replace(/\?.*$/, '') + '?w=480&quality=80&ssl=1';
+    // Only from hosts the site may load from (scripts/photo-hosts.mjs); the rest are noted below.
+    if (img && !photoHosts.has(photoHost(img))) { heldPhotos.push(img); img = ''; }
     // Which part of a meal it is (scripts/course.mjs), and the day the crawler first found it.
     const course = courseOf(decode(r.k || ''), name);
     // Position 12, the flags, is left off when there are none.
@@ -188,6 +193,13 @@ for (const s of sources.recipes) {
   }
 }
 if (folded) console.log(`Twins: ${folded} recipes a site posted twice under one name, shown once`);
+{
+  const note = heldBackNote(heldBack(heldPhotos, photoHosts));
+  if (note) {
+    console.log(note);
+    if (process.env.GITHUB_STEP_SUMMARY) writeFileSync(process.env.GITHUB_STEP_SUMMARY, `**Note:** ${note}\n`, { flag: 'a' });
+  }
+}
 for (const r of recipes) {
   if (r[4]) cuisineCount.set(r[4], (cuisineCount.get(r[4]) || 0) + 1);
   if (r[10]) courseCount.set(r[10], (courseCount.get(r[10]) || 0) + 1);

@@ -21,6 +21,8 @@ import { parseFeed } from './lib/feed.mjs';
 import { recipeFromPost } from './lib/post.mjs';
 import { fetchChannelVideos } from './lib/youtube.mjs';
 import { readSources } from './lib/sources.mjs';
+import { afterRefusal, afterSuccess } from './lib/refusals.mjs';
+import { allowedHosts, heldBack, heldBackNote } from '../scripts/photo-hosts.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 // FindishBot since 2026-11-16 (it was RecipeSearchBot). Rules written for the old name
@@ -85,14 +87,15 @@ async function crawlSite(src) {
   // robots.txt: RFC 9309 says 4xx means "no rules", but a 401/403/429 on
   // robots.txt itself almost always means a firewall is turning us away.
   const robotsRes = await get(`${src.site}/robots.txt`).catch((err) => ({ status: 0, error: err.message }));
-  if ([401, 403, 429].includes(robotsRes.status)) return { ...out, result: 'blocked', error: `HTTP ${robotsRes.status} on robots.txt` };
+  if (robotsRes.status === 429) return { ...out, result: 'slowed', note: 'asked us to slow down (HTTP 429) on robots.txt, so nothing was read this run; it is tried again next run.' };
+  if ([401, 403].includes(robotsRes.status)) return { ...out, result: 'blocked', error: `HTTP ${robotsRes.status} on robots.txt` };
   if (robotsRes.status === 0 || robotsRes.status >= 500) return { ...out, result: 'error', error: `robots.txt unreachable (${robotsRes.error || 'HTTP ' + robotsRes.status})` };
   const robots = robotsForNames(robotsRes.status === 200 ? robotsRes.text : '', [BOT, ...OLD_NAMES]);
   const sitemapUrl = new URL(src.sitemap, src.site).href;
   if (!robots.allowed('/') && !robots.allowed(sitemapUrl)) return { ...out, result: 'blocked', error: 'robots.txt disallows us' };
   // A site can ask for more time between requests (robots.txt Crawl-delay), and so can
   // the source list (crawl.delay_seconds) for a site that has told us we're too quick (HTTP 429).
-  const pause = Math.max(delayMs, (robots.crawlDelay || 0) * 1000, (src.delay_seconds || 0) * 1000);
+  let pause = Math.max(delayMs, (robots.crawlDelay || 0) * 1000, (src.delay_seconds || 0) * 1000);
 
   const include = src.include ? new RegExp(src.include) : null;
   const entries = await readSitemaps(sitemapUrl, (u, o) => getOk(u, o), { include, log });
@@ -129,7 +132,7 @@ async function crawlSite(src) {
   out.waiting = todo.length;
   log(`${todo.length} new or changed; fetching ${Math.min(todo.length, limit)}`);
 
-  let refusedInARow = 0;
+  const refused = {};
   for (const { u, lastmod } of todo.slice(0, limit)) {
     if (Date.now() > deadline) {
       log('time budget used up; the rest waits for the next run');
@@ -148,11 +151,20 @@ async function crawlSite(src) {
     if (res.status !== 200) {
       out.httpErrors[res.status] = (out.httpErrors[res.status] || 0) + 1;
       if ([401, 403, 429].includes(res.status)) {
-        if (++refusedInARow >= 3) {
+        const next = afterRefusal(refused, res.status, pause);
+        if (next.stop === 'blocked') {
           out.result = 'blocked';
           out.error = `HTTP ${res.status} three times in a row`;
           break;
         }
+        if (next.stop === 'slowed') {
+          out.result = 'slowed';
+          out.note = `asked us to slow down (HTTP 429) even at one page every ${pause / 1000} seconds, so this run stopped reading it; the rest waits for the next run. If it happens again, give it crawl.delay_seconds in KitchenCatalog.`;
+          break;
+        }
+        if (next.pause !== pause) log(`HTTP 429: slowing to one page every ${next.pause / 1000} seconds`);
+        pause = next.pause;
+        if (next.wait) await sleep(next.wait);
       }
       if (res.status === 404 || res.status === 410) {
         delete state[u];
@@ -160,7 +172,7 @@ async function crawlSite(src) {
       }
       continue;
     }
-    refusedInARow = 0;
+    afterSuccess(refused);
     if (!sameSite(res.url, host)) {
       state[u] = { m: lastmod, r: 0, f: today };
       continue;
@@ -206,7 +218,8 @@ async function crawlFeed(src) {
   const feedUrl = new URL(src.feed, src.site).href;
 
   const robotsRes = await get(`${src.site}/robots.txt`).catch((err) => ({ status: 0, error: err.message }));
-  if ([401, 403, 429].includes(robotsRes.status)) return { ...out, result: 'blocked', error: `HTTP ${robotsRes.status} on robots.txt` };
+  if (robotsRes.status === 429) return { ...out, result: 'slowed', note: 'asked us to slow down (HTTP 429) on robots.txt, so nothing was read this run; it is tried again next run.' };
+  if ([401, 403].includes(robotsRes.status)) return { ...out, result: 'blocked', error: `HTTP ${robotsRes.status} on robots.txt` };
   if (robotsRes.status === 0 || robotsRes.status >= 500) return { ...out, result: 'error', error: `robots.txt unreachable (${robotsRes.error || 'HTTP ' + robotsRes.status})` };
   const robots = robotsForNames(robotsRes.status === 200 ? robotsRes.text : '', [BOT, ...OLD_NAMES]);
   if (!robots.allowed(feedUrl)) return { ...out, result: 'blocked', error: 'robots.txt disallows the feed' };
@@ -214,7 +227,8 @@ async function crawlFeed(src) {
   await sleep(Math.max(delayMs, (robots.crawlDelay || 0) * 1000));
   const res = await get(feedUrl);
   out.fetched = 1;
-  if ([401, 403, 429].includes(res.status)) return { ...out, result: 'blocked', error: `HTTP ${res.status} on the feed` };
+  if (res.status === 429) return { ...out, result: 'slowed', note: 'asked us to slow down (HTTP 429) on the feed, so nothing was read this run; it is tried again next run.' };
+  if ([401, 403].includes(res.status)) return { ...out, result: 'blocked', error: `HTTP ${res.status} on the feed` };
   if (res.status !== 200) return { ...out, result: 'error', error: `HTTP ${res.status} on the feed` };
   const posts = parseFeed(res.text).filter((p) => sameSite(p.link, new URL(src.site).host.replace(/^www\./, '')));
   out.feedPosts = posts.length;
@@ -354,6 +368,20 @@ function parseArgs(argv) {
   return out;
 }
 
+// A note when sites that ran now have photos on a host the site can't load from yet.
+async function photoNote(s) {
+  const allowed = allowedHosts();
+  const imgs = [];
+  for (const id of Object.keys(s.sources)) {
+    const path = join(ROOT, `data/${id}.json`);
+    if (!existsSync(path)) continue;
+    const rows = JSON.parse(await readFile(path, 'utf8'));
+    if (Array.isArray(rows)) for (const r of rows) if (r && r.img) imgs.push(r.img);
+  }
+  const note = heldBackNote(heldBack(imgs, allowed));
+  return note ? [`- ${note}`] : [];
+}
+
 async function report(s) {
   const rows = Object.values(s.sources).map((x) =>
     `| ${x.name || x.id} | ${x.result}${x.error ? ` (${x.error})` : ''} | ${x.count ?? ''} | ${x.fetched ?? ''} | ${x.added ?? ''} | ${x.noRecipe ?? ''} | ${x.waiting ?? ''} | ${Object.entries(x.httpErrors || {}).map(([k, v]) => `${k}×${v}`).join(' ')} |`,
@@ -367,6 +395,7 @@ async function report(s) {
     '',
     s.alerts.length ? `**Alerts:**\n${s.alerts.map((a) => `- ${a}`).join('\n')}` : 'No alerts.',
     ...Object.values(s.sources).filter((x) => x.note).map((x) => `- ${x.id}: ${x.note}`),
+    ...(await photoNote(s)),
     '',
   ].join('\n');
   console.log('\n' + md);

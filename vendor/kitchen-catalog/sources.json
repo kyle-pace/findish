@@ -1914,9 +1914,11 @@
       "crawl": {
         "sitemap": "/sitemap_index.xml",
         "format": "json-ld",
+        "delay_seconds": 12,
         "size": "over 1,000 posts",
         "notes": [
-          "sitemap: the index lists more than one post sitemap"
+          "sitemap: the index lists more than one post sitemap",
+          "delay_seconds: on its first crawl (2026-11-23) it answered HTTP 429 after about 650 pages at one every 4 seconds, so it gets one every 12"
         ]
       },
       "support": {

@@ -1,6 +1,6 @@
 {
  "days": 90,
- "updated": "2026-11-24",
+ "updated": "2026-11-25",
  "opens": {
   "mwl:/recipes/braised-taro-with-chinese-sausage": 2,
   "rte:/cajun-blackened-fish/": 2,
@@ -25,6 +25,7 @@
   "woks:/eggs-easy-soy-sauce/": 1,
   "woks:/garlic-baby-bok-choy/": 1,
   "woks:/spicy-cold-tofu-liangban-dofu/": 1,
-  "woks:/thai-fried-rice/": 1
+  "woks:/thai-fried-rice/": 1,
+  "woks:/trio-pinchos/": 1
  }
 }

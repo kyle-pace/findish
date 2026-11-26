@@ -19,3 +19,5 @@ public/allowed-hosts.txt
 # npm run check output (screenshots)
 .check/
 public/notes.json
+# staged from vendor/explore/ by scripts/stage-explore.mjs on every build
+public/explore/app/

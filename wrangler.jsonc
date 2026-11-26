@@ -21,5 +21,9 @@
   ],
   "routes": [
     { "pattern": "findish.now", "custom_domain": true }
-  ]
+  ],
+  // Explore's photos (src/pages/explore/img/[...path].ts): each listed Wikimedia photo is
+  // fetched once and kept here. It is the bucket World cuisine filled on kylepace.dev, so
+  // nothing is fetched twice. Free tier; only listed photos are stored.
+  "r2_buckets": [{ "binding": "CUISINE_IMAGES", "bucket_name": "kylepace-cuisine-images" }]
 }

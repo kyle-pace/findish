@@ -11,6 +11,12 @@
 // Turning it on is this one line.
 export const DISCOVER_LISTED = false;
 
+// Explore (/explore/, added 2026-11-26, Kyle's call): World cuisine's globe and its pages for
+// every cuisine, dish and ingredient, moved here from kylepace.dev/world-cuisine/ to become
+// finDish's way to browse. Built but unlisted until this is true: off, it has no footer or
+// home page link, isn't in the sitemap and asks search engines not to index it.
+export const EXPLORE_LISTED = false;
+
 export const SITE = {
   name: 'finDish',
   analytics: { apiKey: '8c102a3b3b5f8f0206dd6883f2b389cf', liveHosts: ['findish.now'] },
@@ -22,6 +28,7 @@ export const SITE = {
     { href: '/?saved=1', label: 'Saved' },
     { href: '/about/', label: 'About' },
     ...(DISCOVER_LISTED ? [{ href: '/discover/', label: 'Discover' }] : []),
+    ...(EXPLORE_LISTED ? [{ href: '/explore/', label: 'Explore' }] : []),
     { href: '/browse/', label: 'Browse' },
     { href: '/creators/', label: 'Creators' },
     { href: '/assistants/', label: 'For AI assistants' },

@@ -1,0 +1,78 @@
+---
+// Explore (/explore/, added 2026-11-26): World cuisine's globe, framed with finDish's own
+// header and footer. The globe itself is the explorer's index.html, staged at /explore/app/
+// (scripts/stage-explore.mjs); a #cuisine link on this page is passed through to it.
+// Unlisted until EXPLORE_LISTED in src/lib/site.ts is on.
+import LabLayout from 'kp-design/layouts/LabLayout.astro';
+import { SITE, EXPLORE_LISTED } from '../../lib/site';
+import SiteHead from '../../components/SiteHead.astro';
+import cuisineData from '../../../vendor/explore/data/cuisines.json';
+import foodData from '../../../vendor/explore/data/food.json';
+import '../../styles/theme.css';
+import '../../styles/explore.css';
+
+const cuisines: { kind: string; iso3: string }[] = (cuisineData as any).cuisines ?? [];
+const dishCount: number = ((foodData as any).dishes ?? []).length;
+const countries = new Set(cuisines.filter((c) => c.kind === 'national').map((c) => c.iso3)).size;
+const round = (n: number) => Math.floor(n / 10) * 10;
+---
+
+<LabLayout
+  favicon="/favicon-v4.svg"
+  site={SITE}
+  bar={false}
+  lab={{ name: 'the search', href: '/' }}
+  about="/about/"
+  title="Explore the world’s cuisines on finDish"
+  description={`More than ${round(cuisines.length)} of the world’s cuisines and ${round(dishCount).toLocaleString('en-US')} dishes on one globe. Find where a dish is from and what goes in it, then find recipes from independent cooks.`}
+  image="/explore/share.png"
+  imageAlt="A dark globe with countries colored by continent and thin routes arcing between them."
+  themeColor={{ light: '#fbf5ec', dark: '#1d1714' }}
+  noindex={!EXPLORE_LISTED}
+>
+  <link slot="head" rel="manifest" href="/manifest.webmanifest" />
+  <SiteHead wide />
+
+  <article class="explore-page" data-page="explore">
+    <header>
+      <h1>Explore</h1>
+      <p class="lede">
+        {round(cuisines.length)}+ of the world’s cuisines on a globe: {countries} countries and territories, their regional cooking and{' '}
+        {dishCount.toLocaleString('en-US')} dishes. Search an ingredient to see where it’s cooked with, or pick a dish to see where it’s
+        from and what goes in it.
+      </p>
+    </header>
+
+    <a class="fullscreen" href="/explore/app/">Open the globe full screen</a>
+    <div class="frame">
+      <iframe data-src="/explore/app/?embed" title="An interactive globe of the world’s cuisines" allow="fullscreen"></iframe>
+      <noscript><p class="noscript">The globe needs JavaScript. <a href="/explore/app/">Open it on its own</a>.</p></noscript>
+    </div>
+    <p class="open">
+      <a href="/explore/app/">Open the globe full screen</a>, or <a href="/explore/app/web.html#/">browse every cuisine, dish and ingredient as pages</a>
+    </p>
+
+    <div class="fine-print">
+      <p>
+        Wikipedia is the source of truth. The list of cuisines comes from its <a href="https://en.wikipedia.org/wiki/List_of_cuisines">List of
+        cuisines</a>, places and countries from Wikidata, and each intro from its own article (CC BY-SA), refreshed weekly. Dishes and their
+        ingredients come from Wikidata and Wikipedia’s infoboxes. Where ingredients are grown comes from <a
+        href="https://www.fao.org/faostat/en/#data/QCL">FAO’s FAOSTAT</a> (CC BY 4.0).
+      </p>
+      <p>
+        Recipe sites and cookbooks are Kyle’s to choose; anything marked “suggested” hasn’t been reviewed yet. Covers from Open Library.
+        Country shapes from <a href="https://www.naturalearthdata.com">Natural Earth</a>, globe by <a href="https://globe.gl">globe.gl</a>.
+      </p>
+    </div>
+  </article>
+</LabLayout>
+
+<script>
+  // Load the globe, passing through a #cuisine link (findish.now/explore/#thai-cuisine)
+  const frame = document.querySelector<HTMLIFrameElement>('.frame iframe');
+  if (frame?.dataset.src) frame.src = frame.dataset.src + location.hash;
+  addEventListener('hashchange', () => {
+    const win = frame?.contentWindow;
+    if (win && win.location.hash !== location.hash) win.location.hash = location.hash;
+  });
+</script>

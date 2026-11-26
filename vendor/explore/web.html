@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>World cuisine: browse</title>
+<meta name="description" content="Every cuisine, dish, ingredient, recipe site and cookbook in World cuisine as linked pages, with backlinks and a graph.">
+<meta property="og:title" content="World cuisine: browse">
+<meta property="og:description" content="The world's cuisines, dishes and ingredients as a web of linked pages.">
+<meta property="og:image" content="https://kylepace.dev/world-cuisine/share.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#1b1424">
+<link rel="stylesheet" href="vendor/fonts/atkinson.css">
+<style>
+  :root {
+    --night: #1b1424; --panel: #241b2f; --panel-2: #2e2439; --line: #4a3f57;
+    --rice: #ede6da; --muted: #a99fb5;
+    --saffron: #f0b340; --beet: #cf5f87; --chili: #e46a3f; --tomatillo: #94bd5c; --seaglass: #55b8ad;
+    --font: "Atkinson Hyperlegible Next", system-ui, sans-serif;
+    --ease: cubic-bezier(.2, .8, .2, 1);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--night); color: var(--rice); font-family: var(--font); font-size: 16px; line-height: 1.55; }
+  a { color: inherit; }
+  button { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--saffron); outline-offset: 2px; border-radius: 4px; }
+
+  /* Top bar: name, Globe and Web, search, graph */
+  .top { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 16px; padding: 12px 28px;
+    background: rgba(27, 20, 36, 0.94); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+  .brand { font-weight: 800; font-size: 1.15rem; letter-spacing: -0.01em; text-decoration: none; white-space: nowrap; }
+  /* The way out of the full-screen views, back to the World cuisine page (its About, the
+     lab bar, More labs). Hidden when the globe is embedded in that page. */
+  .exit { display: inline-flex; align-items: center; gap: 4px; min-height: 24px; margin: 0 0 8px; color: var(--muted); font-size: 0.9rem; font-weight: 600; text-decoration: none; }
+  .exit:hover { color: var(--rice); text-decoration: underline; }
+  .top .exit { margin: 0; }
+  .views { display: flex; gap: 4px; padding: 3px; background: var(--panel-2); border-radius: 999px; }
+  .views a { text-decoration: none; padding: 5px 14px; border-radius: 999px; font-weight: 600; font-size: 0.9rem; color: var(--muted); }
+  .views a[aria-current="page"] { background: var(--rice); color: var(--night); }
+  .search { position: relative; flex: 1; max-width: 420px; margin-left: auto; }
+  .search input { width: 100%; padding: 9px 14px 9px 38px; border-radius: 22px; border: 1px solid var(--line);
+    background: var(--panel); color: var(--rice); font: inherit; -webkit-appearance: none; appearance: none; }
+  .search input::placeholder { color: var(--muted); }
+  .search input::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; width: 16px; height: 16px; cursor: pointer;
+    background: var(--muted); -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round'%3E%3Cpath d='M6 6l12 12M18 6 6 18'/%3E%3C/svg%3E") center / contain no-repeat;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round'%3E%3Cpath d='M6 6l12 12M18 6 6 18'/%3E%3C/svg%3E") center / contain no-repeat; }
+  .search input::-webkit-search-cancel-button:hover { background: var(--rice); }
+  .search svg { position: absolute; left: 14px; top: 12px; width: 15px; height: 15px; stroke: var(--muted); pointer-events: none; }
+  .results { list-style: none; margin: 6px 0 0; padding: 6px; position: absolute; left: 0; right: 0; background: var(--panel);
+    border: 1px solid var(--line); border-radius: 14px; max-height: 60vh; overflow: auto; display: none; }
+  .results.open { display: block; }
+  .results li { padding: 6px 10px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 12px; }
+  .results li > .txt { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.3; }
+  .results li small { color: var(--muted); font-size: 0.84rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .thumb { flex: none; width: 40px; height: 40px; border-radius: 8px; background: var(--panel-2); overflow: hidden; display: grid; place-items: center; }
+  .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .thumb i { width: 10px; height: 10px; border-radius: 50%; display: block; }
+  .thumb i.sq { border-radius: 2px; transform: rotate(45deg); }
+  .results .clear-recent { margin-left: auto; background: none; border: 0; color: var(--muted); font-size: 0.78rem; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; padding: 0; }
+  .results .group { display: flex; align-items: baseline; }
+  .results li[aria-selected="true"], .results li:hover { background: var(--panel-2); }
+  .results .group { padding: 10px 10px 4px; font-size: 0.78rem; font-weight: 700; color: var(--muted); cursor: default; }
+  .results .group:hover { background: none; }
+  .btn { border: 1px solid var(--line); background: var(--panel); border-radius: 999px; padding: 8px 14px; cursor: pointer; font-weight: 600; font-size: 0.9rem; white-space: nowrap; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
+  .btn:hover { border-color: var(--muted); }
+  .btn.solid { background: var(--rice); color: var(--night); border-color: var(--rice); }
+  .btn.solid:hover { background: #fff8ec; }
+  .btn svg { width: 16px; height: 16px; flex: none; }
+  .cdot { display: inline-block; width: 11px; height: 11px; border-radius: 50%; flex: none;
+    background: conic-gradient(var(--chili) 0 20%, var(--tomatillo) 0 40%, var(--saffron) 0 60%, var(--beet) 0 80%, var(--seaglass) 0); }
+
+  /* Page and its connections */
+  .layout { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 48px; max-width: 1200px; margin: 0 auto; padding: 36px 28px 80px; }
+  .page { min-width: 0; max-width: 70ch; }
+  .layout.solo { grid-template-columns: minmax(0, 1fr); }
+  .layout.solo .page { max-width: 90ch; }
+  .side { position: sticky; top: 84px; align-self: start; }
+  .crumb { color: var(--muted); font-size: 0.88rem; margin: 0 0 6px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .crumb a { text-underline-offset: 2px; }
+  .page h1 { font-weight: 800; letter-spacing: -0.02em; font-size: clamp(2rem, 4vw, 2.8rem); line-height: 1.08; margin: 0 0 8px; }
+  .sub { color: var(--muted); margin: 0 0 18px; display: flex; align-items: center; gap: 8px; }
+  .sub i, .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex: none; }
+  .intro { font-size: 1.06rem; }
+  .intro p { margin: 0 0 12px; }
+  .source { font-size: 0.82rem; color: var(--muted); margin: 0 0 4px; }
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 8px; }
+  .page h2 { font-weight: 700; font-size: 1.25rem; margin: 36px 0 12px; display: flex; align-items: baseline; gap: 8px; }
+  .page h2 small { color: var(--muted); font-weight: 400; font-size: 0.9rem; }
+  .page h3 { font-size: 1rem; margin: 22px 0 8px; color: var(--muted); }
+  .empty { color: var(--muted); margin: 0; }
+  .tag { display: inline-block; font-size: 0.72rem; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 0 7px; margin-left: 6px; vertical-align: 2px; font-weight: 400; }
+
+  /* Lists of linked things: internal links look like Obsidian's, plain underlined text */
+  .links { display: flex; flex-wrap: wrap; gap: 6px 8px; margin: 0; padding: 0; list-style: none; }
+  .links a, .inline a { text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--rice) 45%, transparent); text-underline-offset: 3px; }
+  .links a:hover, .inline a:hover { text-decoration-color: var(--rice); }
+  .links li:not(:last-child)::after { content: "·"; color: var(--line); margin-left: 8px; }
+  .rows { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .row { display: flex; align-items: flex-start; gap: 12px; padding: 12px 14px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; }
+  .row > div { flex: 1; min-width: 0; }
+  .row a.name { font-weight: 700; text-decoration: none; }
+  .row a.name:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .row small { display: block; color: var(--muted); font-size: 0.88rem; line-height: 1.4; margin-top: 2px; }
+  .row .out { flex: none; color: var(--muted); padding: 4px; border-radius: 6px; }
+  .row .out:hover { color: var(--rice); background: var(--panel-2); }
+  .row .out svg { width: 18px; height: 18px; display: block; }
+  .row .mark { width: 10px; height: 10px; margin-top: 8px; flex: none; }
+  .grouped { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+  .grouped > li { border-top: 1px solid var(--line); padding-top: 12px; }
+  .grouped > li:first-child { border-top: 0; padding-top: 0; }
+  .grouped b a { text-decoration: none; }
+  .grouped b a:hover { text-decoration: underline; }
+  .grouped .n { color: var(--muted); font-size: 0.85rem; font-weight: 400; }
+  .grouped .links { margin-top: 6px; }
+  .letters { display: flex; flex-wrap: wrap; gap: 4px; margin: 0 0 16px; }
+  .letters a { min-width: 32px; text-align: center; padding: 4px 6px; border-radius: 8px; text-decoration: none; background: var(--panel); border: 1px solid var(--line); font-weight: 600; font-size: 0.9rem; }
+  .letters a[aria-current="true"] { background: var(--rice); color: var(--night); border-color: var(--rice); }
+  .stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 18px 0 0; padding: 0; list-style: none; max-width: 420px; }
+  .stats a { display: block; text-decoration: none; padding: 12px 16px; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; }
+  .stats a:hover { border-color: var(--muted); }
+  .stats b { display: block; font-size: 1.5rem; font-weight: 800; line-height: 1.1; }
+  .stats span { color: var(--muted); font-size: 0.9rem; }
+  .cover { width: 120px; aspect-ratio: 2 / 3; border-radius: 3px 6px 6px 3px; overflow: hidden; position: relative; background: var(--panel-2);
+    box-shadow: inset 6px 0 0 rgba(0,0,0,0.18); display: flex; align-items: flex-end; padding: 10px 8px 10px 14px; font-weight: 700; font-size: 0.85rem; line-height: 1.15; float: right; margin: 0 0 12px 20px; }
+  .cover img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .grown { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+  .grown li { position: relative; display: flex; justify-content: space-between; gap: 12px; padding: 6px 12px; border-radius: 8px; overflow: hidden; background: var(--panel); }
+  .grown li i { position: absolute; left: 0; top: 0; bottom: 0; background: rgba(237, 230, 218, 0.10); }
+  .grown li span { position: relative; z-index: 1; }
+  .grown .n { color: var(--muted); font-size: 0.9rem; }
+  .photo { margin: 6px 0 18px; }
+  .photo img { display: block; width: 100%; max-width: 560px; height: auto; max-height: 360px; object-fit: cover; border-radius: 14px; background: var(--panel); }
+  .photo figcaption { font-size: 0.8rem; color: var(--muted); margin-top: 6px; }
+  .photo figcaption a { color: var(--muted); }
+  .cards { list-style: none; margin: 0 0 14px; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+  .cards a { display: block; text-decoration: none; border-radius: 12px; }
+  .cards .pic { aspect-ratio: 4 / 3; border-radius: 12px; overflow: hidden; background: var(--panel); border: 1px solid var(--line); }
+  .cards img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .cards b { display: block; font-weight: 600; font-size: 0.95rem; line-height: 1.3; margin-top: 6px; }
+  .cards a:hover b { text-decoration: underline; text-underline-offset: 3px; }
+  .all-of { font-size: 0.9rem; color: var(--muted); margin: 0 0 8px; }
+  .toc { margin-top: 24px; }
+  .toc h2 { margin-bottom: 6px; }
+  .toc ol, .toc-m ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+  .toc a, .toc-m a { display: block; padding: 4px 10px; border-left: 2px solid var(--line); text-decoration: none; color: var(--muted); font-size: 0.92rem; }
+  .toc a:hover, .toc-m a:hover { color: var(--rice); }
+  .toc a[aria-current="true"] { color: var(--rice); border-left-color: var(--saffron); font-weight: 600; }
+  .toc-m { display: none; margin: 14px 0 0; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }
+  .toc-m summary { cursor: pointer; padding: 10px 14px; font-weight: 700; font-size: 0.95rem; }
+  .toc-m ol { padding: 0 14px 12px; }
+  .page h2[id] { scroll-margin-top: 84px; }
+  .correct { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--line); color: var(--muted); font-size: 0.88rem; }
+
+  /* Connections: the local graph */
+  .side h2 { font-size: 0.95rem; margin: 0 0 8px; color: var(--muted); font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
+  .local { height: 340px; background: var(--panel); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; position: relative; }
+  .key { display: flex; flex-wrap: wrap; gap: 4px 12px; margin: 10px 0 12px; font-size: 0.8rem; color: var(--muted); }
+  .key span { display: inline-flex; align-items: center; gap: 6px; }
+  .key svg { width: 11px; height: 11px; }
+  .side .btn { width: 100%; justify-content: center; }
+
+  /* The whole web */
+  .full { position: fixed; inset: 0; z-index: 10; background: var(--night); display: none; }
+  .full.open { display: block; }
+  .full-bar { position: absolute; top: 0; left: 0; right: 0; z-index: 2; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 14px 20px;
+    background: linear-gradient(var(--night) 60%, transparent); }
+  .full-bar h2 { margin: 0 12px 0 0; font-size: 1.1rem; }
+  .full-bar .chip { border: 1px solid var(--line); background: var(--panel); border-radius: 999px; padding: 6px 12px; cursor: pointer; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 7px; }
+  .full-bar .chip[aria-pressed="false"] { opacity: 0.55; }
+  .full-bar .chip svg { width: 11px; height: 11px; }
+  .full-bar .close { margin-left: auto; }
+  .seg { display: inline-flex; gap: 2px; padding: 3px; background: var(--panel-2); border-radius: 999px; margin-left: 8px; vertical-align: middle; }
+  .seg button { border: 0; background: none; border-radius: 999px; padding: 5px 12px; cursor: pointer; font-size: 0.85rem; font-weight: 600; color: var(--muted); }
+  .seg button[aria-pressed="true"] { background: var(--rice); color: var(--night); }
+  .full-hint { position: absolute; left: 20px; bottom: 16px; z-index: 2; color: var(--muted); font-size: 0.85rem; margin: 0; max-width: 46ch; }
+  /* Walk: the graph and the current page side by side */
+  .walk { position: fixed; inset: var(--top, 61px) 0 0 0; z-index: 4; background: var(--night); display: none; flex-direction: column; }
+  .walk.open { display: flex; }
+  .walk-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 12px 20px; border-bottom: 1px solid var(--line); }
+  .walk-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-left: auto; }
+  #walk-filters { display: inline-flex; flex-wrap: wrap; gap: 6px; }
+  .walk-tools .chip { border: 1px solid var(--line); background: var(--panel); border-radius: 999px; padding: 5px 10px; cursor: pointer; font-size: 0.82rem; display: inline-flex; align-items: center; gap: 6px; }
+  .walk-tools .chip[aria-pressed="false"] { opacity: 0.55; }
+  .walk-tools .chip svg { width: 10px; height: 10px; }
+  .trail { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; font-size: 0.88rem; color: var(--muted); min-width: 0; }
+  .trail a { color: var(--muted); text-underline-offset: 2px; white-space: nowrap; max-width: 18ch; overflow: hidden; text-overflow: ellipsis; }
+  .trail a[aria-current="page"] { color: var(--rice); font-weight: 700; text-decoration: none; }
+  .trail span { color: var(--line); }
+  .walk-body { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) min(440px, 40vw); }
+  .walk-graph-wrap { position: relative; min-width: 0; min-height: 0; }
+  #walk-graph { position: absolute; inset: 0; }
+  .walk-page { overflow-y: auto; padding: 24px 28px 48px; border-left: 1px solid var(--line); background: var(--panel); max-width: none; }
+  .walk-page h1 { font-size: 2rem; }
+  .walk-page .actions .walk-open { }
+  @media (max-width: 720px) {
+    /* On phones the walk takes the whole screen: back and where you are on top, the tools
+       on their own row that scrolls sideways, and the hint under the graph, not on it */
+    .walk { inset: 0; z-index: 6; }
+    .walk-bar { flex-wrap: wrap; padding: 10px 14px 8px; gap: 8px 10px; }
+    .trail { flex-wrap: nowrap; flex: 1; }
+    .trail a:not([aria-current]), .trail span { display: none; }
+    .trail a[aria-current] { max-width: none; }
+    .walk-tools { flex-basis: 100%; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin: 0 -14px; padding: 2px 14px;
+      -webkit-mask: linear-gradient(90deg, transparent, #000 14px, #000 calc(100% - 28px), transparent); mask: linear-gradient(90deg, transparent, #000 14px, #000 calc(100% - 28px), transparent); }
+    .walk-tools::-webkit-scrollbar { display: none; }
+    #walk-filters { flex-wrap: nowrap; }
+    .walk-tools .chip, .walk-bar .btn, .seg button { white-space: nowrap; }
+    .walk-graph-wrap { display: flex; flex-direction: column; }
+    #walk-graph { position: relative; flex: 1; min-height: 0; overflow: hidden; }
+    .walk-graph-wrap .walk-hint { position: static; padding: 4px 14px 8px; max-width: none; }
+  }
+  @media (max-width: 900px) {
+    .walk-body { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) 42vh; }
+    .walk-page { border-left: 0; border-top: 1px solid var(--line); padding: 16px 18px 32px; }
+    .walk-tools { margin-left: 0; }
+  }
+  .local-wrap { position: relative; }
+  .local-open { position: absolute; right: 10px; top: 10px; z-index: 2; display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); background: rgba(36, 27, 47, 0.92); border-radius: 999px; padding: 6px 12px; cursor: pointer; font-weight: 600; font-size: 0.82rem; }
+  .local-open:hover { border-color: var(--rice); }
+  .local-open svg { width: 14px; height: 14px; }
+  .actions .btn.solid svg { width: 16px; height: 16px; }
+  .side-note { color: var(--muted); font-size: 0.85rem; margin: -4px 0 10px; }
+  .walk-hint { position: absolute; left: 20px; bottom: 16px; margin: 0; max-width: 46ch; color: var(--muted); font-size: 0.85rem; pointer-events: none; }
+  .walk-hint b { color: var(--rice); font-weight: 600; }
+  @media (max-width: 720px) { .walk-hint { left: 14px; right: 14px; bottom: 10px; font-size: 0.8rem; } }
+  .tip { position: fixed; z-index: 12; pointer-events: none; background: var(--rice); color: var(--night); font-weight: 600; font-size: 0.85rem; padding: 4px 10px; border-radius: 999px; display: none; white-space: nowrap; box-shadow: 0 4px 16px rgba(0,0,0,0.35); }
+  .tip.card { border-radius: 12px; padding: 10px 12px; white-space: normal; width: max-content; max-width: min(300px, calc(100vw - 32px)); }
+  .tip .type { display: block; font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: #5b5066; margin-bottom: 2px; }
+  .tip b { display: block; font-size: 0.95rem; line-height: 1.25; }
+  .tip small { display: block; font-weight: 400; font-size: 0.82rem; margin-top: 4px; line-height: 1.4; color: #3a3142; }
+  @media (hover: none) { .hover-only { display: none; } }
+  .loading { padding: 80px 28px; text-align: center; color: var(--muted); }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .page { animation: rise 0.22s var(--ease); }
+    @keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  }
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: minmax(0, 1fr); gap: 32px; padding: 24px 18px 64px; }
+    .side { position: static; }
+    .local { height: 280px; }
+    .top { flex-wrap: wrap; padding: 10px 18px; gap: 10px; }
+    .search { order: 3; flex-basis: 100%; max-width: none; }
+    .top .btn { margin-left: auto; }
+    .cover { width: 96px; }
+    .toc { display: none; }
+    .toc-m { display: block; }
+  }
+  @media (max-width: 560px) {
+    .top { padding: 10px 14px; gap: 8px; }
+    .brand { font-size: 1.05rem; }
+    .views a { padding: 5px 11px; }
+    .top .btn .label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+    .top .btn { padding: 8px 10px; }
+    .stats a { padding: 10px 12px; }
+    .stats b { font-size: 1.25rem; }
+    .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="exit" href="/world-cuisine/"><span aria-hidden="true">‹</span> Back to World cuisine</a>
+  <a class="brand" href="#/">World cuisine</a>
+  <nav class="views" aria-label="Views">
+    <a id="to-globe" href="./">Globe</a>
+    <a href="#/" aria-current="page">Browse</a>
+  </nav>
+  <div class="search" role="search">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+    <input id="q" type="search" placeholder="Search cuisines, dishes, ingredients" autocomplete="off" enterkeyhint="go"
+           aria-label="Search cuisines, dishes and ingredients" role="combobox" aria-expanded="false" aria-controls="results" aria-autocomplete="list">
+    <ul class="results" id="results" role="listbox" aria-label="Matches"></ul>
+  </div>
+  <button class="btn" id="open-graph" type="button">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="5" cy="6" r="2.5"/><circle cx="18" cy="5" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M7.3 7.2 10.6 16M16.5 7.1 13.2 15.9M7.5 6h8"/></svg>
+    <span class="label">Wander</span></button>
+</header>
+
+<div class="layout" id="layout">
+  <main class="page" id="page" tabindex="-1"><p class="loading">Setting the table…</p></main>
+  <aside class="side" id="side" aria-label="Connections">
+    <h2>Connections</h2>
+    <p class="side-note">Everything linked to this page. Pick a dot to go there.</p>
+    <div class="local-wrap">
+      <div class="local" id="local" aria-hidden="true"></div>
+      <button class="local-open" id="local-open" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="5" cy="6" r="2.5"/><circle cx="18" cy="5" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M7.3 7.2 10.6 16M16.5 7.1 13.2 15.9M7.5 6h8"/></svg> Wander from here</button>
+    </div>
+    <div class="key" id="key" aria-hidden="true"></div>
+    <button class="btn" id="open-graph-2" type="button">See everything at once</button>
+    <nav class="toc" id="toc" aria-label="On this page" hidden></nav>
+  </aside>
+</div>
+
+<div class="full" id="full" role="dialog" aria-modal="true" aria-label="Everything at once">
+  <div class="full-bar">
+    <h2>Everything at once</h2>
+    <span id="filters"></span>
+    <button class="btn close" id="close-graph" type="button">Close</button>
+  </div>
+  <div id="graph" aria-hidden="true"></div>
+  <p class="full-hint">Each dot is a cuisine, and each line links two of them. Drag to move, scroll or pinch to zoom, and pick a dot to explore from there. Dishes and ingredients are hidden at first; turn them on above.</p>
+</div>
+<div class="walk" id="walk" role="dialog" aria-label="Wander">
+  <div class="walk-bar">
+    <button class="btn" id="walk-close" type="button" >← Back to page</button>
+    <nav class="trail" id="trail" aria-label="Where you've been"></nav>
+    <div class="walk-tools">
+      <span class="seg" role="group" aria-label="How far out to show">
+        <button type="button" data-depth="1" aria-pressed="true">Direct links</button><button type="button" data-depth="2" aria-pressed="false">2 away</button><button type="button" data-depth="3" aria-pressed="false">3 away</button>
+      </span>
+      <span id="walk-filters"></span>
+      <button class="btn" id="walk-whole" type="button">See everything</button>
+    </div>
+  </div>
+  <div class="walk-body">
+    <div class="walk-graph-wrap">
+      <div id="walk-graph" aria-hidden="true"></div>
+      <p class="walk-hint" id="walk-hint">Each dot is something linked to <b id="walk-name"></b>. Pick one to move there, and its own links appear around it. <span class="hover-only">Hover for a preview.</span></p>
+    </div>
+    <section class="walk-page page" id="walk-page" aria-live="polite"></section>
+  </div>
+</div>
+<div class="tip" id="tip"></div>
+
+<script src="vendor/force-graph.min.js"></script>
+<!--INLINE_DATA-->
+<script>
+(async function () {
+  // --- Data: a light skeleton of every page, and each page's details on demand ------
+  // Built weekly by scripts/build_web.mjs. The skeleton has names, types and links for
+  // search, hubs and graphs; a page's details come from one of 256 small bucket files.
+  async function load(id, path) {
+    const el = document.getElementById(id);
+    if (el) return JSON.parse(el.textContent);
+    const r = await fetch(path);
+    if (!r.ok) throw new Error(path);
+    return r.json();
+  }
+  const [skeleton, R] = await Promise.all([load("data-skeleton", "data/web/skeleton.json"), import("./render_item.js")]);
+  const { renderItem, bucketOf, summaryOf, slug } = R;
+  const buckets = new Map();
+  function getItem(ref) {
+    const b = bucketOf(ref);
+    if (!buckets.has(b)) buckets.set(b, load("data-items-" + b, `data/web/items/${b}.json`).catch(() => { buckets.delete(b); return {}; }));
+    return buckets.get(b).then(all => all[ref] || null);
+  }
+
+  const COLORS = { "African cuisine": "#e46a3f", "Cuisine of the Americas": "#94bd5c", "Asian cuisine": "#f0b340", "European cuisine": "#cf5f87", "Oceanic cuisine": "#55b8ad" };
+  const CONTINENT = skeleton.continents;
+  // The visitor's own continent goes first, from the device's time zone (it never leaves the browser)
+  const HOME = (() => {
+    let zone = "";
+    try { zone = Intl.DateTimeFormat().resolvedOptions().timeZone || ""; } catch (e) {}
+    const area = zone.split("/")[0];
+    return { America: "The Americas", Europe: "Europe", Asia: "Asia", Africa: "Africa", Australia: "Oceania", Pacific: "Oceania" }[area] || "";
+  })();
+  const continentOfColor = new Map(Object.entries(COLORS).map(([k, c]) => [c, CONTINENT[k]]));
+  const TYPE_LABEL = { cuisine: "Cuisine", dish: "Dish", ingredient: "Ingredient", site: "Recipe site", book: "Cookbook" };
+  const PLURAL = { cuisine: "Cuisines", dish: "Dishes", ingredient: "Ingredients", site: "Recipe sites", book: "Cookbooks" };
+  const INDEX_PATH = { cuisine: "cuisines", dish: "dishes", ingredient: "ingredients", site: "sites", book: "cookbooks" };
+  const CORRECT = "https://github.com/kyle-pace/world-cuisines/issues/new?title=";
+  const esc = s => String(s ?? "").replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+  const norm = s => String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+
+  // Nodes and links from the skeleton: [ref, name, type, color, flags, sub, x, y, X, Y]
+  const nodes = new Map();
+  const nodeList = skeleton.nodes.map(([ref, name, t, c, flags, sub, x, y, X, Y]) => {
+    const n = { key: ref, ref, name, type: skeleton.types[t], color: skeleton.colors[c], national: !!(flags & 1), indigenous: !!(flags & 2),
+      beyond: !!(flags & 4), sub, pos: [x, y, X, Y], href: "#/" + ref, out: new Map() };
+    nodes.set(ref, n);
+    return n;
+  });
+  for (const [a, b] of skeleton.links) { const x = nodeList[a], y = nodeList[b]; x.out.set(y.key, { node: y }); y.out.set(x.key, { node: x }); }
+  const bySlug = nodes;
+  const ofType = t => nodeList.filter(n => n.type === t);
+  const byName = (a, b) => a.name.localeCompare(b.name);
+  const linkTo = n => `<a href="${n.href}">${esc(n.name)}</a>`;
+  const linkList = list => list.length ? `<ul class="links">${list.map(n => `<li>${linkTo(n)}</li>`).join("")}</ul>` : "";
+  const neighbors = (n, type) => [...n.out.values()].map(e => e.node).filter(x => !type || x.type === type);
+  // The graph is food: cuisines, dishes and ingredients. Recipe sites and cookbooks stay on
+  // the pages (and in search) but aren't dots.
+  const GRAPH = new Set(["cuisine", "dish", "ingredient"]);
+  const graphNeighbors = n => [...n.out.values()].map(e => e.node).filter(x => GRAPH.has(x.type));
+  // Photos for search and dish cards: paths from data/web/app.json, loaded when first needed.
+  // Only on kylepace.dev, whose image route serves them; no outside image host anywhere.
+  let photoMap = null, photoLoad = null;
+  const loadPhotos = () => photoLoad ||= (onSite ? load("data-app", "data/web/app.json").then(a => a.photos || {}).catch(() => ({})) : Promise.resolve({})).then(m => (photoMap = m));
+  const onSite = location.pathname.startsWith("/world-cuisine/");
+  const photoUrl = p => "/world-cuisine/img/" + p;
+  // Recently viewed pages, for search; kept in this browser only
+  const recents = () => { try { return JSON.parse(localStorage.getItem("cuisines.recent") || "[]"); } catch (e) { return []; } };
+  const saveRecents = l => { try { localStorage.setItem("cuisines.recent", JSON.stringify(l.slice(0, 6))); } catch (e) {} };
+  const visited = n => saveRecents([n.ref, ...recents().filter(r => r !== n.ref)]);
+  const globeHash = n => n.type === "cuisine" ? slug(n.ref.slice(8)) : n.type === "dish" ? "dish-" + n.ref.slice(5) : n.type === "ingredient" ? "ingredient-" + n.ref.slice(11) : "";
+
+  // --- Pages ------------------------------------------------------------------
+  const mainPage = document.getElementById("page"), walkPage = document.getElementById("walk-page");
+  let page = mainPage;
+  const section = (title, body, count) => body ? `<h2>${title}${count ? ` <small>${count}</small>` : ""}</h2>${body}` : "";
+  const live = new Map();
+  function liveIntro(title) {
+    if (!live.has(title)) {
+      const q = new URLSearchParams({ action: "query", prop: "extracts", exintro: "1", explaintext: "1", redirects: "1", titles: title, format: "json", formatversion: "2", origin: "*" });
+      live.set(title, fetch("https://en.wikipedia.org/w/api.php?" + q).then(r => r.ok ? r.json() : null)
+        .then(d => d?.query?.pages?.[0]?.extract || null).catch(() => null));
+    }
+    return live.get(title);
+  }
+  // Server pages live at /world-cuisine/<type>/<slug>/ on kylepace.dev; here links stay in the app
+  const renderOpts = {
+    href: ref => "#/" + ref,
+    globe: hash => "./#" + hash,
+    correct: name => CORRECT + encodeURIComponent("Correction: " + name),
+  };
+  let renderToken = 0;
+  async function itemPage(n) {
+    const token = ++renderToken, target = page;
+    if (!target.querySelector("h1") || target.dataset.ref !== n.ref) target.innerHTML = `<p class="crumb">${esc(TYPE_LABEL[n.type])}</p><h1>${esc(n.name)}</h1>`;
+    const m = await getItem(n.ref);
+    if (token !== renderToken) return;
+    target.dataset.ref = n.ref;
+    if (!m) { target.innerHTML = `<h1>${esc(n.name)}</h1><p class="empty">This page didn't load. Check your connection and try again.</p>`; return; }
+    const shareable = location.hostname.endsWith("kylepace.dev") ? `<button class="btn" type="button" data-copy="https://kylepace.dev/world-cuisine/${n.ref}/">Copy link</button>` : "";
+    const mapBtn = page === mainPage ? `<a class="btn solid" href="${walkHref(n)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="5" cy="6" r="2.5"/><circle cx="18" cy="5" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M7.3 7.2 10.6 16M16.5 7.1 13.2 15.9M7.5 6h8"/></svg> Wander from here</a>` : "";
+    target.innerHTML = renderItem(m, { ...renderOpts, extraActions: mapBtn + shareable });
+    contents(target);
+    dishCards(target, token);
+    const box = target.querySelector("#intro");
+    if (box && !box.textContent.trim() && box.dataset.wiki) liveIntro(box.dataset.wiki).then(t => {
+      if (t && box.isConnected) box.innerHTML = t.split(/\n+/).filter(p => p.trim()).map(p => `<p>${esc(p)}</p>`).join("") + `<p class="source">Intro from Wikipedia, shared under CC BY-SA.</p>`;
+    });
+  }
+
+  // On this page: the sections, in the side rail on wide screens and folded up at the top on phones
+  function contents(root) {
+    const toc = document.getElementById("toc");
+    const hs = [...root.querySelectorAll("h2")];
+    hs.forEach(h => { h.id = "s-" + slug(h.firstChild.textContent); });
+    const list = hs.length >= 3 ? `<ol>${hs.map(h => `<li><a href="${current ? current.href + "#" + h.id : "#" + h.id}">${esc(h.firstChild.textContent.trim())}</a></li>`).join("")}</ol>` : "";
+    if (root === mainPage) { toc.hidden = !list; toc.innerHTML = list ? `<h2>On this page</h2>${list}` : ""; }
+    if (list && root === mainPage) root.querySelector(".actions")?.insertAdjacentHTML("afterend", `<details class="toc-m"><summary>On this page</summary>${list}</details>`);
+  }
+  // Section links scroll within the page instead of changing the route
+  document.addEventListener("click", e => {
+    const a = e.target.closest('a[href*="#s-"]');
+    if (!a) return;
+    e.preventDefault();
+    document.getElementById(a.getAttribute("href").split("#").pop())?.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth" });
+    a.closest("details")?.removeAttribute("open");
+  });
+  // A cuisine's best-known dishes with photos as cards, above the full list
+  async function dishCards(root, token) {
+    const h = [...root.querySelectorAll("h2")].find(x => x.firstChild.textContent.trim() === "Dishes");
+    const ul = h && h.nextElementSibling;
+    if (!ul || !ul.matches(".links")) return;
+    const photos = await loadPhotos();
+    if (token !== renderToken || !ul.isConnected) return;
+    const ds = [...ul.querySelectorAll("a")].map(a => nodes.get(a.getAttribute("href").slice(2))).filter(n => n && photos[n.ref]);
+    if (ds.length < 3) return;
+    const top = ds.sort((a, b) => b.out.size - a.out.size).slice(0, ds.length >= 8 ? 8 : 4);
+    ul.insertAdjacentHTML("beforebegin", `<ul class="cards">${top.map(n => `<li><a href="${n.href}"><div class="pic"><img src="${esc(photoUrl(photos[n.ref]))}" alt="" loading="lazy" onerror="this.closest('li').remove()"></div><b>${esc(n.name)}</b></a></li>`).join("")}</ul>
+      <p class="all-of">All ${ul.children.length} dishes</p>`);
+  }
+
+  // Hub pages, like the index notes in a vault
+  const stat = (t, label) => `<li><a href="#/${INDEX_PATH[t]}"><b>${ofType(t).length.toLocaleString()}</b><span>${label}</span></a></li>`;
+  function homePage() {
+    const nationals = ofType("cuisine").filter(n => n.national);
+    const indigenous = ofType("cuisine").filter(n => n.indigenous).sort(byName);
+    const topIngs = ofType("ingredient").map(n => [n, neighbors(n, "dish").length]).sort((a, b) => b[1] - a[1]).slice(0, 40).map(([n]) => n);
+    const shared = ofType("dish").filter(n => neighbors(n, "cuisine").length > 1).sort((a, b) => neighbors(b, "cuisine").length - neighbors(a, "cuisine").length).slice(0, 40);
+    page.dataset.ref = "";
+    page.innerHTML = `
+      <h1>Browse every cuisine</h1>
+      <div class="intro"><p>The same cuisines, dishes and ingredients as the globe, as pages you can read and follow. Every page links to what it's connected to: a cuisine to its dishes, a dish to its ingredients, an ingredient to everywhere it's cooked. From any page you can wander: its connections laid out around it, to follow one link at a time.</p>
+        <p class="actions"><a class="btn solid" href="#/walk/cuisine/thai-cuisine"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="5" cy="6" r="2.5"/><circle cx="18" cy="5" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M7.3 7.2 10.6 16M16.5 7.1 13.2 15.9M7.5 6h8"/></svg> Wander, starting from Thai cuisine</a><button class="btn" type="button" id="home-everything">See everything at once</button></p></div>
+      <ul class="stats">${stat("cuisine", "cuisines")}${stat("dish", "dishes")}${stat("ingredient", "ingredients")}</ul>
+      ${section("Cuisines by region", byContinent(nationals))}
+      ${section("Indigenous foodways", linkList(indigenous), indigenous.length)}
+      ${section("Most-used ingredients", linkList(topIngs))}
+      ${section("Dishes shared across borders", linkList(shared))}`;
+  }
+  function byContinent(list) {
+    const groups = new Map();
+    for (const n of list) { const k = continentOfColor.get(n.color) || "Elsewhere"; if (!groups.has(k)) groups.set(k, []); groups.get(k).push(n); }
+    return [...groups].sort((a, b) => (b[0] === HOME) - (a[0] === HOME) || a[0].localeCompare(b[0])).map(([k, l]) => `<h3 id="${slug(k)}">${esc(k)}</h3>${linkList(l.sort(byName))}`).join("");
+  }
+  function indexPage(type, letter) {
+    let list = ofType(type).sort(byName);
+    if (type === "ingredient") list = list.filter(n => neighbors(n, "dish").length);
+    const letters = [...new Set(list.map(n => norm(n.name).charAt(0).toUpperCase()).filter(ch => /[A-Z]/.test(ch)))].sort();
+    const long = list.length > 300;
+    const pick = long ? (letter || letters[0]) : null;
+    const shown = long ? list.filter(n => norm(n.name).charAt(0).toUpperCase() === pick) : list;
+    const base = "#/" + INDEX_PATH[type];
+    const body = type === "cuisine"
+      ? byContinent(list.filter(n => !n.beyond)) + `<h3 id="beyond-borders">Beyond borders</h3>${linkList(list.filter(n => n.beyond))}`
+      : linkList(shown);
+    page.dataset.ref = "";
+    page.innerHTML = `
+      <p class="crumb"><a href="#/">Browse</a></p>
+      <h1>${PLURAL[type]}</h1>
+      <p class="sub">${list.length.toLocaleString()} in all${long ? `, ${shown.length} starting with ${pick}` : ""}</p>
+      ${long ? `<nav class="letters" aria-label="By first letter">${letters.map(ch => `<a href="${base}/${ch}" aria-current="${ch === pick}">${ch}</a>`).join("")}</nav>` : ""}
+      ${body}`;
+  }
+
+  // --- Routing ------------------------------------------------------------------
+  const INDEX = { cuisines: "cuisine", dishes: "dish", ingredients: "ingredient", sites: "site", cookbooks: "book" };
+  let current = null;
+  function route() {
+    const h = decodeURIComponent(location.hash.replace(/^#\/?/, ""));
+    const [path, anchor] = h.split("#");
+    const parts = path.split("/").filter(Boolean);
+    const walking = parts[0] === "walk";
+
+    if (walking) parts.shift();
+    current = null;
+    page = walking ? walkPage : mainPage;
+    if (walking) mainPage.innerHTML = "";
+    if (!parts.length) homePage();
+    else if (INDEX[parts[0]]) indexPage(INDEX[parts[0]], parts[1]);
+    else {
+      const n = bySlug.get(parts[0] + "/" + parts[1]);
+      if (!n) { page.dataset.ref = ""; page.innerHTML = `<h1>Not found</h1><p class="empty">Nothing here by that name. <a href="#/">Back to the web</a>.</p>`; }
+      else { current = n; visited(n); itemPage(n); }
+    }
+    document.title = (current ? current.name + " · " : "") + "World cuisine: browse";
+    document.getElementById("to-globe").href = "./" + (current && globeHash(current) ? "#" + globeHash(current) : "");
+    if (walking && current) { showWalk(current); return; }
+    if (walking) { location.replace("#/"); return; }
+    hideWalk();
+    if (anchor) document.getElementById(anchor)?.scrollIntoView();
+    else window.scrollTo(0, 0);
+    drawLocal();
+    if (fullOpen) highlight();
+  }
+  addEventListener("hashchange", route);
+
+  // --- Graphs ---------------------------------------------------------------------
+  // Shapes say what something is (color alone doesn't have to): circles for cuisines,
+  // small dots for dishes, diamonds for ingredients, squares for sites, tall bars for books
+  function shape(ctx, n, x, y, r) {
+    ctx.beginPath();
+    if (n.type === "ingredient") { ctx.moveTo(x, y - r); ctx.lineTo(x + r, y); ctx.lineTo(x, y + r); ctx.lineTo(x - r, y); ctx.closePath(); }
+    else if (n.type === "site") ctx.rect(x - r * 0.85, y - r * 0.85, r * 1.7, r * 1.7);
+    else if (n.type === "book") ctx.rect(x - r * 0.6, y - r, r * 1.2, r * 2);
+    else ctx.arc(x, y, r, 0, 2 * Math.PI);
+  }
+  const keySvg = t => `<svg viewBox="-6 -6 12 12">${t === "ingredient" ? `<path d="M0-5 5 0 0 5-5 0z" fill="#c9b8dd"/>`
+    : t === "site" ? `<rect x="-4" y="-4" width="8" height="8" fill="#55b8ad"/>` : t === "book" ? `<rect x="-3" y="-5" width="6" height="10" fill="#f0b340"/>`
+    : t === "dish" ? `<circle r="3.5" fill="#ede6da"/>` : ""}</svg>`;
+  // Cuisines take their continent's color, so their key is every continent's color at once
+  const keyMark = t => t === "cuisine" ? `<i class="cdot" aria-hidden="true"></i>` : keySvg(t);
+  document.getElementById("key").innerHTML = [...GRAPH].map(t => `<span>${keyMark(t)}${t === "cuisine" ? "Cuisine, colored by continent" : TYPE_LABEL[t]}</span>`).join("");
+  const size = n => n.type === "cuisine" ? (n.national ? 5 : 3.6) : n.type === "dish" ? 2.2 : n.type === "ingredient" ? 2.8 : 3;
+  const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const isPhone = () => innerWidth <= 720;
+  const tip = document.getElementById("tip");
+  let mouse = [0, 0];
+  addEventListener("pointermove", e => { mouse = [e.clientX, e.clientY]; if (tip.style.display === "block") placeTip(); });
+  const placeTip = () => {
+    const w = tip.offsetWidth, h = tip.offsetHeight;
+    const x = mouse[0] + 16 + w > innerWidth - 8 ? mouse[0] - 16 - w : mouse[0] + 16;
+    const y = mouse[1] + 16 + h > innerHeight - 8 ? mouse[1] - 16 - h : mouse[1] + 16;
+    tip.style.left = Math.max(8, x) + "px"; tip.style.top = Math.max(8, y) + "px";
+  };
+  function hover(n) {
+    if (!n) { tip.style.display = "none"; return; }
+    tip.className = "tip"; tip.textContent = `${n.name} · ${TYPE_LABEL[n.type]}`;
+    tip.style.display = "block"; placeTip();
+  }
+
+  // The local graph: this page and everything it links to, and how those connect
+  const localEl = document.getElementById("local");
+  let localGraph = null, localHover = null;
+  function drawLocal() {
+    const side = document.getElementById("side");
+    side.hidden = !current || !GRAPH.has(current.type);
+    document.getElementById("layout").classList.toggle("solo", side.hidden);
+    if (side.hidden) return;
+    const priority = { cuisine: 0, ingredient: 2, dish: 3 };
+    const near = graphNeighbors(current).sort((a, b) => priority[a.type] - priority[b.type] || b.out.size - a.out.size).slice(0, 48);
+    const set = new Set([current, ...near]);
+    const gNodes = [...set].map(n => ({ n, id: n.key }));
+    const gLinks = [];
+    for (const a of set) for (const [k, e] of a.out) if (set.has(e.node) && GRAPH.has(e.node.type) && a.key < k) gLinks.push({ source: a.key, target: k });
+    if (!localGraph) {
+      localGraph = ForceGraph()(localEl)
+        .backgroundColor("rgba(0,0,0,0)")
+        .nodeId("id")
+        .linkColor(l => localHover && (l.source.n === localHover || l.target.n === localHover) ? "rgba(237,230,218,0.7)" : "rgba(169,159,181,0.28)")
+        .linkWidth(1)
+        .nodeCanvasObject((g, ctx, scale) => {
+          const n = g.n, me = n === current, r = me ? 7 : size(n) + 1.5;
+          shape(ctx, n, g.x, g.y, r);
+          ctx.fillStyle = n.color; ctx.fill();
+          if (me) { ctx.lineWidth = 2 / scale; ctx.strokeStyle = "#fff"; ctx.stroke(); }
+          if (me || n === localHover || n.type !== "dish" || set.size < 18) {
+            const fs = (me ? 12 : 10) / scale;
+            ctx.font = `${me ? 700 : 400} ${fs}px Atkinson Hyperlegible Next, system-ui, sans-serif`;
+            ctx.textAlign = "center"; ctx.textBaseline = "top";
+            ctx.fillStyle = me || n === localHover ? "#ede6da" : "rgba(237,230,218,0.72)";
+            ctx.fillText(n.name.length > 26 ? n.name.slice(0, 25) + "…" : n.name, g.x, g.y + r + 2 / scale);
+          }
+        })
+        .nodePointerAreaPaint((g, color, ctx) => { ctx.fillStyle = color; shape(ctx, g.n, g.x, g.y, size(g.n) + 4); ctx.fill(); })
+        .onNodeHover(g => { localHover = g ? g.n : null; localEl.style.cursor = g ? "pointer" : ""; hover(localHover); })
+        .onNodeClick(g => { hover(null); location.hash = g.n.href; })
+        // Clicking the empty space opens the full map from here
+        .onBackgroundClick(() => { if (current) location.hash = walkHref(current); })
+        .cooldownTicks(reduceMotion ? 0 : 120)
+        .warmupTicks(reduceMotion ? 120 : 20)
+        .d3VelocityDecay(0.35);
+      localGraph.d3Force("charge").strength(-90);
+      new ResizeObserver(() => localGraph.width(localEl.clientWidth).height(localEl.clientHeight)).observe(localEl);
+      localGraph.onEngineStop(() => {
+        localGraph.zoomToFit(0, 36);
+        if (localGraph.zoom() > 2.6) localGraph.zoom(2.6, 0);
+      });
+    }
+    const pinned = gNodes.find(g => g.n === current);
+    pinned.fx = 0; pinned.fy = 0;
+    localGraph.graphData({ nodes: gNodes, links: gLinks });
+  }
+
+  // The whole web. Positions come from data/graph.json, laid out once in the weekly
+  // rebuild (scripts/build_graph.mjs), so it opens settled and holds still.
+  const full = document.getElementById("full"), graphEl = document.getElementById("graph");
+  let fullGraph = null, fullOpen = false, fullHover = null, layoutKind = "continent";
+  const shown = { cuisine: true, dish: false, ingredient: false };
+  let near = new Set();
+  function highlight() { near = current && shown[current.type] ? new Set([current, ...graphNeighbors(current)]) : new Set(); }
+  const fullCache = new Map();
+  function place(g) {
+    const p = g.n.pos;
+    const [x, y] = layoutKind === "links" ? [p[0], p[1]] : [p[2], p[3]];
+    const first = g.hx == null;
+    g.hx = x; g.hy = y;
+    if (first || reduceMotion) { g.x = x; g.y = y; }
+    if (reduceMotion) { g.fx = x; g.fy = y; }
+  }
+  function fullData() {
+    const keep = nodeList.filter(n => shown[n.type]);
+    const set = new Set(keep);
+    const gl = [];
+    for (const a of keep) for (const [k, e] of a.out) if (set.has(e.node) && a.key < k) gl.push({ source: a.key, target: k });
+    const gn = keep.map(n => { let g = fullCache.get(n.key); if (!g) fullCache.set(n.key, g = { n, id: n.key }); place(g); return g; });
+    return { nodes: gn, links: gl };
+  }
+  async function openFull() {
+    fullOpen = true; full.classList.add("open"); highlight();
+    document.body.style.overflow = "hidden";
+    document.getElementById("close-graph").focus();
+    if (!fullGraph) {
+      fullGraph = ForceGraph()(graphEl)
+        .backgroundColor("#1b1424")
+        .width(innerWidth).height(innerHeight)
+        .nodeId("id")
+        // Alive like Obsidian, but starting from the saved layout: dots ease in, a
+        // dragged dot pulls its neighbors, and everything springs back toward home
+        .cooldownTicks(reduceMotion ? 0 : isPhone() ? 90 : 240).warmupTicks(0)
+        .d3AlphaDecay(0.025).d3VelocityDecay(0.45)
+        .linkColor(l => (l.source.n === current || l.target.n === current) ? "rgba(237,230,218,0.75)"
+          : fullHover && (l.source.n === fullHover || l.target.n === fullHover) ? "rgba(237,230,218,0.5)" : "rgba(169,159,181,0.1)")
+        .nodeCanvasObject((g, ctx, scale) => {
+          const n = g.n, me = n === current, lit = !near.size || near.has(n);
+          const r = me ? 8 : size(n);
+          shape(ctx, n, g.x, g.y, r);
+          ctx.globalAlpha = lit ? 1 : 0.3;
+          ctx.fillStyle = n.color; ctx.fill();
+          ctx.globalAlpha = 1;
+          if (me) { ctx.lineWidth = 2.5 / scale; ctx.strokeStyle = "#fff"; ctx.stroke(); }
+          const label = me || n === fullHover || (near.has(n) && scale > 0.9) || (n.type === "cuisine" && n.national && scale > 1.4) || scale > 4;
+          if (label) {
+            const fs = Math.max(11 / scale, 1.2);
+            ctx.font = `${me ? 700 : 400} ${fs}px Atkinson Hyperlegible Next, system-ui, sans-serif`;
+            ctx.textAlign = "center"; ctx.textBaseline = "top";
+            ctx.fillStyle = lit ? "#ede6da" : "rgba(237,230,218,0.5)";
+            ctx.fillText(n.name.replace(/ cuisine$/, ""), g.x, g.y + r + 1.5 / scale);
+          }
+        })
+        .nodePointerAreaPaint((g, color, ctx) => { ctx.fillStyle = color; shape(ctx, g.n, g.x, g.y, size(g.n) + 2); ctx.fill(); })
+        .onNodeHover(g => { fullHover = g ? g.n : null; graphEl.style.cursor = g ? "pointer" : ""; hover(fullHover); })
+        .onNodeClick(g => { hover(null); closeFull(); location.hash = walkHref(g.n); })
+        // Dragging a dot moves it; it stays where you drop it
+        .onNodeDragEnd(g => { g.fx = g.fy = undefined; g.hx = g.x; g.hy = g.y; });
+      fullGraph.d3Force("charge").strength(-10).distanceMax(120);
+      fullGraph.d3Force("link").distance(14).strength(0.25);
+      fullGraph.d3Force("center", null);
+      // A gentle spring back to each dot's place in the saved layout
+      let homeNodes = [];
+      const home = alpha => { for (const g of homeNodes) { g.vx += (g.hx - g.x) * 0.08 * alpha; g.vy += (g.hy - g.y) * 0.08 * alpha; } };
+      home.initialize = ns => { homeNodes = ns; };
+      fullGraph.d3Force("home", home);
+      addEventListener("resize", () => fullOpen && fullGraph.width(innerWidth).height(innerHeight));
+      fullGraph.graphData(fullData());
+    }
+    focusCurrent(0);
+  }
+  function focusCurrent(ms) {
+    const g = current && fullCache.get(current.key);
+    if (g && g.x != null && shown[current.type]) { fullGraph.centerAt(g.x, g.y, reduceMotion ? 0 : ms); fullGraph.zoom(2.4, reduceMotion ? 0 : ms); }
+    else fullGraph.zoomToFit(reduceMotion ? 0 : ms, 60);
+  }
+  function closeFull() {
+    fullOpen = false; full.classList.remove("open"); document.body.style.overflow = ""; hover(null);
+  }
+  document.getElementById("open-graph").addEventListener("click", () => current ? (location.hash = walkHref(current)) : openFull());
+  document.getElementById("local-open").addEventListener("click", () => current && (location.hash = walkHref(current)));
+  document.addEventListener("click", e => { if (e.target.id === "home-everything") openFull(); });
+  document.getElementById("open-graph-2").addEventListener("click", openFull);
+  document.getElementById("close-graph").addEventListener("click", closeFull);
+  addEventListener("keydown", e => { if (e.key === "Escape" && fullOpen) closeFull(); });
+  const filters = document.getElementById("filters");
+  filters.innerHTML = Object.keys(shown).map(t => `<button class="chip" type="button" data-t="${t}" aria-pressed="${shown[t]}">${keyMark(t)}${PLURAL[t]}</button>`).join(" ")
+    + `<span class="seg" role="group" aria-label="Arrange the dots"><button type="button" data-layout="continent" aria-pressed="true">Arrange by continent</button><button type="button" data-layout="links" aria-pressed="false">Arrange by connections</button></span>`;
+  filters.addEventListener("click", e => {
+    const b = e.target.closest("[data-t], [data-layout]");
+    if (!b || !fullGraph) return;
+    if (b.dataset.layout) {
+      layoutKind = b.dataset.layout;
+      filters.querySelectorAll("[data-layout]").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+      fullGraph.graphData(fullData());
+      return focusCurrent(0);
+    }
+    shown[b.dataset.t] = !shown[b.dataset.t];
+    b.setAttribute("aria-pressed", String(shown[b.dataset.t]));
+    fullGraph.graphData(fullData());
+  });
+
+  // --- Walk: move through the web one step at a time, like Obsidian's local graph ---
+  const walkEl = document.getElementById("walk"), walkGraphEl = document.getElementById("walk-graph");
+  const walkHref = n => "#/walk/" + n.href.slice(2);
+  let walkGraph = null, walkCenter = null, walkHover = null, depth = 1, walkFit = false;
+  const walkShown = { cuisine: true, dish: true, ingredient: true };
+  const walkNodes = new Map();   // key -> graph node, kept between steps so dots glide
+  const trailList = [];
+  // A one-line preview for hovering, from notes or Wikipedia's intro
+  // A one-line preview for hovering, from the page's intro (its bucket loads on hover)
+  const previews = new Map();
+  function preview(n) {
+    if (previews.has(n.ref)) return previews.get(n.ref);
+    previews.set(n.ref, "");
+    getItem(n.ref).then(m => {
+      if (!m) return;
+      const t = summaryOf(m, 300);
+      const first = (t.match(/^.{20,}?[.!?](\s|$)/) || [t])[0];
+      previews.set(n.ref, first.length > 160 ? first.slice(0, 157) + "…" : first);
+      if (walkHover === n) walkGraph.onNodeHover()({ n });
+    });
+    return "";
+  }
+  // Everything within `depth` steps, nearest and best-connected first, capped so it stays readable
+  function neighborhood(center) {
+    const cap = [0, 70, 140, 200][depth];
+    const priority = { cuisine: 0, ingredient: 2, dish: 3 };
+    const seen = new Map([[center, { d: 0, via: null }]]);
+    let ring = [center];
+    for (let d = 1; d <= depth && seen.size < cap; d++) {
+      const next = [];
+      for (const a of ring) for (const e of a.out.values()) {
+        const b = e.node;
+        if (seen.has(b) || !walkShown[b.type] || !GRAPH.has(b.type)) continue;
+        seen.set(b, { d, via: a }); next.push(b);
+      }
+      next.sort((a, b) => priority[a.type] - priority[b.type] || b.out.size - a.out.size);
+      ring = next.slice(0, Math.max(0, cap - (seen.size - next.length)));
+      for (const b of next.slice(ring.length)) seen.delete(b);
+    }
+    return seen;
+  }
+  function walkData() {
+    const near = neighborhood(walkCenter);
+    const keep = new Set(near.keys());
+    const gn = [...keep].map(n => {
+      let g = walkNodes.get(n.key);
+      if (!g) {
+        // New dots start next to the dot that brought them in, so they drift out of it
+        // (first ring fans out around the center, farther rings out of their parent)
+        const via = near.get(n).via;
+        const from = walkNodes.get((via && via !== walkCenter ? via : walkCenter).key);
+        const a = Math.random() * 2 * Math.PI, d = via === walkCenter ? 40 : 12;
+        g = { n, id: n.key, x: (from?.x || 0) + Math.cos(a) * d, y: (from?.y || 0) + Math.sin(a) * d };
+        walkNodes.set(n.key, g);
+      }
+      g.depth = near.get(n).d;
+      return g;
+    });
+    const gl = [];
+    for (const a of keep) for (const [k, e] of a.out) if (keep.has(e.node) && a.key < k) gl.push({ source: a.key, target: k });
+    for (const k of [...walkNodes.keys()]) if (!keep.has(nodes.get(k))) walkNodes.delete(k);
+    return { nodes: gn, links: gl };
+  }
+  function lit(n) { return !walkHover || walkHover === n || walkHover.out.has(n.key); }
+  function ensureWalkGraph() {
+    if (walkGraph) return;
+    walkGraph = ForceGraph()(walkGraphEl)
+      .backgroundColor("rgba(0,0,0,0)")
+      .nodeId("id")
+      .d3AlphaDecay(0.03).d3VelocityDecay(0.35)
+      .cooldownTicks(reduceMotion ? 0 : 300).warmupTicks(reduceMotion ? 200 : 0)
+      .linkColor(l => walkHover && (l.source.n === walkHover || l.target.n === walkHover) ? "rgba(237,230,218,0.8)"
+        : (l.source.n === walkCenter || l.target.n === walkCenter) ? "rgba(237,230,218,0.35)" : "rgba(169,159,181,0.16)")
+      .linkWidth(l => walkHover && (l.source.n === walkHover || l.target.n === walkHover) ? 1.6 : 1)
+      .nodeCanvasObject((g, ctx, scale) => {
+        const n = g.n, me = n === walkCenter, on = lit(n);
+        const r = me ? 9 : size(n) + (g.depth === 1 ? 2.5 : 1);
+        ctx.globalAlpha = on ? (g.depth > 1 && !walkHover ? 0.75 : 1) : 0.18;
+        shape(ctx, n, g.x, g.y, r);
+        ctx.fillStyle = n.color; ctx.fill();
+        if (me) { ctx.lineWidth = 2.5 / scale; ctx.strokeStyle = "#fff"; ctx.stroke(); }
+        ctx.globalAlpha = 1;
+      })
+      // Labels go on last, most important first, and a label that would overlap one
+      // already drawn is left off (hover or tap a dot for its name)
+      .onRenderFramePost((ctx, scale) => {
+        const gs = walkGraph.graphData().nodes;
+        const rank = g => g.n === walkCenter ? -2 : g.n === walkHover ? -1 : (g.depth - 1) * 100 + (g.n.type === "cuisine" ? 0 : 50) - Math.min(49, g.n.out.size / 4);
+        const placed = [];
+        ctx.textAlign = "center"; ctx.textBaseline = "top";
+        for (const g of [...gs].sort((a, b) => rank(a) - rank(b))) {
+          const n = g.n, me = n === walkCenter, hov = n === walkHover;
+          if (g.x == null || (walkHover && !lit(n))) continue;
+          const fs = (me ? 14 : g.depth === 1 ? 11 : 9.5) / Math.max(scale, 0.6);
+          if (scale * fs <= 6 && !me && !hov) continue;
+          ctx.font = `${me || hov ? 700 : 400} ${fs}px Atkinson Hyperlegible Next, system-ui, sans-serif`;
+          const label = n.name.replace(/ cuisine$/, "");
+          const text = label.length > 30 ? label.slice(0, 29) + "…" : label;
+          const r = me ? 9 : size(n) + (g.depth === 1 ? 2.5 : 1);
+          const w = ctx.measureText(text).width, y = g.y + r + 2 / scale, pad = 2 / scale;
+          const box = [g.x - w / 2 - pad, y - pad, g.x + w / 2 + pad, y + fs + pad];
+          if (!me && !hov && placed.some(b => box[0] < b[2] && box[2] > b[0] && box[1] < b[3] && box[3] > b[1])) continue;
+          placed.push(box);
+          ctx.globalAlpha = g.depth > 1 && !walkHover && !me ? 0.8 : 1;
+          ctx.fillStyle = me || hov ? "#ede6da" : "rgba(237,230,218,0.82)";
+          ctx.fillText(text, g.x, y);
+        }
+        ctx.globalAlpha = 1;
+      })
+      .nodePointerAreaPaint((g, color, ctx) => { ctx.fillStyle = color; shape(ctx, g.n, g.x, g.y, size(g.n) + 6); ctx.fill(); })
+      .onNodeHover(g => {
+        walkHover = g ? g.n : null; walkGraphEl.style.cursor = g ? "pointer" : "";
+        if (!g) { tip.style.display = "none"; return; }
+        const pv = preview(g.n);
+        tip.className = "tip card";
+        tip.innerHTML = `<span class="type">${TYPE_LABEL[g.n.type]}</span><b>${esc(g.n.name)}</b>${pv ? `<small>${esc(pv)}</small>` : ""}`;
+        tip.style.display = "block"; placeTip();
+      })
+      .onNodeClick(g => { tip.style.display = "none"; if (g.n !== walkCenter) location.hash = walkHref(g.n); })
+      .onNodeDragEnd(g => { if (g.n !== walkCenter) { g.fx = g.fy = undefined; } })
+      .onEngineStop(() => { if (walkFit) { walkFit = false; walkGraph.zoomToFit(reduceMotion ? 0 : 280, 50); } });
+    walkGraph.d3Force("charge").strength(-220).distanceMax(500);
+    walkGraph.d3Force("link").distance(l => (l.source.n === walkCenter || l.target.n === walkCenter) ? 70 : 45);
+    new ResizeObserver(() => walkGraph.width(walkGraphEl.clientWidth).height(walkGraphEl.clientHeight)).observe(walkGraphEl);
+  }
+  function showWalk(n) {
+    const opening = !walkEl.classList.contains("open");
+    walkEl.style.setProperty("--top", isPhone() ? "0px" : document.querySelector(".top").offsetHeight + "px");
+    walkEl.classList.add("open"); document.body.style.overflow = "hidden";
+    ensureWalkGraph();
+    const prev = walkCenter && walkNodes.get(walkCenter.key);
+    if (prev) { prev.fx = prev.fy = undefined; }
+    walkCenter = n;
+    document.getElementById("walk-name").textContent = n.name;
+    if (opening && !walkNodes.has(n.key)) walkNodes.clear();
+    walkGraph.graphData(walkData());
+    const g = walkNodes.get(n.key);
+    g.fx = g.x; g.fy = g.y;
+    walkFit = true;
+    walkGraph.centerAt(g.x, g.y, reduceMotion || opening ? 0 : 280);
+    clearTimeout(showWalk.t);
+    showWalk.t = setTimeout(() => walkGraph.zoomToFit(reduceMotion ? 0 : 280, 50), reduceMotion ? 0 : 1100);
+    if (opening) walkGraph.zoom(1.6, 0);
+    // The trail: where you've been, most recent last
+    const at = trailList.indexOf(n);
+    if (at >= 0) trailList.splice(at + 1); else trailList.push(n);
+    if (trailList.length > 8) trailList.shift();
+    document.getElementById("trail").innerHTML = trailList.map(t => `<a href="${walkHref(t)}"${t === n ? ' aria-current="page"' : ""}>${esc(t.name)}</a>`).join("<span>›</span>");
+    walkPage.scrollTop = 0;
+    document.title = n.name + " · Wander · World cuisine";
+  }
+  function hideWalk() {
+    if (!walkEl.classList.contains("open")) return;
+    walkEl.classList.remove("open"); document.body.style.overflow = ""; tip.style.display = "none";
+  }
+  // Links inside the page panel keep walking instead of leaving
+  walkPage.addEventListener("click", e => {
+    const a = e.target.closest('a[href^="#/"]');
+    if (!a) return;
+    const n = bySlug.get(a.getAttribute("href").slice(2));
+    if (n) { e.preventDefault(); location.hash = walkHref(n); }
+  });
+  document.getElementById("walk-close").addEventListener("click", () => { location.hash = walkCenter ? walkCenter.href : "#/"; });
+  document.getElementById("walk-whole").addEventListener("click", () => { openFull(); });
+  addEventListener("keydown", e => { if (e.key === "Escape" && walkEl.classList.contains("open") && !fullOpen) location.hash = walkCenter.href; });
+  walkEl.querySelector(".seg").addEventListener("click", e => {
+    const b = e.target.closest("[data-depth]");
+    if (!b) return;
+    depth = +b.dataset.depth;
+    walkEl.querySelectorAll("[data-depth]").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+    walkGraph.graphData(walkData()); walkFit = true;
+  });
+  const wf = document.getElementById("walk-filters");
+  wf.innerHTML = Object.keys(walkShown).map(t => `<button class="chip" type="button" data-wt="${t}" aria-pressed="true">${keyMark(t)}${PLURAL[t]}</button>`).join(" ");
+  wf.addEventListener("click", e => {
+    const b = e.target.closest("[data-wt]");
+    if (!b) return;
+    walkShown[b.dataset.wt] = !walkShown[b.dataset.wt];
+    b.setAttribute("aria-pressed", String(walkShown[b.dataset.wt]));
+    walkGraph.graphData(walkData()); walkFit = true;
+  });
+
+  // Copy a page's shareable address
+  document.addEventListener("click", e => {
+    const b = e.target.closest("[data-copy]");
+    if (!b) return;
+    navigator.clipboard?.writeText(b.dataset.copy).then(() => { b.textContent = "Copied"; setTimeout(() => { b.textContent = "Copy link"; }, 1600); }).catch(() => { location.href = b.dataset.copy; });
+  });
+
+  // --- Search ----------------------------------------------------------------------
+  // Names with a photo and a line on where each is from. With nothing typed yet, it
+  // offers what you looked at last and a few good places to start.
+  const q = document.getElementById("q"), results = document.getElementById("results");
+  const index = nodeList.map(n => ({ n, s: norm(n.name), w: n.type === "cuisine" ? (n.national ? 3 : 2) : n.type === "ingredient" ? 1.5 : 1 }));
+  const STARTERS = ["cuisine/thai-cuisine", "cuisine/mexican-cuisine", "cuisine/ethiopian-cuisine", "dish/pad-thai", "ingredient/chili-pepper", "ingredient/coconut-milk"];
+  let hits = [], sel = 0;
+  function about(n) {
+    if (n.type === "cuisine") return n.sub || (n.indigenous ? "Indigenous foodways" : n.beyond ? "Beyond borders" : "Cuisine");
+    if (n.type === "dish") { const c = neighbors(n, "cuisine"); return c.length ? c[0].name + (c.length > 1 ? ` and ${c.length - 1} more` : "") : "Dish"; }
+    if (n.type === "ingredient") { const k = neighbors(n, "dish").length; return `In ${k} ${k === 1 ? "dish" : "dishes"}`; }
+    return n.sub || "";
+  }
+  const thumbOf = n => {
+    const p = photoMap && photoMap[n.ref];
+    return `<span class="thumb">${p ? `<img src="${esc(photoUrl(p))}" alt="" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('i'),{style:'background:${n.color}'}))">` : `<i${n.type === "ingredient" ? ' class="sq"' : ""} style="background:${n.color}"></i>`}</span>`;
+  };
+  const option = (x, i) => `<li role="option" id="r${i}" data-i="${i}" aria-selected="${i === sel}">${thumbOf(x.n)}<span class="txt">${esc(x.n.name)}<small>${esc(about(x.n))}</small></span></li>`;
+  function showStart() {
+    const recent = recents().map(r => nodes.get(r)).filter(Boolean);
+    const starters = STARTERS.map(r => nodes.get(r)).filter(n => n && !recent.includes(n));
+    hits = [...recent, ...starters].map(n => ({ n }));
+    sel = -1;
+    let html = "";
+    if (recent.length) html += `<li class="group" role="presentation">Recently viewed <button type="button" class="clear-recent" data-clear>Clear</button></li>` + recent.map((n, i) => option({ n }, i)).join("");
+    if (starters.length) html += `<li class="group" role="presentation">Places to start</li>` + starters.map((n, i) => option({ n }, recent.length + i)).join("");
+    results.innerHTML = html;
+    results.classList.add("open"); q.setAttribute("aria-expanded", "true");
+  }
+  function search() {
+    const t = norm(q.value.trim());
+    if (!t) { if (document.activeElement === q) showStart(); else { results.classList.remove("open"); q.setAttribute("aria-expanded", "false"); } return; }
+    hits = index.filter(x => GRAPH.has(x.n.type) && x.s.includes(t)).map(x => ({ ...x, score: (x.s.startsWith(t) ? 10 : x.s.includes(" " + t) ? 5 : 0) + (x.s === t ? 20 : 0) + x.w + x.n.out.size / 400 }))
+      .sort((a, b) => b.score - a.score).slice(0, 24);
+    const order = ["cuisine", "dish", "ingredient"];
+    hits.sort((a, b) => order.indexOf(a.n.type) - order.indexOf(b.n.type) || b.score - a.score);
+    sel = 0;
+    let html = "", last = null;
+    hits.forEach((x, i) => {
+      if (x.n.type !== last) { html += `<li class="group" role="presentation">${PLURAL[x.n.type]}</li>`; last = x.n.type; }
+      html += option(x, i);
+    });
+    results.innerHTML = html || `<li class="group">Nothing by that name. Try a country, a dish or an ingredient.</li>`;
+    results.classList.add("open"); q.setAttribute("aria-expanded", "true");
+  }
+  const go = i => { const x = hits[i]; if (!x) return; q.value = ""; results.classList.remove("open"); q.blur(); if (fullOpen) closeFull(); location.hash = walkEl.classList.contains("open") ? walkHref(x.n) : x.n.href; };
+  q.addEventListener("input", search);
+  q.addEventListener("focus", () => { loadPhotos().then(() => { if (results.classList.contains("open")) search(); }); search(); });
+  q.addEventListener("keydown", e => {
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+      e.preventDefault(); if (!hits.length) return;
+      sel = Math.max(0, Math.min(hits.length - 1, sel + (e.key === "ArrowDown" ? 1 : -1)));
+      results.querySelectorAll("[role=option]").forEach(li => li.setAttribute("aria-selected", String(+li.dataset.i === sel)));
+      q.setAttribute("aria-activedescendant", "r" + sel);
+    } else if (e.key === "Enter") go(Math.max(0, sel));
+    else if (e.key === "Escape") { q.value = ""; results.classList.remove("open"); q.blur(); }
+  });
+  results.addEventListener("mousedown", e => {
+    if (e.target.closest("[data-clear]")) { e.preventDefault(); saveRecents([]); showStart(); return; }
+    const li = e.target.closest("[data-i]");
+    if (li) { e.preventDefault(); go(+li.dataset.i); }
+  });
+  document.addEventListener("click", e => { if (!e.target.closest(".search")) results.classList.remove("open"); });
+
+  route();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,104 @@
+---
+// One page of Explore: a cuisine, dish or ingredient, at /explore/<type>/<slug>/. Moved here
+// from World cuisine on 2026-11-26. Rendered on request (there are about 3,600), so the site
+// build stays fast: each page reads one small file of page models from the static assets
+// (/explore/app/data/web/items/, staged by scripts/stage-explore.mjs) and renders it with
+// the explorer's own code (vendor/explore/render_item.js), the same code its page browser
+// uses.
+//
+// Kept out of search engines for now (noindex), whatever EXPLORE_LISTED says: most of
+// these pages have no recipes here, and the ones that do are due to merge with the
+// /cuisine/ and /with/ browse pages. Decide page by page then.
+import { env } from 'cloudflare:workers';
+import LabLayout from 'kp-design/layouts/LabLayout.astro';
+import { SITE } from '../../../lib/site';
+import SiteHead from '../../../components/SiteHead.astro';
+// @ts-expect-error: plain JS shared with the explorer's page browser
+import { renderItem, bucketOf, summaryOf } from '../../../../vendor/explore/render_item.js';
+import '../../../styles/theme.css';
+import '../../../styles/explore.css';
+
+export const prerender = false;
+
+const TYPES = new Set(['cuisine', 'dish', 'ingredient']);
+const LABEL: Record<string, string> = { cuisine: 'Cuisine', dish: 'Dish', ingredient: 'Ingredient' };
+const { type = '', slug = '' } = Astro.params;
+const ref = `${type}/${slug}`;
+
+let item: any = null;
+if (TYPES.has(type) && /^[a-z0-9-]+$/.test(slug)) {
+  const url = new URL(`/explore/app/data/web/items/${bucketOf(ref)}.json`, Astro.url);
+  const assets = (env as unknown as { ASSETS?: { fetch(r: Request): Promise<Response> } }).ASSETS;
+  try {
+    const res = assets ? await assets.fetch(new Request(url)) : await fetch(url);
+    if (res.ok) item = ((await res.json()) as Record<string, unknown>)[ref] ?? null;
+  } catch (error) {
+    console.error('Explore page failed to load its data', ref, error);
+  }
+}
+
+if (!item) Astro.response.status = 404;
+// Browsers keep a page for an hour; the data changes weekly at most
+Astro.response.headers.set('cache-control', item ? 'public, max-age=3600' : 'no-store');
+
+const app = '/explore/app/web.html';
+const html = item
+  ? renderItem(item, {
+      href: (r: string) => (r.includes('/') && !r.includes('#') ? `/explore/${r}/` : `${app}#/${r}`),
+      globe: (hash: string) => `/explore/#${hash}`,
+      correct: (name: string) => `https://github.com/kyle-pace/world-cuisines/issues/new?title=${encodeURIComponent('Correction: ' + name)}`,
+      extraActions: `<a class="btn btn-walk" href="${app}#/walk/${ref}">Explore on the map</a>`,
+    })
+  : '';
+const title = item ? `${item.t === 'cuisine' ? item.n : `${item.n}: ${LABEL[item.t]}`} on finDish` : 'Page not found on finDish';
+const description = item ? summaryOf(item, 160) : 'Nothing here by that name.';
+// A page with a photo uses it for link previews; otherwise Explore's share card
+const shareImage = item?.img?.src ?? '/explore/share.png';
+const shareAlt = item?.img ? `Photo of ${item.img.of ?? item.n}` : 'A dark globe with countries colored by continent and thin routes arcing between them.';
+---
+
+<LabLayout
+  favicon="/favicon-v4.svg"
+  site={SITE}
+  bar={false}
+  lab={{ name: 'the search', href: '/' }}
+  about="/about/"
+  title={title}
+  description={description}
+  image={shareImage}
+  imageAlt={shareAlt}
+  imageWidth={item?.img?.w ?? 1200}
+  imageHeight={item?.img?.h ?? 630}
+  themeColor={{ light: '#fbf5ec', dark: '#1d1714' }}
+  noindex
+>
+  <SiteHead />
+  <nav class="cx-top" aria-label="Explore">
+    <a href="/explore/">Explore</a>
+    <span aria-hidden="true">/</span>
+    <a href={`${app}#/`}>Browse all</a>
+  </nav>
+  {
+    item ? (
+      <article class="cx" data-page="explore-item" data-type={type} set:html={html} />
+    ) : (
+      <article class="cx">
+        <h1>Nothing here by that name.</h1>
+        <p>
+          Try <a href={`${app}#/`}>browsing every cuisine</a>, the <a href="/explore/">globe</a> or <a href="/">a search</a>.
+        </p>
+      </article>
+    )
+  }
+</LabLayout>
+
+<script>
+  // An ingredient page's "recipes with …" button opens that search on finDish. The same
+  // event the browse pages send for "Search all", so one chart covers every way in:
+  // catalog ids only, never text.
+  import { track } from 'kp-design/analytics';
+  document.addEventListener('click', (e) => {
+    const link = (e.target as Element | null)?.closest<HTMLAnchorElement>('a[data-recipes]');
+    if (link) track('Opened Full Search', { browse_kind: 'ingredient', browse_page: link.dataset.recipes, opened_from: 'explore' });
+  });
+</script>

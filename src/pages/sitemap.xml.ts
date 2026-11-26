@@ -1,8 +1,7 @@
 // The sitemap, built with the site (it was a hand-kept public/sitemap.xml until 2026-11-16,
-// when every creator got a page). Add new pages to PAGES; creator and browse pages come
-// from the index.
+// when every creator got a page). Add new pages to PAGES; browse pages come from the index.
+// Each creator's own page is left out (noindex since 2026-11-25); /creators/ stays.
 import type { APIRoute } from 'astro';
-import { CREATORS, pagePath } from '../lib/creators';
 import { ALL, CRAWLED } from '../lib/browse';
 import { DISCOVER_LISTED } from '../lib/site';
 
@@ -14,7 +13,7 @@ const PAGES = ['/about/', '/how-its-built/', '/assistants/', '/privacy/'];
 const FROM_INDEX = ['/', '/creators/', '/browse/', ...(DISCOVER_LISTED ? ['/discover/'] : [])];
 
 export const GET: APIRoute = () => {
-  const dated = [...FROM_INDEX, ...ALL.map((b) => b.path), ...CREATORS.map((c) => pagePath(c.id))];
+  const dated = [...FROM_INDEX, ...ALL.map((b) => b.path)];
   const body = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${[

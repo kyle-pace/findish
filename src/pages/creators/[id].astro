@@ -66,6 +66,10 @@ const ld = {
   themeColor={{ light: '#fbf5ec', dark: '#1d1714' }}
 >
   <link slot="head" rel="manifest" href="/manifest.webmanifest" />
+  {/* Kept out of search results (2026-11-25, Kyle's call): someone searching a creator's
+      name should land on the creator's own site, not here. "follow" so search engines
+      still follow the links out to their site and recipes. Not in the sitemap either. */}
+  <meta slot="head" name="robots" content="noindex, follow" />
   <script slot="head" type="application/ld+json" set:html={jsonForScript(ld)} />
   <SiteHead wide />
 

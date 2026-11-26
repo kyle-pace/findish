@@ -843,7 +843,7 @@ function renderVideos(hits: VideoRow[], q: string[], only: boolean) {
 
 // ---------------------------------------------------------------------------------------
 // When a search is just one cuisine, one quiet line above the results links to that cuisine
-// on World cuisine (kyle-pace/world-cuisines). Nothing for ingredients or broader searches.
+// in Explore (/explore/cuisine/<slug>/, which is its browse page's About section when it has one). Nothing for ingredients or broader searches.
 // Until 2026-11-16 it was a card with a Wikipedia sentence; Kyle dropped it as filler.
 // The links load (public/notes.json) only the first time the line is needed.
 
@@ -900,7 +900,7 @@ function renderNote() {
   box.removeAttribute('data-waiting');
   const note = notes.cuisines[cuisine];
   if (!note) return void (box.hidden = true);
-  box.innerHTML = `<a href="${esc(note.page)}" data-note="cuisine" data-note-id="${esc(cuisine)}" data-note-link="world-cuisine">Explore ${esc(note.name)} on World cuisine</a>`;
+  box.innerHTML = `<a href="${esc(note.page)}" data-note="cuisine" data-note-id="${esc(cuisine)}" data-note-link="explore">Explore ${esc(note.name)}</a>`;
   box.hidden = false;
 }
 
@@ -2265,6 +2265,9 @@ app.addEventListener('click', (e) => {
     writeUrl(true);
     remember();
     qInput.focus();
+  } else if (el.dataset.explore === 'home') {
+    // The home page's one line that isn't about searching: the way into Explore.
+    track('Opened Explore', { opened_from: 'home' });
   } else if (el.dataset.noteLink) {
     track('Opened World Cuisine', { note_kind: el.dataset.note, note_id: el.dataset.noteId, link: el.dataset.noteLink });
   } else if (el.dataset.srcId) {

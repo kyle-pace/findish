@@ -3,14 +3,14 @@
 // Each creator's own page is left out (noindex since 2026-11-25); /creators/ stays.
 import type { APIRoute } from 'astro';
 import { ALL, CRAWLED } from '../lib/browse';
-import { DISCOVER_LISTED } from '../lib/site';
+import { EXPLORE_LISTED } from '../lib/site';
 
 export const prerender = true;
 
 // Pages written by hand. They carry no lastmod: a date nobody keeps is worse than none.
-const PAGES = ['/about/', '/how-its-built/', '/assistants/', '/privacy/'];
+const PAGES = ['/about/', '/how-its-built/', '/assistants/', '/privacy/', ...(EXPLORE_LISTED ? ['/explore/ingredients/'] : [])];
 // Pages built from the index change with every weekly crawl, so their lastmod is its date.
-const FROM_INDEX = ['/', '/creators/', '/browse/', ...(DISCOVER_LISTED ? ['/discover/'] : [])];
+const FROM_INDEX = ['/', '/creators/', '/browse/', ...(EXPLORE_LISTED ? ['/explore/'] : [])];
 
 export const GET: APIRoute = () => {
   const dated = [...FROM_INDEX, ...ALL.map((b) => b.path)];

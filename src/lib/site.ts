@@ -6,16 +6,13 @@
 // that it shared kylepace.dev's (902556), where its older events stay. The daily popularity
 // job (scripts/popularity.mjs) reads this project with the secrets AMPLITUDE_API_KEY and
 // AMPLITUDE_SECRET_KEY.
-// The Discover page (/discover/, added 2026-11-22) is built but unlisted until this is true:
-// off, it has no footer link, isn't in the sitemap and asks search engines not to index it.
-// Turning it on is this one line.
-export const DISCOVER_LISTED = false;
-
 // Explore (/explore/, added 2026-11-26, Kyle's call): World cuisine's globe and its pages for
-// every cuisine, dish and ingredient, moved here from kylepace.dev/world-cuisine/ to become
-// finDish's way to browse. Built but unlisted until this is true: off, it has no footer or
-// home page link, isn't in the sitemap and asks search engines not to index it.
-export const EXPLORE_LISTED = false;
+// every cuisine, dish and ingredient, moved here from kylepace.dev/world-cuisine/, plus the
+// week's recipe shelves (what was the unlisted Discover page). It is finDish's way to browse
+// when you don't know what to search for. Listed since 2026-11-26: the home page and the
+// footer link to it and /explore/ and /explore/ingredients/ are in the sitemap. Turning this
+// off takes all of that away again and asks search engines not to index them.
+export const EXPLORE_LISTED = true;
 
 export const SITE = {
   name: 'finDish',
@@ -27,7 +24,6 @@ export const SITE = {
     { href: '/?new=1', label: 'New this week' },
     { href: '/?saved=1', label: 'Saved' },
     { href: '/about/', label: 'About' },
-    ...(DISCOVER_LISTED ? [{ href: '/discover/', label: 'Discover' }] : []),
     ...(EXPLORE_LISTED ? [{ href: '/explore/', label: 'Explore' }] : []),
     { href: '/browse/', label: 'Browse' },
     { href: '/creators/', label: 'Creators' },

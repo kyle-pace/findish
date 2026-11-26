@@ -2,10 +2,12 @@
 // Explore (/explore/, added 2026-11-26): World cuisine's globe, framed with finDish's own
 // header and footer. The globe itself is the explorer's index.html, staged at /explore/app/
 // (scripts/stage-explore.mjs); a #cuisine link on this page is passed through to it.
-// Unlisted until EXPLORE_LISTED in src/lib/site.ts is on.
+// Under the globe are the week's recipe shelves (src/components/DiscoverShelves.astro), which
+// were the Discover page. Listed while EXPLORE_LISTED in src/lib/site.ts is on.
 import LabLayout from 'kp-design/layouts/LabLayout.astro';
 import { SITE, EXPLORE_LISTED } from '../../lib/site';
 import SiteHead from '../../components/SiteHead.astro';
+import DiscoverShelves from '../../components/DiscoverShelves.astro';
 import cuisineData from '../../../vendor/explore/data/cuisines.json';
 import foodData from '../../../vendor/explore/data/food.json';
 import '../../styles/theme.css';
@@ -23,7 +25,7 @@ const round = (n: number) => Math.floor(n / 10) * 10;
   bar={false}
   lab={{ name: 'the search', href: '/' }}
   about="/about/"
-  title="Explore the world’s cuisines on finDish"
+  title="Explore the world’s cuisines and this week’s recipes: finDish"
   description={`More than ${round(cuisines.length)} of the world’s cuisines and ${round(dishCount).toLocaleString('en-US')} dishes on one globe. Find where a dish is from and what goes in it, then find recipes from independent cooks.`}
   image="/explore/share.png"
   imageAlt="A dark globe with countries colored by continent and thin routes arcing between them."
@@ -56,6 +58,8 @@ const round = (n: number) => Math.floor(n / 10) * 10;
     </p>
 
     <p class="more"><a href="/explore/ingredients/">Every ingredient</a>, each under the part of the world where it’s most at home.</p>
+
+    <DiscoverShelves />
 
     <div class="fine-print">
       <p>

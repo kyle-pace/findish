@@ -84,7 +84,7 @@ Last checked: 2026-11-21 (web at recipe-search `7774072`, app 0.6.0 after the pa
 | New this week | Yes (footer) | Yes | App: a home shortcut and a filter |
 | Browse pages by cuisine, course, ingredient | Yes | No | Web only: they're there for search engines |
 | The week's shelves (collections) | Yes, on `/explore/#shelves` since 2026-11-26 (`/discover/` forwards there) | Not yet | Built from `/discover.json`, which the app can read as is when it gets a Discover tab; "See all" is the search held to a shelf (`collection=`, keys in `/discover/keys.json`); same shelf ids and event names |
-| Explore: the globe, a page for every cuisine, dish and ingredient, Every ingredient | Yes (`/explore/`, 2026-11-26; moved in from World cuisine) | Not yet | The plan is an Explore tab in this app, replacing the separate World cuisines demo app; its data is under `/explore/app/data/` |
+| Explore: the globe, a page for every cuisine, dish and ingredient, Every ingredient | Yes (`/explore/`, 2026-11-26; moved in from World cuisine) | Written, not built (the `explore-tab` branch of findish-app, 2026-11-26): an Explore tab with Browse, Globe and Wander, and "Find recipes" on every page | The World cuisines app's screens moved into the app; it reads `/explore/app/data/` and `/covers/`. It was written without a Mac, so it needs `xcodegen generate` and a build before it merges. The app adds "Changed Explore View" |
 | About sections on cuisine and ingredient pages | Yes (2026-11-26) | Not yet | The app has no browse pages |
 | World cuisine notes on cuisine searches | Yes (link) | Not yet | |
 | Recently opened, saved recipes | Yes (this browser) | Yes (Saved, offline) | |

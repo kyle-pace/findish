@@ -56,11 +56,13 @@ link, recipes for it from finDish, the creators who cook it, and related pages.
    its Labs card opens `/explore/`. The iOS demo app's share links ride the same redirect.
    World cuisine's weekly refresh stays in its repo, and `.github/workflows/explore.yml`
    here copies the result every Monday. Its events are finDish's since stage 1.
-   Not done, and not planned without Kyle asking: removing the old Worker or its repo,
-   and folding the World cuisines demo app into the finDish app as a tab.
+   The World cuisines app is moving into the finDish app as an Explore tab (Kyle, 2026-11-26):
+   written on findish-app's `explore-tab` branch, not built yet (it needs a Mac).
+   Not done, and not planned without Kyle asking: removing the old Worker or its repo.
 
 ## Still open
 
 - A dish's page (`/explore/dish/…`) shows no finDish recipes yet.
+- The explorer's About and How it's built pages stay out (Kyle wasn't sure about them, 2026-11-26).
 - The home page's way in is "Explore cuisines" beside "Pick one at random", on every
   screen size (2026-11-26; it was a line hidden on short phones before the home page was trimmed).

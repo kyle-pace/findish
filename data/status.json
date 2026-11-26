@@ -1,5 +1,5 @@
 {
- "run": "2026-11-23T22:39:09.856Z",
+ "run": "2026-11-26T17:54:56.131Z",
  "options": {
   "limit": null,
   "delayMs": 4000
@@ -9,9 +9,9 @@
    "id": "koreanbapsang",
    "name": "Korean Bapsang",
    "result": "ok",
-   "fetched": 1,
+   "fetched": 0,
    "added": 0,
-   "updated": 1,
+   "updated": 0,
    "removed": 0,
    "noRecipe": 0,
    "httpErrors": {},
@@ -45,8 +45,7 @@
    "id": "recipesfromitaly",
    "name": "Recipes from Italy",
    "result": "paused",
-   "error": "Its firewall answers HTTP 403 to the crawler from GitHub Actions (6 of 8 pages on the first crawl, 2026-11-19), though robots.txt allows us and the same pages loaded in the check on 2026-11-18 from another network. Needs the site to allow us; not worked around.",
-   "previous": 2
+   "error": "Its firewall answers HTTP 403 to the crawler from GitHub Actions (6 of 8 pages on the first crawl, 2026-11-19), though robots.txt allows us and the same pages loaded in the check on 2026-11-18 from another network. Needs the site to allow us; not worked around."
   },
   "maureenabood": {
    "id": "maureenabood",
@@ -67,11 +66,11 @@
    "id": "ozlemsturkishtable",
    "name": "Ozlem's Turkish Table",
    "result": "ok",
-   "fetched": 0,
+   "fetched": 1,
    "added": 0,
    "updated": 0,
    "removed": 0,
-   "noRecipe": 0,
+   "noRecipe": 1,
    "httpErrors": {},
    "sitemapPages": 410,
    "waiting": 0,
@@ -82,9 +81,9 @@
    "id": "unicornsinthekitchen",
    "name": "Unicorns in the Kitchen",
    "result": "ok",
-   "fetched": 5,
+   "fetched": 1,
    "added": 0,
-   "updated": 5,
+   "updated": 1,
    "removed": 0,
    "noRecipe": 0,
    "httpErrors": {},
@@ -97,11 +96,11 @@
    "id": "hungryhuy",
    "name": "Hungry Huy",
    "result": "ok",
-   "fetched": 2,
+   "fetched": 0,
    "added": 0,
-   "updated": 1,
+   "updated": 0,
    "removed": 0,
-   "noRecipe": 1,
+   "noRecipe": 0,
    "httpErrors": {},
    "sitemapPages": 455,
    "waiting": 0,
@@ -127,15 +126,13 @@
    "id": "ruhlman",
    "name": "Ruhlman's Newsletter",
    "result": "paused",
-   "error": "Substack newsletter, read through its public RSS feed only (Kyle's 2026-11-11 decision); robots.txt allows /feed. Paused 2026-11-19: Substack answers HTTP 403 for robots.txt when the crawler runs on GitHub Actions (the crawl of 2026-11-19), so nothing was read, the same as Susan Herrmann Loomis. Not worked around.",
-   "previous": 1
+   "error": "Substack newsletter, read through its public RSS feed only (Kyle's 2026-11-11 decision); robots.txt allows /feed. Paused 2026-11-19: Substack answers HTTP 403 for robots.txt when the crawler runs on GitHub Actions (the crawl of 2026-11-19), so nothing was read, the same as Susan Herrmann Loomis. Not worked around."
   },
   "ciaosamin": {
    "id": "ciaosamin",
    "name": "a grain of salt",
    "result": "paused",
-   "error": "Substack newsletter, read through its public RSS feed only (Kyle's 2026-11-11 decision); robots.txt allows /feed. Paused 2026-11-19: Substack answers HTTP 403 for robots.txt when the crawler runs on GitHub Actions (the crawl of 2026-11-19), so nothing was read, the same as Susan Herrmann Loomis. Not worked around.",
-   "previous": 2
+   "error": "Substack newsletter, read through its public RSS feed only (Kyle's 2026-11-11 decision); robots.txt allows /feed. Paused 2026-11-19: Substack answers HTTP 403 for robots.txt when the crawler runs on GitHub Actions (the crawl of 2026-11-19), so nothing was read, the same as Susan Herrmann Loomis. Not worked around."
   },
   "woks": {
    "id": "woks",
@@ -162,31 +159,29 @@
    "id": "htk",
    "name": "Hot Thai Kitchen",
    "result": "ok",
-   "fetched": 2,
-   "added": 1,
+   "fetched": 0,
+   "added": 0,
    "updated": 0,
    "removed": 0,
-   "noRecipe": 1,
+   "noRecipe": 0,
    "httpErrors": {},
    "sitemapPages": 476,
    "waiting": 0,
    "count": 416,
-   "previous": 415
+   "previous": 416
   },
   "sk": {
    "id": "sk",
    "name": "Smitten Kitchen",
-   "result": "ok",
-   "fetched": 5,
-   "added": 3,
-   "updated": 2,
+   "result": "blocked",
+   "fetched": 0,
+   "added": 0,
+   "updated": 0,
    "removed": 0,
    "noRecipe": 0,
    "httpErrors": {},
-   "sitemapPages": 979,
-   "waiting": 0,
-   "count": 448,
-   "previous": 445
+   "error": "HTTP 403 on robots.txt",
+   "previous": 448
   },
   "maangchi": {
    "id": "maangchi",
@@ -198,58 +193,58 @@
    "id": "mala",
    "name": "The Mala Market",
    "result": "ok",
-   "fetched": 3,
-   "added": 1,
-   "updated": 1,
+   "fetched": 0,
+   "added": 0,
+   "updated": 0,
    "removed": 0,
-   "noRecipe": 1,
+   "noRecipe": 0,
    "httpErrors": {},
    "sitemapPages": 226,
    "waiting": 0,
    "count": 199,
-   "previous": 198
+   "previous": 199
   },
   "rte": {
    "id": "rte",
    "name": "RecipeTin Eats",
    "result": "ok",
-   "fetched": 73,
+   "fetched": 3,
    "added": 1,
-   "updated": 65,
+   "updated": 0,
    "removed": 0,
-   "noRecipe": 7,
+   "noRecipe": 2,
    "httpErrors": {},
-   "sitemapPages": 1753,
+   "sitemapPages": 1754,
    "waiting": 0,
-   "count": 1542,
-   "previous": 1541
+   "count": 1543,
+   "previous": 1542
   },
   "rtj": {
    "id": "rtj",
    "name": "RecipeTin Japan",
    "result": "ok",
-   "fetched": 2,
-   "added": 1,
+   "fetched": 0,
+   "added": 0,
    "updated": 0,
-   "removed": 0,
-   "noRecipe": 1,
+   "removed": 431,
+   "noRecipe": 0,
    "httpErrors": {},
-   "sitemapPages": 442,
+   "sitemapPages": 0,
    "waiting": 0,
-   "count": 431,
-   "previous": 430
+   "count": 0,
+   "previous": 431
   },
   "sudachi": {
    "id": "sudachi",
    "name": "Sudachi",
    "result": "ok",
-   "fetched": 17,
+   "fetched": 5,
    "added": 0,
-   "updated": 15,
+   "updated": 3,
    "removed": 0,
    "noRecipe": 2,
    "httpErrors": {},
-   "sitemapPages": 609,
+   "sitemapPages": 610,
    "waiting": 0,
    "count": 493,
    "previous": 493
@@ -258,9 +253,9 @@
    "id": "mwl",
    "name": "Made With Lau",
    "result": "ok",
-   "fetched": 197,
+   "fetched": 3,
    "added": 0,
-   "updated": 197,
+   "updated": 3,
    "removed": 0,
    "noRecipe": 0,
    "httpErrors": {},
@@ -273,9 +268,9 @@
    "id": "ab",
    "name": "Alton Brown",
    "result": "ok",
-   "fetched": 0,
+   "fetched": 1,
    "added": 0,
-   "updated": 0,
+   "updated": 1,
    "removed": 0,
    "noRecipe": 0,
    "httpErrors": {},
@@ -289,42 +284,42 @@
    "name": "The Woks of Life",
    "result": "ok",
    "count": 409,
-   "previous": 406
+   "previous": 409
   },
   "joc-yt": {
    "id": "joc-yt",
    "name": "Just One Cookbook",
    "result": "ok",
-   "count": 592,
-   "previous": 591
+   "count": 593,
+   "previous": 592
   },
   "htk-yt": {
    "id": "htk-yt",
    "name": "Hot Thai Kitchen",
    "result": "ok",
-   "count": 836,
-   "previous": 834
+   "count": 837,
+   "previous": 836
   },
   "sk-yt": {
    "id": "sk-yt",
    "name": "Smitten Kitchen",
    "result": "ok",
-   "count": 92,
-   "previous": 91
+   "count": 93,
+   "previous": 92
   },
   "maangchi-yt": {
    "id": "maangchi-yt",
    "name": "Maangchi",
    "result": "ok",
    "count": 612,
-   "previous": 611
+   "previous": 612
   },
   "rte-yt": {
    "id": "rte-yt",
    "name": "RecipeTin Eats",
    "result": "ok",
-   "count": 1438,
-   "previous": 1436
+   "count": 1439,
+   "previous": 1438
   },
   "rtj-yt": {
    "id": "rtj-yt",
@@ -337,8 +332,8 @@
    "id": "sudachi-yt",
    "name": "Sudachi",
    "result": "ok",
-   "count": 576,
-   "previous": 574
+   "count": 577,
+   "previous": 576
   },
   "mwl-yt": {
    "id": "mwl-yt",
@@ -352,20 +347,20 @@
    "name": "Alton Brown",
    "result": "ok",
    "count": 267,
-   "previous": 265
+   "previous": 267
   },
   "kenji": {
    "id": "kenji",
    "name": "J. Kenji López-Alt",
    "result": "ok",
-   "count": 893,
-   "previous": 878
+   "count": 894,
+   "previous": 893
   },
   "ccd": {
    "id": "ccd",
    "name": "Chinese Cooking Demystified",
    "result": "ok",
-   "count": 362,
+   "count": 363,
    "previous": 362
   },
   "rhs-yt": {
@@ -379,8 +374,8 @@
    "id": "fca",
    "name": "French Cooking Academy",
    "result": "ok",
-   "count": 550,
-   "previous": 546
+   "count": 551,
+   "previous": 550
   },
   "hebbarskitchen": {
    "id": "hebbarskitchen",
@@ -416,61 +411,61 @@
    "id": "panlasangpinoy",
    "name": "Panlasang Pinoy",
    "result": "ok",
-   "fetched": 351,
-   "added": 192,
-   "updated": 11,
+   "fetched": 7,
+   "added": 0,
+   "updated": 4,
    "removed": 0,
-   "noRecipe": 148,
+   "noRecipe": 3,
    "httpErrors": {},
-   "sitemapPages": 2746,
+   "sitemapPages": 2747,
    "waiting": 0,
    "count": 2003,
-   "previous": 1811
+   "previous": 2003
   },
   "rasamalaysia": {
    "id": "rasamalaysia",
    "name": "Rasa Malaysia",
    "result": "ok",
-   "fetched": 2,
+   "fetched": 4,
    "added": 1,
-   "updated": 0,
+   "updated": 2,
    "removed": 0,
    "noRecipe": 1,
    "httpErrors": {},
-   "sitemapPages": 1425,
+   "sitemapPages": 1426,
    "waiting": 0,
-   "count": 1383,
-   "previous": 1382
+   "count": 1384,
+   "previous": 1383
   },
   "dimitrasdishes": {
    "id": "dimitrasdishes",
    "name": "Dimitra's Dishes",
    "result": "ok",
-   "fetched": 6,
-   "added": 3,
-   "updated": 1,
+   "fetched": 2,
+   "added": 0,
+   "updated": 0,
    "removed": 0,
    "noRecipe": 2,
    "httpErrors": {},
-   "sitemapPages": 1201,
+   "sitemapPages": 1202,
    "waiting": 0,
    "count": 1098,
-   "previous": 1095
+   "previous": 1098
   },
   "mycolombianrecipes": {
    "id": "mycolombianrecipes",
    "name": "My Colombian Recipes",
    "result": "ok",
-   "fetched": 112,
-   "added": 80,
-   "updated": 14,
+   "fetched": 11,
+   "added": 1,
+   "updated": 9,
    "removed": 0,
-   "noRecipe": 18,
+   "noRecipe": 1,
    "httpErrors": {},
-   "sitemapPages": 1212,
+   "sitemapPages": 1213,
    "waiting": 0,
-   "count": 1013,
-   "previous": 933
+   "count": 1014,
+   "previous": 1013
   },
   "tasteofmaroc": {
    "id": "tasteofmaroc",
@@ -491,16 +486,16 @@
    "id": "obviouslyfrench",
    "name": "Obviously French",
    "result": "ok",
-   "fetched": 6,
+   "fetched": 1,
    "added": 1,
-   "updated": 4,
+   "updated": 0,
    "removed": 0,
-   "noRecipe": 1,
+   "noRecipe": 0,
    "httpErrors": {},
-   "sitemapPages": 223,
+   "sitemapPages": 224,
    "waiting": 0,
-   "count": 136,
-   "previous": 135
+   "count": 137,
+   "previous": 136
   },
   "seonkyounglongest": {
    "id": "seonkyounglongest",
@@ -521,8 +516,8 @@
    "id": "vickypham",
    "name": "Vicky Pham",
    "result": "ok",
-   "fetched": 6,
-   "added": 2,
+   "fetched": 4,
+   "added": 0,
    "updated": 3,
    "removed": 0,
    "noRecipe": 1,
@@ -530,7 +525,7 @@
    "sitemapPages": 513,
    "waiting": 0,
    "count": 460,
-   "previous": 458
+   "previous": 460
   },
   "delightfulplate": {
    "id": "delightfulplate",
@@ -567,38 +562,39 @@
    "name": "I Am a Food Blog",
    "result": "ok",
    "fetched": 5,
-   "added": 2,
-   "updated": 1,
+   "added": 0,
+   "updated": 0,
    "removed": 0,
-   "noRecipe": 2,
+   "noRecipe": 5,
    "httpErrors": {},
    "sitemapPages": 1645,
    "waiting": 0,
-   "count": 1268,
-   "previous": 1266
+   "count": 1266,
+   "note": "no recipe data found on any fetched page; check the reader or the include pattern",
+   "previous": 1268
   },
   "preppykitchen": {
    "id": "preppykitchen",
    "name": "Preppy Kitchen",
    "result": "ok",
-   "fetched": 9,
-   "added": 0,
-   "updated": 9,
+   "fetched": 5,
+   "added": 1,
+   "updated": 4,
    "removed": 0,
    "noRecipe": 0,
    "httpErrors": {},
-   "sitemapPages": 1354,
+   "sitemapPages": 1355,
    "waiting": 0,
-   "count": 1313,
+   "count": 1314,
    "previous": 1313
   },
   "bakerbynature": {
    "id": "bakerbynature",
    "name": "Baker by Nature",
    "result": "ok",
-   "fetched": 1,
+   "fetched": 0,
    "added": 0,
-   "updated": 1,
+   "updated": 0,
    "removed": 0,
    "noRecipe": 0,
    "httpErrors": {},
@@ -611,16 +607,16 @@
    "id": "joythebaker",
    "name": "Joy the Baker",
    "result": "ok",
-   "fetched": 2,
-   "added": 1,
+   "fetched": 0,
+   "added": 0,
    "updated": 0,
    "removed": 0,
-   "noRecipe": 1,
+   "noRecipe": 0,
    "httpErrors": {},
    "sitemapPages": 1769,
    "waiting": 0,
    "count": 1003,
-   "previous": 1002
+   "previous": 1003
   },
   "susanherrmannloomis": {
    "id": "susanherrmannloomis",
@@ -632,29 +628,29 @@
    "id": "kingarthur-yt",
    "name": "King Arthur Baking",
    "result": "ok",
-   "count": 734,
-   "previous": 731
+   "count": 736,
+   "previous": 734
   },
   "pepin": {
    "id": "pepin",
    "name": "Jacques Pépin",
    "result": "ok",
    "count": 156,
-   "previous": 154
+   "previous": 156
   },
   "sohla": {
    "id": "sohla",
    "name": "Sohla and Ham",
    "result": "ok",
    "count": 98,
-   "previous": 97
+   "previous": 98
   },
   "matty": {
    "id": "matty",
    "name": "Matty Matheson",
    "result": "ok",
    "count": 828,
-   "previous": 826
+   "previous": 828
   },
   "mexicoinmykitchen-yt": {
    "id": "mexicoinmykitchen-yt",
@@ -668,28 +664,28 @@
    "name": "Pati Jinich",
    "result": "ok",
    "count": 567,
-   "previous": 566
+   "previous": 567
   },
   "hebbarskitchen-yt": {
    "id": "hebbarskitchen-yt",
    "name": "Hebbar's Kitchen",
    "result": "ok",
-   "count": 3340,
-   "previous": 3335
+   "count": 3343,
+   "previous": 3340
   },
   "panlasangpinoy-yt": {
    "id": "panlasangpinoy-yt",
    "name": "Panlasang Pinoy",
    "result": "ok",
-   "count": 1560,
-   "previous": 1558
+   "count": 1561,
+   "previous": 1560
   },
   "dimitrasdishes-yt": {
    "id": "dimitrasdishes-yt",
    "name": "Dimitra's Dishes",
    "result": "ok",
    "count": 1689,
-   "previous": 1688
+   "previous": 1689
   },
   "seonkyounglongest-yt": {
    "id": "seonkyounglongest-yt",
@@ -702,8 +698,8 @@
    "id": "preppykitchen-yt",
    "name": "Preppy Kitchen",
    "result": "ok",
-   "count": 1576,
-   "previous": 1574
+   "count": 1579,
+   "previous": 1576
   },
   "indianhealthyrecipes": {
    "id": "indianhealthyrecipes",
@@ -721,74 +717,77 @@
    "id": "chopstickchronicles",
    "name": "Chopstick Chronicles",
    "result": "ok",
-   "fetched": 367,
-   "added": 334,
+   "fetched": 0,
+   "added": 0,
    "updated": 0,
    "removed": 0,
-   "noRecipe": 33,
+   "noRecipe": 0,
    "httpErrors": {},
    "sitemapPages": 367,
    "waiting": 0,
-   "count": 334
+   "count": 334,
+   "previous": 334
   },
   "okonomikitchen": {
    "id": "okonomikitchen",
    "name": "Okonomi Kitchen",
    "result": "ok",
-   "fetched": 803,
-   "added": 707,
+   "fetched": 1,
+   "added": 1,
    "updated": 0,
    "removed": 0,
-   "noRecipe": 96,
+   "noRecipe": 0,
    "httpErrors": {},
-   "sitemapPages": 803,
+   "sitemapPages": 804,
    "waiting": 0,
-   "count": 707
+   "count": 708,
+   "previous": 707
   },
   "omnivorescookbook": {
    "id": "omnivorescookbook",
    "name": "Omnivore's Cookbook",
    "result": "ok",
-   "fetched": 785,
-   "added": 728,
+   "fetched": 0,
+   "added": 0,
    "updated": 0,
    "removed": 0,
-   "noRecipe": 57,
+   "noRecipe": 0,
    "httpErrors": {},
    "sitemapPages": 785,
    "waiting": 0,
-   "count": 728
+   "count": 728,
+   "previous": 728
   },
   "halfbakedharvest": {
    "id": "halfbakedharvest",
    "name": "Half Baked Harvest",
-   "result": "blocked",
-   "fetched": 652,
-   "added": 482,
+   "result": "ok",
+   "fetched": 1480,
+   "added": 1314,
    "updated": 0,
    "removed": 0,
-   "noRecipe": 139,
-   "httpErrors": {
-    "429": 31
-   },
-   "sitemapPages": 4521,
-   "waiting": 3869,
-   "error": "HTTP 429 three times in a row",
-   "count": 482
+   "noRecipe": 166,
+   "httpErrors": {},
+   "sitemapPages": 4523,
+   "waiting": 2422,
+   "stoppedEarly": true,
+   "count": 1796,
+   "previous": 482
   },
   "ahnestkitchen": {
    "id": "ahnestkitchen",
    "name": "ahnest kitchen",
    "result": "ok",
-   "fetched": 264,
-   "added": 70,
+   "fetched": 0,
+   "added": 0,
    "updated": 0,
    "removed": 0,
-   "noRecipe": 194,
+   "noRecipe": 0,
    "httpErrors": {},
    "sitemapPages": 264,
    "waiting": 0,
-   "count": 70
+   "count": 70,
+   "previous": 70
   },
   "maunikagowardhan": {
    "id": "maunikagowardhan",
@@ -800,40 +799,47 @@
    "id": "japanesecookingchannel",
    "name": "Japanese Cooking Channel",
    "result": "ok",
-   "count": 478
+   "count": 481,
+   "previous": 478
   },
   "japanesecooking101-yt": {
    "id": "japanesecooking101-yt",
    "name": "Japanese Cooking 101",
    "result": "ok",
-   "count": 796
+   "count": 796,
+   "previous": 796
   },
   "chopstickchronicles-yt": {
    "id": "chopstickchronicles-yt",
    "name": "Chopstick Chronicles",
    "result": "ok",
-   "count": 138
+   "count": 138,
+   "previous": 138
   },
   "okonomikitchen-yt": {
    "id": "okonomikitchen-yt",
    "name": "Okonomi Kitchen",
    "result": "ok",
-   "count": 12
+   "count": 12,
+   "previous": 12
   },
   "omnivorescookbook-yt": {
    "id": "omnivorescookbook-yt",
    "name": "Omnivore's Cookbook",
    "result": "ok",
-   "count": 320
+   "count": 320,
+   "previous": 320
   },
   "happydonabelife-yt": {
    "id": "happydonabelife-yt",
    "name": "Happy Donabe Life",
    "result": "ok",
-   "count": 22
+   "count": 22,
+   "previous": 22
   }
  },
  "alerts": [
-  "halfbakedharvest: blocked (HTTP 429 three times in a row)"
+  "sk: blocked (HTTP 403 on robots.txt)",
+  "rtj: recipe count dropped from 431 to 0"
  ]
 }

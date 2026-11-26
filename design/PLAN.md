@@ -267,3 +267,47 @@ See all 299
 ```
 
 Checked against the defaults: no cards, pills or eyebrows; the count beside a heading is plain muted text, not a badge; the blurb is one sentence about the food, not about the interface; "See all" is a plain link, and only where the shelf is a search the page can run.
+
+## Explore (November 26, 2026)
+
+World cuisine moved in as `/explore/`: a globe of the world's cuisines, a page for every dish, and an About section on the browse pages for a cuisine or an ingredient (`/cuisine/korean/#about`, `/with/tofu/#about`). It arrived wearing the explorer's own clothes: pill buttons, colored dots, middle dots between names, and recipe sites in rounded cards. This pass puts it in finDish's.
+
+**Who it's for:** someone who doesn't know what to search for yet, or who landed on Korean recipes and wonders what Korean cooking is. The globe is for wandering; the About section answers "what is this, what's in it, who cooks it" under the recipes, never above them.
+
+**The one bold thing: the globe,** and the one big ink button that opens it full screen. It is the only dark, colorful object on a cream page, and it keeps its own look inside its frame (the explorer is a copy; its colors mean parts of the world there). Nothing around it competes: no second accent, no decoration.
+
+**Colors:** finDish's own, nothing new. Cream page `#fbf5ec` (charcoal `#1d1714`), ink `#2a1712` (`#f1e6df`) for the button and names, muted ink `#6e5249` (`#b8a49b`) for counts and credits, hairline `#efe2d6` (`#332924`) for rules, tomato `#b8341c` (`#f2593c`) only for links inside sentences, and basil fill `#e2efd9` (`#25331f`) for the one chart, the bars under "Where it's grown".
+
+**Type:** Atkinson Hyperlegible Next throughout. The Wikipedia intro is the only large text (step 1); section headings are step 1 bold with their count beside them in plain muted text.
+
+```
+/explore/                                   A dish, or a browse page's About section
+
+findish                                     Bibimbap
+Explore                                     Dish from Korean cuisine
+670+ of the world's cuisines on a globe…    [ photo ]
+[ ⛶ Open the globe full screen ]            Photo: …, CC BY-SA 2.0, via Wikimedia Commons
+┌──────────────────────────────────┐        Bibimbap, sometimes romanised as…
+│            the globe             │        [Show on the globe]  Wikipedia ↗  Explore on the map
+└──────────────────────────────────┘
+Open the page browser   Every ingredient    Ingredients 4
+                                            Egg   Gochujang   Namul   Rice
+Recipes for this week
+(the shelves, as on Discover)               Cook it
+                                            ───────────────────────────────
+                                            Maangchi  Suggested           ↗
+                                            maangchi.com
+                                            ───────────────────────────────
+```
+
+**What changed, against the defaults:**
+
+- **Pills to one button and plain links.** "Show on the globe" is the ink, square-shouldered button the browse pages use for "Search all"; "Wikipedia" and "Explore on the map" are links beside it. The arrow on an outside link is the explorer's "opens another site" mark and stays.
+- **Dots gone.** The colored dot beside "Dish from Korean cuisine" and the squares beside each recipe site repeated what the words say, so they're hidden (in CSS: the markup is the explorer's).
+- **Middle dots gone.** Lists of dishes, ingredients and cuisines are words with room between them, as on Every ingredient. Every word in such a list is a link, so they carry no underline until pointed at.
+- **Cards to ruled lines.** Recipe sites and cookbooks are a bold name and a muted sentence between hairlines, like the creators list. "Suggested" is a muted word after the name, not a badge.
+- **One chart.** "Where it's grown" keeps its bars (each is that country's share of the biggest harvest, with the tonnes written beside it), in basil.
+
+Left as they were: Every ingredient (`/explore/ingredients/`), which was already words and rules, and everything inside the globe's frame.
+
+**Share cards:** `design/og-explore.html` (a globe in plate-colored and tomato lines) and `design/og-explore-ingredients.html` (a line of ingredient names on a tomato rule), rendered to `public/explore/share.png` and `share-ingredients.png`.

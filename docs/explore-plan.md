@@ -57,7 +57,8 @@ link, recipes for it from finDish, the creators who cook it, and related pages.
    World cuisine's weekly refresh stays in its repo, and `.github/workflows/explore.yml`
    here copies the result every Monday. Its events are finDish's since stage 1.
    The World cuisines app is moving into the finDish app as an Explore tab (Kyle, 2026-11-26):
-   written on findish-app's `explore-tab` branch, not built yet (it needs a Mac).
+   built, merged and on internal TestFlight as finDish Dev the same day; the iPad layout,
+   largest text and VoiceOver haven't been checked yet.
    Not done, and not planned without Kyle asking: removing the old Worker or its repo.
 
 ## Still open

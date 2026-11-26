@@ -316,7 +316,9 @@ Left as they were: Every ingredient (`/explore/ingredients/`), which was already
 
 Kyle: the home page had grown cluttered, and the text was taking away from its job, which is
 finding recipes and exploring. Now, top to bottom: the name; one line, "Find a dish from
-independent cooks." (no totals, those are on About); "About this site"; the box; "Pick one at
+independent cooks." (no totals, those are on About); the box; "Pick one at
 random" and "Explore cuisines" side by side; one line of dishes to try. The ingredient and
 creator lines only show under "nothing found". On a phone the group sits lower, nearer the
 thumb.
+
+Later the same day: "About this site" left the page (the footer's About covers it) and the footer was cut to five links plus "Send feedback".

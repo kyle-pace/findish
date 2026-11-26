@@ -18,19 +18,18 @@ export const SITE = {
   name: 'finDish',
   analytics: { apiKey: '8c102a3b3b5f8f0206dd6883f2b389cf', liveHosts: ['findish.now'] },
   // finDish has no top bar (Kyle, 2026-11-16): it's a standalone product, so the way
-  // around, and back to Kyle's other work, is this footer.
+  // around is this footer.
+  // Kept short (Kyle, 2026-11-26: "a bit too much in the footer", and his name was there
+  // twice): kp-design adds "Send feedback" in front and "Made by Kyle Pace" above. What
+  // left is still linked elsewhere: New this week is a shelf on Explore, Browse is linked
+  // from Explore and About, For AI assistants from About, Accessibility from the display
+  // settings panel, and the name at the top of every page goes back to the search.
   footer: [
-    { href: '/', label: 'Search' },
-    { href: '/?new=1', label: 'New this week' },
+    ...(EXPLORE_LISTED ? [{ href: '/explore/', label: 'Explore' }] : [{ href: '/browse/', label: 'Browse' }]),
+    { href: '/creators/', label: 'Creators' },
     { href: '/?saved=1', label: 'Saved' },
     { href: '/about/', label: 'About' },
-    ...(EXPLORE_LISTED ? [{ href: '/explore/', label: 'Explore' }] : []),
-    { href: '/browse/', label: 'Browse' },
-    { href: '/creators/', label: 'Creators' },
-    { href: '/assistants/', label: 'For AI assistants' },
     { href: '/privacy/', label: 'Privacy' },
-    { href: 'https://kylepace.dev/accessibility/', label: 'Accessibility' },
-    { href: 'https://kylepace.dev/', label: 'More by Kyle' },
   ],
   accessibilityHref: 'https://kylepace.dev/accessibility/',
   // "Send feedback" in the welcome dialog and first in every page's footer (Kyle,

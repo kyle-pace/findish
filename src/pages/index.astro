@@ -48,14 +48,6 @@ const FILTERS = [
   bar={false}
   lab={{ name: 'the search', href: '/' }}
   about="/about/"
-  welcome={{ name: "finDish", opens: "on-request", heading: "About this site", aboutLabel: "The full story", text: [
-    `One search across the recipe sites and YouTube channels of ${creators.length} independent cooks, like The Woks of Life, Hot Thai Kitchen and Smitten Kitchen. Search by dish, by what you have or by who made it, and every recipe opens on the creator’s own site.`,
-    // What the experiment is, in Kyle's words from About ("searching them one at a time got
-    // old"), and what feedback helps (Kyle, 2026-11-23: the old line wasn't descriptive).
-    `It’s an early experiment: I wanted to search the cooks I trust all at once, without wading through a regular search engine. I add cooks and tune the results every week, so tell me what you looked for, what worked and who I should add.`,
-    // It no longer opens by itself (Kyle, 2026-11-25: "less obnoxious, let the site speak for
-    // itself"). "About this site" (a link on the home page, a button after a search) opens it.
-  ] }}
   title="finDish: find a dish from independent cooks"
   description="Find a dish from The Woks of Life, Hot Thai Kitchen, Smitten Kitchen and more at once, by dish, by what you have or by creator. Every recipe opens on its own site."
   image="/og.png"
@@ -99,19 +91,6 @@ const FILTERS = [
       <header class="top">
         <h1><a href="/" id="home-link"><Wordmark /></a></h1>
         <p class="from" id="from">{fromLine}</p>
-        <!-- "About this site": the short version of About, in a dialog (Kyle, 2026-11-25).
-             On the home page it's a quiet link under the line above, in the centered column;
-             after a search it's the outlined button at the top right, level with the name
-             (moved 2026-11-26: alone in the corner of the home page it looked stranded).
-             Before scripts load it's a plain link to the About page. -->
-        <a class="about-site" href="/about/" data-kp-welcome-open="top">
-          <svg aria-hidden="true" viewBox="0 0 20 20" width="18" height="18">
-            <circle cx="10" cy="10" r="8.25" fill="none" stroke="currentColor" stroke-width="1.5" />
-            <circle cx="10" cy="6.25" r="1.25" fill="currentColor" />
-            <path d="M10 9v5.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" />
-          </svg>
-          <span>About this site</span>
-        </a>
       </header>
 
       <form class="search" id="search-form" role="search" action="/" method="get" aria-label="Recipes">
@@ -345,69 +324,6 @@ const FILTERS = [
     /* The end of the page clears the phone's home indicator. (kp-design's footer already
        leaves room under itself for the floating display-settings button.) */
     padding-block: var(--space-4) calc(var(--space-12) + env(safe-area-inset-bottom, 0px));
-  }
-
-  /* "About this site". After a search: top right, on the name's row, outlined like
-     kp-design's bar buttons. On the home page: a quiet link in the
-     centered column, under the line that says what finDish is. */
-  .about-site {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
-    min-height: 2.75rem;
-    color: var(--ink);
-    font-size: var(--step--1);
-    text-decoration: none;
-    white-space: nowrap;
-  }
-
-  .about-site:focus-visible {
-    outline: 3px solid var(--accent-ink);
-    outline-offset: 2px;
-  }
-
-  /* The 44px touch target reaches into the empty space around the link, so the box
-     keeps close to the line above it. */
-  [data-mode='home'] .about-site {
-    margin-block: calc(-1 * var(--space-1)) calc(-1 * var(--space-3));
-    color: var(--ink-muted);
-  }
-
-  [data-mode='home'] .about-site span {
-    text-decoration: underline;
-    text-decoration-thickness: 1px;
-    text-underline-offset: 0.2em;
-  }
-
-  [data-mode='home'] .about-site:hover {
-    color: var(--ink);
-  }
-
-  [data-mode='results'] .about-site {
-    flex: none;
-    max-width: 100%;
-    white-space: normal;
-    padding: 0 var(--space-4) 0 var(--space-3);
-    border: 1.5px solid color-mix(in srgb, var(--ink) 45%, transparent);
-    border-radius: 999px;
-    background: var(--bg);
-    font-weight: 700;
-  }
-
-  [data-mode='results'] .about-site:hover {
-    border-color: var(--ink);
-    background: color-mix(in srgb, var(--ink) 8%, var(--bg));
-  }
-
-  /* After a search the name sits top left and the button top right, on one row. At very
-     large text on a small phone the button drops under the name instead of pushing the
-     page sideways (it did, by 64px at 320px and 200% text, until 2026-11-26). */
-  [data-mode='results'] .top {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-1) var(--space-3);
   }
 
   h2 {

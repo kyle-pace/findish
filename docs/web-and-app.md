@@ -92,5 +92,5 @@ Last checked: 2026-11-21 (web at recipe-search `7774072`, app 0.6.0 after the pa
 | Works offline | No | Yes | App keeps the last index |
 | Assistants (MCP) | Yes | No | Web only: it's a server |
 | Recipes for a shopping list (`/api/with`) | Yes | No | Web only: used by the Grocery Deals app |
-| Send feedback (email to Kyle) | Yes (About this site dialog, footer) | Yes (Settings) | Same words, "Send feedback", and the same event, "Opened Feedback Link" (`opened_from`: welcome, footer, settings). Added 2026-11-23 |
-| About this site (the short version of About) | Yes (a link under the home page's opening line, and a button at the top right after a search, open a dialog; it no longer opens by itself) | No (Settings has an About section) | Web only: the app has no popup to tone down. Event "Opened About Dialog" (`opened_from`: top). Added 2026-11-25 |
+| Send feedback (email to Kyle) | Yes (footer) | Yes (Settings) | Same words, "Send feedback", and the same event, "Opened Feedback Link" (`opened_from`: welcome, footer, settings). Added 2026-11-23 |
+| About (what finDish is) | Yes (the About page, linked from the footer; the short "About this site" dialog was removed 2026-11-26) | Yes (Settings has an About section) | Web only: the page. |

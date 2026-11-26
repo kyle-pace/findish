@@ -47,11 +47,13 @@ const FILTERS = [
   bar={false}
   lab={{ name: 'the search', href: '/' }}
   about="/about/"
-  welcome={{ name: "finDish", text: [
+  welcome={{ name: "finDish", opens: "on-request", heading: "About this site", aboutLabel: "The full story", text: [
     `One search across the recipe sites and YouTube channels of ${creators.length} independent cooks, like The Woks of Life, Hot Thai Kitchen and Smitten Kitchen. Search by dish, by what you have or by who made it, and every recipe opens on the creator’s own site.`,
     // What the experiment is, in Kyle's words from About ("searching them one at a time got
     // old"), and what feedback helps (Kyle, 2026-11-23: the old line wasn't descriptive).
     `It’s an early experiment: I wanted to search the cooks I trust all at once, without wading through a regular search engine. I add cooks and tune the results every week, so tell me what you looked for, what worked and who I should add.`,
+    // It no longer opens by itself (Kyle, 2026-11-25: "less obnoxious, let the site speak for
+    // itself"). The "About this site" button at the top of the page opens it.
   ] }}
   title="finDish: find a dish from independent cooks"
   description="Find a dish from The Woks of Life, Hot Thai Kitchen, Smitten Kitchen and more at once, by dish, by what you have or by creator. Every recipe opens on its own site."
@@ -92,6 +94,16 @@ const FILTERS = [
       if (/[?&](q|with|site|time|cuisine|course|new|show|without|not|diet|pick|saved|collection)=[^&]/.test(location.search) || /^#list=./.test(location.hash))
         document.getElementById('page').dataset.mode = 'results';
     </script>
+    <!-- "About this site": the short version of About, in a dialog, top right on every view
+         (Kyle, 2026-11-25). Before scripts load it's a plain link to the About page. -->
+    <a class="about-site" href="/about/" data-kp-welcome-open="top">
+      <svg aria-hidden="true" viewBox="0 0 20 20" width="18" height="18">
+        <circle cx="10" cy="10" r="8.25" fill="none" stroke="currentColor" stroke-width="1.5" />
+        <circle cx="10" cy="6.25" r="1.25" fill="currentColor" />
+        <path d="M10 9v5.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" />
+      </svg>
+      About this site
+    </a>
     <div class="app" id="app" data-state="loading">
       <header class="top">
         <h1><a href="/" id="home-link"><Wordmark /></a></h1>
@@ -320,11 +332,55 @@ const FILTERS = [
 
 <style>
   .page {
+    position: relative;
     width: min(100% - 2 * var(--gutter), 68rem);
     margin-inline: auto;
     /* The end of the page clears the phone's home indicator. (kp-design's footer already
        leaves room under itself for the floating display-settings button.) */
     padding-block: var(--space-4) calc(var(--space-12) + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* "About this site": top right, out of the flow, so the home page stays centered and a
+     search's name and box don't move. Outlined like kp-design's bar buttons. */
+  .about-site {
+    position: absolute;
+    top: var(--space-3);
+    right: 0;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: 2.75rem;
+    padding: 0 var(--space-4) 0 var(--space-3);
+    border: 1.5px solid color-mix(in srgb, var(--ink) 45%, transparent);
+    border-radius: 999px;
+    background: var(--bg);
+    color: var(--ink);
+    font-size: var(--step--1);
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .about-site:hover {
+    border-color: var(--ink);
+    background: color-mix(in srgb, var(--ink) 8%, var(--bg));
+  }
+
+  .about-site:focus-visible {
+    outline: 3px solid var(--accent-ink);
+    outline-offset: 2px;
+  }
+
+  /* After a search the name sits top left; keep the box clear of the button on phones. */
+  [data-mode='results'] .top {
+    padding-right: 11rem;
+  }
+
+  @media (max-width: 40rem) {
+    [data-mode='results'] .top {
+      min-height: 2.75rem;
+    }
   }
 
   h2 {

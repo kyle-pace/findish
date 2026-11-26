@@ -27,7 +27,9 @@ const creators = prepare(index).creators;
 // It starts with "Find a dish" so the name's two words are spelled out next to it, here and
 // in the snippet search engines show (Kyle, 2026-11-22).
 // The home page's one line. No totals: those are on the About page (Kyle, 2026-11-26).
-const fromLine = 'Find a dish from independent cooks.';
+// "Recipe sites worth trusting", not "independent cooks", since the same day: the sources
+// include a shop (The Mala Market) and a company (King Arthur Baking), and brands may follow.
+const fromLine = 'Find a dish from recipe sites worth trusting.';
 // Creator names by id, for the tags a link to a search shows before the index has loaded.
 const shelfNames = JSON.stringify(Object.fromEntries(DISCOVER.shelves.map((x) => [x.id, x.title[0].toLowerCase() + x.title.slice(1)])));
 const creatorNames = JSON.stringify(Object.fromEntries(creators.map((c: { id: string; name: string }) => [c.id, c.name])));
@@ -48,7 +50,7 @@ const FILTERS = [
   bar={false}
   lab={{ name: 'the search', href: '/' }}
   about="/about/"
-  title="finDish: find a dish from independent cooks"
+  title="finDish: find a dish from recipe sites worth trusting"
   description="Find a dish from The Woks of Life, Hot Thai Kitchen, Smitten Kitchen and more at once, by dish, by what you have or by creator. Every recipe opens on its own site."
   image="/og.png"
   imageAlt="finDish: a search box holding ginger and tofu. Recipes from The Woks of Life, Hot Thai Kitchen, Smitten Kitchen and more."
@@ -63,7 +65,7 @@ const FILTERS = [
     name: 'finDish',
     alternateName: ['Findish', 'Find Dish'],
     url: 'https://findish.now/',
-    description: 'One search box across recipe sites from independent cooks. Every result opens on the creator’s own site.',
+    description: 'One search box across hand-picked recipe sites worth trusting. Every result opens on the creator’s own site.',
     potentialAction: { '@type': 'SearchAction', target: 'https://findish.now/?q={search_term_string}', 'query-input': 'required name=search_term_string' },
     publisher: { '@type': 'Person', '@id': 'https://kylepace.net/#kyle', name: 'Kyle Pace', url: 'https://kylepace.net/' },
   })} />
@@ -184,8 +186,9 @@ const FILTERS = [
         <p id="q-hint" class="visually-hidden">Suggestions appear as you type. Pick an ingredient, cuisine or creator to add it to your search. Backspace in an empty box removes the last one. While the box is empty, your recent searches and saved recipes are listed under it; they are kept on this device only.</p>
         <p class="visually-hidden" id="announce" role="status" aria-live="polite"></p>
         <p class="home-actions">
-          <button class="lucky" type="button" id="lucky">Pick one at random</button>
+          <button class="lucky" type="button" id="lucky">Surprise me</button>
           {EXPLORE_LISTED && <a class="lucky" href="/explore/" data-explore="home">Explore</a>}
+          {EXPLORE_LISTED && <a class="lucky" href="/explore/globe/" data-explore="home-globe">The globe</a>}
         </p>
       </form>
 
@@ -243,7 +246,7 @@ const FILTERS = [
       <div class="count-line">
         <p class="status" id="status" role="status" aria-live="polite" tabindex="-1" data-amp-mask>Loading the recipes…</p>
         <p class="acts">
-          <button class="lucky" type="button" id="lucky-results">Pick one at random</button>
+          <button class="lucky" type="button" id="lucky-results">Surprise me</button>
           <button class="lucky" type="button" id="share">Share this search</button>
           <button class="clear-all" type="button" id="clear-all" hidden>Start over</button>
         </p>
@@ -1119,7 +1122,7 @@ const FILTERS = [
     margin-right: 0.4em;
   }
 
-  /* The count, with "Pick one at random", "Share this search" and "Start over" at its far
+  /* The count, with "Surprise me", "Share this search" and "Start over" at its far
      end. When there isn't room beside the count they sit under it, together, wrapping
      among themselves on a very narrow screen: never scrolling sideways. */
   .count-line {

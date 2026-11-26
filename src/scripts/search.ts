@@ -27,6 +27,7 @@
 // the last searches, the recipes opened lately and the recipes saved for later. They show
 // under the empty box when it's focused, each one removable; "saved" is also a view (&saved=1).
 import { track } from 'kp-design/analytics';
+import { ASK_ENABLED } from '../lib/site';
 import * as core from '../lib/search-core.mjs';
 import type { Creator, Hit, Ready, Recipe, Understood } from '../lib/search-core.mjs';
 import { looksLikeAsk, words } from '../lib/search-core.mjs';
@@ -969,7 +970,7 @@ function supportLine(id: string, from = 'results'): string {
 }
 
 // ---------------------------------------------------------------------------------------
-// Pick one at random: from what you're looking at, or from everything.
+// "Surprise me" ("Pick one at random" until 2026-11-26): from what you're looking at, or from everything.
 
 function pickRandom() {
   const pool = isBlank() ? recipes.map((r) => ({ r })) : search();
@@ -2266,6 +2267,9 @@ app.addEventListener('click', (e) => {
   } else if (el.dataset.explore === 'home') {
     // The home page's one line that isn't about searching: the way into Explore.
     track('Opened Explore', { opened_from: 'home' });
+  } else if (el.dataset.explore === 'home-globe') {
+    // The globe has its own page and its own link on the home page (Kyle, 2026-11-26).
+    track('Opened Explore Page', { explore_kind: 'globe', opened_from: 'home' });
   } else if (el.dataset.noteLink) {
     track('Opened World Cuisine', { note_kind: el.dataset.note, note_id: el.dataset.noteId, link: el.dataset.noteLink });
   } else if (el.dataset.srcId) {
@@ -2374,6 +2378,7 @@ addEventListener('findish:ask-ready', () => {
 });
 
 function askOn() {
+  if (!ASK_ENABLED) return false; // paused: see src/lib/site.ts
   const asked = new URLSearchParams(location.search).get('chat') === '1';
   try {
     if (asked) sessionStorage.setItem('findish-ask', '1');

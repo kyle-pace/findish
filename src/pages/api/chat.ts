@@ -22,6 +22,7 @@
 // words: {"fallback": "busy" | "off" | "error", "reason": "...", "reply", "query"}.
 
 import type { APIRoute } from 'astro';
+import { ASK_ENABLED } from '../../lib/site';
 import { env } from 'cloudflare:workers';
 import { loadIndex } from '../../mcp/load-index';
 import { chat, cleanMessages } from '../../chat/chat.mjs';
@@ -59,6 +60,9 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
   const messages = cleanMessages((body.value as { messages?: unknown } | null)?.messages);
   if (!messages) return reply(400, { error: HOW });
   const last = messages.at(-1)!.content as string;
+
+  // Paused (ASK_ENABLED in src/lib/site.ts): nothing is sent to Claude.
+  if (!ASK_ENABLED) return fallback(last, 'off', 'paused');
 
   // With no key or no rate limiter (a binding lost in a config change), Ask is off: it never
   // runs unguarded.

@@ -14,6 +14,13 @@
 // off takes all of that away again and asks search engines not to index them.
 export const EXPLORE_LISTED = true;
 
+// Ask, the chat experiment (src/chat/, src/scripts/chat.ts, /api/chat). Paused 2026-11-26
+// (Kyle: "remove mention of the ask project for now"): while this is off, ?chat=1 does
+// nothing, /api/chat answers "off" without calling Claude, and no page mentions Ask, so the
+// privacy page can say plainly that what you type stays on your device. Turning it back on
+// means putting the privacy page's Ask section back first (it is in git history).
+export const ASK_ENABLED = false;
+
 export const SITE = {
   name: 'finDish',
   analytics: { apiKey: '8c102a3b3b5f8f0206dd6883f2b389cf', liveHosts: ['findish.now'] },

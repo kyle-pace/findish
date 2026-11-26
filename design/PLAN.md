@@ -316,7 +316,7 @@ Left as they were: Every ingredient (`/explore/ingredients/`), which was already
 
 Kyle: the home page had grown cluttered, and the text was taking away from its job, which is
 finding recipes and exploring. Now, top to bottom: the name; one line, "Find a dish from
-independent cooks." (no totals, those are on About); the box; "Pick one at
+recipe sites worth trusting." (no totals, those are on About); the box; "Pick one at
 random" and "Explore cuisines" side by side; one line of dishes to try. The ingredient and
 creator lines only show under "nothing found". On a phone the group sits lower, nearer the
 thumb.
@@ -330,3 +330,5 @@ page's parts and one ink button with a small line-drawn globe, "The globe" (its 
 `/explore/globe/`, where the framed globe and its big full-screen button live); the week's
 shelves (unchanged, the tomato shelf edge is still the bold thing); Browse, as ruled lists
 of names with counts, two to a row on a phone. No cards, no pills.
+
+Then: the links under the box became "Surprise me" (was "Pick one at random"), "Explore" and "The globe"; the line reads "Find a dish from recipe sites worth trusting."

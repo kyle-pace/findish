@@ -9,7 +9,7 @@ import { jsonForScript } from '../lib/json-script.mjs';
 import { SITE } from '../lib/site';
 import SiteHead from './SiteHead.astro';
 import { andList, fmtTime, n, pagePath } from '../lib/creators';
-import type { Browse } from '../lib/browse';
+import { cuisinesFor, signatureIngredients, worldCuisine, QUICK_MINUTES, type Browse } from '../lib/browse';
 import '../styles/theme.css';
 import '../styles/creators.css';
 import '../styles/browse.css';
@@ -50,7 +50,22 @@ function withTitle(): string {
 const title = b.kind === 'with' ? withTitle() : `${b.heading} from independent cooks: finDish`;
 // "A, B, C and more", not "A, B and C and more".
 const names = b.creators.length > 3 ? `${b.creators.slice(0, 3).map((x) => x.creator.name).join(', ')} and more` : andList(b.creators.map((x) => x.creator.name));
-const description = `${count} ${what} from ${names}. Every one opens on the cook’s own site.`;
+// An ingredient page's description also says how many are quick, for searches like "quick
+// celery dinner" (the top one in Search Console in November 2026).
+const quickCount = b.quickCount.toLocaleString('en-US');
+const description =
+  b.kind === 'with' && b.quick.length
+    ? `${count} ${what}, ${quickCount} ready in ${QUICK_MINUTES} minutes or less, from ${names}. Every one opens on the cook’s own site.`
+    : `${count} ${what} from ${names}. Every one opens on the cook’s own site.`;
+const quickSearch = `${b.search}&time=${QUICK_MINUTES}`;
+// A cuisine page says what it's mostly made of and which ingredients it leans on, with links to
+// those ingredients' pages and to the cuisine on World cuisine. An ingredient page links to the
+// cuisine pages that cook with it most.
+const lean = b.kind === 'cuisine' ? signatureIngredients(b) : [];
+const courseWords = b.courses.map((c) => COURSE_WORDS[c.id]).filter(Boolean).slice(0, 3);
+const world = b.kind === 'cuisine' ? worldCuisine(b.name) : undefined;
+const related = b.kind === 'with' ? cuisinesFor(b) : lean;
+const cap = (s: string) => s.replace(/^./, (c) => c.toUpperCase());
 const searchAll = `Search all ${count} ${what}`;
 const openedFrom = b.kind === 'with' ? 'ingredient' : b.kind;
 const url = (path: string) => new URL(path, 'https://findish.now').href;
@@ -92,16 +107,82 @@ const ld = {
   <SiteHead wide />
 
   <article class="creator browse" data-page="browse" data-browse-kind={openedFrom} data-browse-page={b.slug}>
-    <header class="who">
+    <header class="who" data-section="top">
       <h1>{b.heading}</h1>
       <p class="lede">{lede} Each one opens on the cook’s own site, where the full recipe is.</p>
+      {
+        b.kind === 'cuisine' && (courseWords.length > 1 || lean.length > 2) && (
+          <p class="intro">
+            {courseWords.length > 1 && <>Mostly {andList(courseWords)}. </>}
+            {lean.length > 2 && (
+              <>
+                They lean on{' '}
+                {lean.slice(0, 3).map((x, k) => (
+                  <>
+                    {k > 0 && (k === 2 ? ' and ' : ', ')}
+                    <a href={x.path} data-browse-kind="ingredient" data-browse-page={x.slug}>{x.name}</a>
+                  </>
+                ))}
+                {' '}more than most.
+              </>
+            )}
+          </p>
+        )
+      }
+      {
+        world && (
+          <p class="world">
+            <a href={world.page} data-note="cuisine" data-note-id={b.name} data-note-link="world-cuisine">
+              Explore {world.name} on World cuisine
+            </a>
+          </p>
+        )
+      }
       <p class="go-row">
         <a class="go-link" href={b.search} data-full-search>{searchAll}</a>
       </p>
     </header>
 
-    <section class="picks" aria-labelledby="picks">
-      <h2 id="picks">{b.count > b.rows.length ? 'A few to start with' : 'All of them'}</h2>
+    {
+      b.quick.length > 0 && (
+        <section class="picks quick" aria-labelledby="quick" data-section="quick">
+          <h2 id="quick">Ready in {QUICK_MINUTES} minutes or less</h2>
+          <ol class="rows">
+            {b.quick.map((r, k) => (
+              <li>
+                <article class="row">
+                  <div class="text">
+                    <h3>
+                      <a href={r.url} data-src-id={r.source} data-key={r.key} data-pos={k + 1}>
+                        {r.name}
+                      </a>
+                    </h3>
+                    <p class="meta">{[r.minutes ? fmtTime(r.minutes) : '', r.cuisine, `from ${r.creator}`].filter(Boolean).join(', ')}</p>
+                  </div>
+                  <div class="photo">
+                    {r.img ? (
+                      <img src={r.img} alt="" width="320" height="240" loading="lazy" decoding="async" referrerpolicy="no-referrer" />
+                    ) : (
+                      <span class="no-photo" aria-hidden="true"></span>
+                    )}
+                  </div>
+                </article>
+              </li>
+            ))}
+          </ol>
+          {b.quickCount > b.quick.length && (
+            <p class="all">
+              <a href={quickSearch} data-full-search>
+                See all {quickCount} quick recipes with {b.name}
+              </a>
+            </p>
+          )}
+        </section>
+      )
+    }
+
+    <section class="picks" aria-labelledby="picks" data-section="picks">
+      <h2 id="picks">{b.count > b.rows.length + b.quick.length ? (b.quick.length ? 'More to start with' : 'A few to start with') : b.quick.length ? 'The rest of them' : 'All of them'}</h2>
       <ol class="rows">
         {
           b.rows.map((r, k) => (
@@ -128,7 +209,7 @@ const ld = {
         }
       </ol>
       {
-        b.count > b.rows.length && (
+        b.count > b.rows.length + b.quick.length && (
           <p class="all">
             <a href={b.search} data-full-search>
               {searchAll}
@@ -140,7 +221,7 @@ const ld = {
 
     {
       b.narrower.length > 1 && (
-        <section aria-labelledby="narrow">
+        <section aria-labelledby="narrow" data-section="narrower">
           <h2 id="narrow">{b.kind === 'cuisine' ? 'By course' : 'By cuisine'}</h2>
           <ul class="list">
             {b.narrower.map((x) => (
@@ -156,7 +237,25 @@ const ld = {
       )
     }
 
-    <section aria-labelledby="cooks">
+    {
+      related.length > 1 && (
+        <section aria-labelledby="related" data-section="related">
+          <h2 id="related">{b.kind === 'with' ? `Cuisines that cook with ${b.name}` : `Cook ${b.name} with`}</h2>
+          <ul class="list">
+            {related.map((x) => (
+              <li>
+                <a href={x.path} data-browse-kind={x.kind === 'with' ? 'ingredient' : x.kind} data-browse-page={x.slug}>
+                  {x.kind === 'with' ? cap(x.name) : x.heading}
+                </a>
+                <span class="has">{n(x.count, 'recipe')}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
+
+    <section aria-labelledby="cooks" data-section="cooks">
       <h2 id="cooks">Who they’re from</h2>
       <ul class="list">
         {

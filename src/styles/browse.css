@@ -22,3 +22,15 @@
 .browse .who + .picks h2 {
   margin-top: var(--space-8);
 }
+
+/* A cuisine's page: one line on what it's made of, and its World cuisine link (2026-11-26). */
+.browse .intro {
+  max-width: 38em;
+  margin: var(--space-2) 0 0;
+  color: var(--ink-muted);
+  line-height: 1.55;
+}
+.browse .world {
+  margin: var(--space-2) 0 0;
+  line-height: 1.55;
+}

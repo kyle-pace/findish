@@ -42,11 +42,14 @@ link, recipes for it from finDish, the creators who cook it, and related pages.
    Left in this stage: dish pages don't show finDish recipes yet (a search for the dish's
    name is the plan), the 20 cuisine pages and 68 ingredient pages with no match, and a
    design pass so the About sections and `/explore/` pages share finDish's look.
-3. **One Explore section.** `/explore/` shows the globe and the Discover shelves;
-   `/discover/` forwards there; the home page gets its link and the ideas row can offer a
-   cuisine or dish; a search that is exactly one cuisine, dish or ingredient links to its
-   page. Turn on `EXPLORE_LISTED`, add the pages with recipes to the sitemap, add the hosts
-   and events below, update About and the privacy page.
+3. **One Explore section.** Done 2026-11-26: `/explore/` shows the globe and then the
+   shelves, `/discover/` forwards there, the home page and footer link to it,
+   `EXPLORE_LISTED` is on, `/explore/` and `/explore/ingredients/` are in the sitemap, a
+   one-cuisine search links to its page here, and About and the privacy page mention it.
+   Left in this stage: finDish share cards for Explore (it still uses World cuisine's),
+   the ideas row offering a cuisine or dish, dish and ingredient searches linking to their
+   pages, the explorer's own About and How it's built folded into finDish's, a row in
+   `docs/web-and-app.md`, and Confluence.
 4. **Retire the old home.** kylepace.dev/world-cuisine/ forwards here (the hub's
    `_redirects`, then remove the Worker's routes), the hub's Labs listing and the iOS app's
    share links point here, World cuisine's weekly refresh either moves into this repo or
@@ -54,10 +57,12 @@ link, recipes for it from finDish, the creators who cook it, and related pages.
    finDish's. The World cuisines demo app folds into the finDish app as a tab.
    Removing the old Worker needs Kyle's OK first.
 
-## Open before the flag goes on
+## Still open
 
-- In the Amplitude tracking plan: `opened_from` on "Opened Full Search", and "Opened Ingredient", "Searched Ingredients" and "Changed Ingredient Filter" from the Every ingredient page, "Opened About Section" and "Opened Explore Page" from the browse pages, "Opened Full Screen Globe" from `/explore/`, plus whatever events
-  the globe needs (it sends none of its own from here yet).
 - Confluence: the Findish page (6848557) and World cuisine's page in the Labs space.
 - `docs/web-and-app.md`: a row for Explore in the feature table.
 - Keeping the copy fresh: nothing syncs `vendor/explore/` automatically yet.
+- The About sections and `/explore/` pages still wear the explorer's look; they haven't
+  been through `design/PLAN.md`.
+- On phones shorter than 780px the home page's Explore line is hidden so the page fits one
+  screen; the footer link is the way in there.

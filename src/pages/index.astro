@@ -592,7 +592,11 @@ const FILTERS = [
     margin-top: clamp(var(--space-2), 2svh, var(--space-4));
   }
 
-  @media (max-height: 460px) {
+  /* A phone's browser leaves about 660 to 750px of height, and the name, box and ideas
+     already fill it. The line would make the home page scroll there (measured 2026-11-26:
+     31 to 54px more at 320 to 412px wide), so on a phone shorter than 780px it steps out
+     and the footer's Explore link, on the same screen, is the way in. */
+  @media (max-height: 780px) and (max-width: 40rem), (max-height: 460px) {
     [data-mode='home'] .start #explore-line {
       display: none;
     }

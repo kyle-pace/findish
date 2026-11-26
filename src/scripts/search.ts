@@ -1338,8 +1338,6 @@ function renderFilterButtons() {
 const keepPunct = (html: string) => html.replace(/(<button[^>]*>[^<]*<\/button>[,.])/g, '<span class="keep">$1</span>');
 
 function buildStart() {
-  // Totals, not names: the list of creators is under the box and on the About page.
-  $('from').textContent = `Find a dish from ${creators.length} independent cooks: ${plural(data.recipes.length, 'recipe')} and ${plural(data.videos.sources.reduce((n, c) => n + c.count, 0), 'video')}, each opening on its creator’s own site.`;
   // Every line is a fresh draw on each visit: four dishes, five of the 18 most-used
   // ingredients and two creators. New this week moved to the footer (Kyle, 2026-11-16).
   const tries: string[] = [];

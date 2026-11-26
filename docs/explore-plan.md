@@ -62,5 +62,5 @@ link, recipes for it from finDish, the creators who cook it, and related pages.
 ## Still open
 
 - A dish's page (`/explore/dish/…`) shows no finDish recipes yet.
-- On phones shorter than 780px the home page's Explore line is hidden so the page fits one
-  screen; the footer link is the way in there.
+- The home page's way in is "Explore cuisines" beside "Pick one at random", on every
+  screen size (2026-11-26; it was a line hidden on short phones before the home page was trimmed).

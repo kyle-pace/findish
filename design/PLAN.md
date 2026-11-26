@@ -311,3 +311,12 @@ Recipes for this week
 Left as they were: Every ingredient (`/explore/ingredients/`), which was already words and rules, and everything inside the globe's frame.
 
 **Share cards:** `design/og-explore.html` (a globe in plate-colored and tomato lines) and `design/og-explore-ingredients.html` (a line of ingredient names on a tomato rule), rendered to `public/explore/share.png` and `share-ingredients.png`.
+
+## The home page, trimmed (2026-11-26)
+
+Kyle: the home page had grown cluttered, and the text was taking away from its job, which is
+finding recipes and exploring. Now, top to bottom: the name; one line, "Find a dish from
+independent cooks." (no totals, those are on About); "About this site"; the box; "Pick one at
+random" and "Explore cuisines" side by side; one line of dishes to try. The ingredient and
+creator lines only show under "nothing found". On a phone the group sits lower, nearer the
+thumb.

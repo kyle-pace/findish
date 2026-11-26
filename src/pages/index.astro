@@ -26,7 +26,8 @@ const count = (n: number, one: string) => `${n.toLocaleString('en-US')} ${n === 
 const creators = prepare(index).creators;
 // It starts with "Find a dish" so the name's two words are spelled out next to it, here and
 // in the snippet search engines show (Kyle, 2026-11-22).
-const fromLine = `Find a dish from ${creators.length} independent cooks: ${count(index.recipes.length, 'recipe')} and ${count(index.videos.rows.length, 'video')}, each opening on its creator’s own site.`;
+// The home page's one line. No totals: those are on the About page (Kyle, 2026-11-26).
+const fromLine = 'Find a dish from independent cooks.';
 // Creator names by id, for the tags a link to a search shows before the index has loaded.
 const shelfNames = JSON.stringify(Object.fromEntries(DISCOVER.shelves.map((x) => [x.id, x.title[0].toLowerCase() + x.title.slice(1)])));
 const creatorNames = JSON.stringify(Object.fromEntries(creators.map((c: { id: string; name: string }) => [c.id, c.name])));
@@ -203,7 +204,10 @@ const FILTERS = [
         </div>
         <p id="q-hint" class="visually-hidden">Suggestions appear as you type. Pick an ingredient, cuisine or creator to add it to your search. Backspace in an empty box removes the last one. While the box is empty, your recent searches and saved recipes are listed under it; they are kept on this device only.</p>
         <p class="visually-hidden" id="announce" role="status" aria-live="polite"></p>
-        <p class="home-actions"><button class="lucky" type="button" id="lucky">Pick one at random</button></p>
+        <p class="home-actions">
+          <button class="lucky" type="button" id="lucky">Pick one at random</button>
+          {EXPLORE_LISTED && <a class="lucky" href="/explore/" data-explore="home">Explore cuisines</a>}
+        </p>
       </form>
 
       <!-- On a narrow screen (a container query, so large text counts too) the seven words
@@ -300,11 +304,6 @@ const FILTERS = [
         <p id="try"></p>
         <p id="popular"></p>
         <p id="creators"></p>
-        {EXPLORE_LISTED && (
-          <p id="explore-line">
-            Not sure yet? <a href="/explore/" data-explore="home">Explore cuisines and this week’s recipes</a>
-          </p>
-        )}
         <p id="kept-line" hidden></p>
         <script is:inline>
           // Someone with saved recipes sees the way back to them from the first paint, so the
@@ -348,8 +347,8 @@ const FILTERS = [
     padding-block: var(--space-4) calc(var(--space-12) + env(safe-area-inset-bottom, 0px));
   }
 
-  /* "About this site". After a search: top right of the page, out of the flow, level with
-     the name, outlined like kp-design's bar buttons. On the home page: a quiet link in the
+  /* "About this site". After a search: top right, on the name's row, outlined like
+     kp-design's bar buttons. On the home page: a quiet link in the
      centered column, under the line that says what finDish is. */
   .about-site {
     display: inline-flex;
@@ -385,10 +384,9 @@ const FILTERS = [
   }
 
   [data-mode='results'] .about-site {
-    position: absolute;
-    top: var(--space-3);
-    right: 0;
-    z-index: 1;
+    flex: none;
+    max-width: 100%;
+    white-space: normal;
     padding: 0 var(--space-4) 0 var(--space-3);
     border: 1.5px solid color-mix(in srgb, var(--ink) 45%, transparent);
     border-radius: 999px;
@@ -401,15 +399,15 @@ const FILTERS = [
     background: color-mix(in srgb, var(--ink) 8%, var(--bg));
   }
 
-  /* After a search the name sits top left; keep the box clear of the button on phones. */
+  /* After a search the name sits top left and the button top right, on one row. At very
+     large text on a small phone the button drops under the name instead of pushing the
+     page sideways (it did, by 64px at 320px and 200% text, until 2026-11-26). */
   [data-mode='results'] .top {
-    padding-right: 11rem;
-  }
-
-  @media (max-width: 40rem) {
-    [data-mode='results'] .top {
-      min-height: 2.75rem;
-    }
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-1) var(--space-3);
   }
 
   h2 {
@@ -578,27 +576,36 @@ const FILTERS = [
     }
   }
 
-  /* The way into Explore is the home page's one line that isn't about searching. It is
-     written at build time, so nothing moves when the recipes arrive, it holds one line
-     even on a phone, and it only shows on the home page (not under "nothing found"). It
-     stays on short windows after the creator line has stepped out. */
-  .start #explore-line {
+  /* The home page is the name, one line, the box, two ways to browse and one line of
+     dishes to try (Kyle, 2026-11-26: it had grown cluttered, and the box is the point).
+     The ingredient and creator lines are still drawn, for "nothing found", but don't show
+     here; creators are in the footer and ingredients in Explore. */
+  [data-mode='home'] .start #popular,
+  [data-mode='home'] .start #creators {
     display: none;
   }
 
-  [data-mode='home'] .start #explore-line {
-    display: block;
-    min-height: 1lh;
-    margin-top: clamp(var(--space-2), 2svh, var(--space-4));
+  [data-mode='home'] .home-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-1) var(--space-6);
   }
 
-  /* A phone's browser leaves about 660 to 750px of height, and the name, box and ideas
-     already fill it. The line would make the home page scroll there (measured 2026-11-26:
-     31 to 54px more at 320 to 412px wide), so on a phone shorter than 780px it steps out
-     and the footer's Explore link, on the same screen, is the way in. */
-  @media (max-height: 780px) and (max-width: 40rem), (max-height: 460px) {
-    [data-mode='home'] .start #explore-line {
-      display: none;
+  .home-actions a {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  /* On a phone the group sits lower, nearer the thumb: more of the spare height goes
+     above it than below. */
+  @media (max-width: 40rem) {
+    [data-mode='home'] .app::before {
+      flex-grow: 3;
+    }
+
+    [data-mode='home'] .app::after {
+      flex-grow: 2;
     }
   }
 

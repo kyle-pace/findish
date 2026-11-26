@@ -18,13 +18,39 @@ const { b } = Astro.props as { b: Browse };
 const count = b.count.toLocaleString('en-US');
 const cooks = b.creators.length === 1 ? b.creators[0].creator.name : `${b.creators.length} independent cooks`;
 const what = b.kind === 'with' ? `recipes with ${b.name}` : b.heading.replace(/^./, (c) => (b.kind === 'cuisine' ? c : c.toLowerCase()));
-const names = andList(b.creators.slice(0, 3).map((x) => x.creator.name));
 const lede =
   b.kind === 'with'
     ? `${count} recipes that use ${b.name}, from ${cooks}.`
     : `${count} ${what} from ${cooks}.`;
-const title = `${b.heading} from independent cooks: finDish`;
-const description = `${count} ${what} from ${names}${b.creators.length > 3 ? ' and more' : ''}. Every one opens on the cook’s own site.`;
+// An ingredient page's title says what you can make with it and from how many cooks:
+// "Celery recipes: mains, soups and sides from 35 cooks | finDish" (Kyle's pick, 2026-11-26,
+// over a count or a "ready in 30 minutes" hook). The courses and the number come from the
+// index, so they follow each weekly crawl. A page with fewer than two courses, or a title too
+// long for a search result, falls back to one course fewer, then to the cooks alone.
+const COURSE_WORDS: Record<string, string> = {
+  main: 'mains', side: 'sides', soup: 'soups', starter: 'snacks', breakfast: 'breakfasts',
+  dessert: 'desserts', bread: 'breads', sauce: 'sauces', drink: 'drinks',
+};
+// People search "tomato recipes", not "tomatoes recipes": the last word of each name (each
+// side of an "or") goes singular, except "greens", which reads wrong as "green".
+const one = (w: string) =>
+  /greens$|(ss|us|is)$/.test(w) ? w : w.endsWith('chilies') ? w.slice(0, -2) : w.endsWith('ies') ? w.slice(0, -3) + 'y' : w.endsWith('oes') ? w.slice(0, -2) : w.endsWith('aves') ? w.slice(0, -3) + 'f' : w.endsWith('s') ? w.slice(0, -1) : w;
+const single = b.name.split(' or ').map((part) => part.replace(/\S+$/, one)).join(' or ');
+const Name = single.replace(/^./, (c) => c.toUpperCase());
+function withTitle(): string {
+  const cookCount = `${b.creators.length} ${b.creators.length === 1 ? 'cook' : 'cooks'}`;
+  const words = b.courses.map((c) => COURSE_WORDS[c.id]).filter(Boolean);
+  for (const k of [3, 2]) {
+    if (words.length < k) continue;
+    const t = `${Name} recipes: ${andList(words.slice(0, k))} from ${cookCount} | finDish`;
+    if (t.length <= 65) return t;
+  }
+  return `${Name} recipes from ${b.creators.length === 1 ? cooks : cookCount.replace('cooks', 'independent cooks')} | finDish`;
+}
+const title = b.kind === 'with' ? withTitle() : `${b.heading} from independent cooks: finDish`;
+// "A, B, C and more", not "A, B and C and more".
+const names = b.creators.length > 3 ? `${b.creators.slice(0, 3).map((x) => x.creator.name).join(', ')} and more` : andList(b.creators.map((x) => x.creator.name));
+const description = `${count} ${what} from ${names}. Every one opens on the cook’s own site.`;
 const searchAll = `Search all ${count} ${what}`;
 const openedFrom = b.kind === 'with' ? 'ingredient' : b.kind;
 const url = (path: string) => new URL(path, 'https://findish.now').href;

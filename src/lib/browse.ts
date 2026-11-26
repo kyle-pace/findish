@@ -41,6 +41,9 @@ export type Browse = {
   search: string;
   count: number;
   creators: { creator: Creator; count: number }[];
+  /** Course ids with their counts, most first (courses with at least 3 recipes). Used by the
+   *  ingredient pages' titles ("mains, soups and sides"). */
+  courses: { id: string; count: number }[];
   /** Narrower searches with counts: by course on a cuisine's page, by cuisine on the others. Most first. */
   narrower: { label: string; href: string; count: number }[];
   rows: Row[];
@@ -74,7 +77,9 @@ function page(kind: Kind, slug: string, name: string, heading: string, search: s
   // A cuisine's page narrows by course ("Korean soups"); the others narrow by cuisine.
   const at = kind === 'cuisine' ? 10 : 4;
   const perNarrow = new Map<string, number>();
+  const perCourse = new Map<string, number>();
   for (const r of recipes) {
+    if (r[10]) perCourse.set(r[10], (perCourse.get(r[10]) || 0) + 1);
     const id = index.sources[r[0]].id;
     perSource.set(id, (perSource.get(id) || 0) + 1);
     if (r[at]) perNarrow.set(r[at], (perNarrow.get(r[at]) || 0) + 1);
@@ -91,6 +96,10 @@ function page(kind: Kind, slug: string, name: string, heading: string, search: s
       .filter(([id]) => creatorById.has(id))
       .map(([id, count]) => ({ creator: creatorById.get(id)!, count }))
       .sort((a, b) => b.count - a.count || a.creator.name.localeCompare(b.creator.name)),
+    courses: [...perCourse]
+      .filter(([, count]) => count >= 3)
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+      .map(([id, count]) => ({ id, count })),
     narrower: [...perNarrow]
       .filter(([, count]) => count >= 3)
       .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))

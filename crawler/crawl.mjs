@@ -15,7 +15,7 @@ import { existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { robotsForNames } from './lib/robots.mjs';
-import { readSitemaps } from './lib/sitemap.mjs';
+import { readSitemaps, shortSitemap } from './lib/sitemap.mjs';
 import { extractRecipe } from './lib/extract.mjs';
 import { parseFeed } from './lib/feed.mjs';
 import { recipeFromPost } from './lib/post.mjs';
@@ -111,6 +111,17 @@ async function crawlSite(src) {
   const statePath = join(ROOT, `state/${src.id}.json`);
   const recipes = new Map((await readJson(dataPath, [])).map((r) => [r.u, r]));
   const state = await readJson(statePath, {});
+
+  // A sitemap far shorter than what we know is read as broken this run, not as deleted posts.
+  const short = shortSitemap({
+    listed: inSitemap.size,
+    known: Object.keys(state).length,
+    shortLastRun: previousStatus.sources?.[src.id]?.result === 'kept',
+  });
+  if (short) {
+    log(short);
+    return { ...out, result: 'kept', count: recipes.size, note: short };
+  }
 
   // Pages no longer in the sitemap are gone from the site.
   for (const u of Object.keys(state)) {

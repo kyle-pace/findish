@@ -60,7 +60,6 @@ link, recipes for it from finDish, the creators who cook it, and related pages.
 
 - Confluence: the Findish page (6848557) and World cuisine's page in the Labs space.
 - Keeping the copy fresh: nothing syncs `vendor/explore/` automatically yet.
-- The About sections and `/explore/` pages still wear the explorer's look; they haven't
-  been through `design/PLAN.md`.
+- A dish's page (`/explore/dish/…`) shows no finDish recipes yet.
 - On phones shorter than 780px the home page's Explore line is hidden so the page fits one
   screen; the footer link is the way in there.

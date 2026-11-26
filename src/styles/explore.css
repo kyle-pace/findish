@@ -1,7 +1,7 @@
 /* Explore (/explore/): the globe's page and the pages for every cuisine, dish and
    ingredient, moved here from World cuisine on 2026-11-26. These rules came with them and
-   read finDish's tokens (theme.css). Their look is still the explorer's own; bringing it
-   into line with design/PLAN.md is part of merging these pages with the browse pages. */
+   read finDish's tokens (theme.css). The globe and the page browser inside the frame keep
+   the explorer's own look; everything around them is finDish's (design/PLAN.md, "Explore"). */
 .explore-page {
   width: min(100% - 2 * var(--gutter), 64rem);
   margin-inline: auto;
@@ -9,7 +9,7 @@
 }
 .explore-page > header h1 { font-size: var(--step-4); line-height: 1.05; margin: 0 0 var(--space-3); }
 .explore-page .lede { max-width: 42rem; font-size: var(--step-1); color: var(--ink-muted); margin: 0 0 var(--space-6); }
-.explore-page .frame { border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; background: #1b1424; }
+.explore-page .frame { border: 1px solid var(--line); border-radius: 0.5rem; overflow: hidden; background: #1b1424; }
 /* Keyboard focus inside the globe shows on its frame, since the page can't see in. */
 .explore-page .frame:has(iframe:focus-visible),
 .explore-page .frame:focus-within { outline: 3px solid var(--accent-ink); outline-offset: 2px; }
@@ -19,7 +19,7 @@
 .explore-page .fullscreen {
   display: flex; align-items: center; justify-content: center; gap: var(--space-3);
   width: 100%; min-height: 4rem; margin: 0 0 var(--space-4); padding: var(--space-4) var(--space-6);
-  border-radius: var(--radius); background: var(--ink); color: var(--bg);
+  border-radius: 0.5rem; background: var(--ink); color: var(--bg);
   font-size: var(--step-1); font-weight: 700; line-height: 1.2; text-align: center; text-decoration: none;
 }
 .explore-page .fullscreen svg { flex: none; }
@@ -36,52 +36,79 @@
   .explore-page iframe { height: 70svh; }
 }
 
-/* One cuisine, dish or ingredient (src/pages/explore/[type]/[slug].astro) */
-  .cx-top { max-width: 42rem; margin: var(--space-8) auto 0; padding: 0 var(--space-4); font-size: var(--step--1); color: var(--ink-muted); display: flex; gap: var(--space-2); }
-  .cx { max-width: 42rem; margin: var(--space-4) auto var(--space-16); padding: 0 var(--space-4); }
-  .cx a { color: inherit; text-underline-offset: 3px; }
-  .cx .crumb { color: var(--ink-muted); font-size: var(--step--1); margin: 0 0 var(--space-2); }
-  .cx h1 { font-family: var(--font-display); font-size: var(--step-4); line-height: 1.05; margin: 0 0 var(--space-2); }
-  .cx .sub { color: var(--ink-muted); margin: 0 0 var(--space-3); display: flex; align-items: center; gap: var(--space-2); }
-  .cx .sub i { width: 10px; height: 10px; border-radius: 50%; flex: none; box-shadow: 0 0 0 1px var(--line); }
-  .cx .intro { font-size: var(--step-1); }
-  .cx .intro p { margin: 0 0 var(--space-3); }
-  .cx .source { color: var(--ink-muted); font-size: var(--step--1); margin: 0 0 var(--space-2); }
-  .cx .actions { display: flex; flex-wrap: wrap; gap: var(--space-2); margin: var(--space-4) 0; }
-  .cx .btn { display: inline-flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-4); border: 1px solid var(--line); border-radius: 999px; text-decoration: none; font-weight: 600; font-size: var(--step--1); background: var(--bg-raised); }
-  .cx .btn:hover { border-color: var(--ink-muted); }
-  .cx .btn svg, .cx .out svg { width: 16px; height: 16px; }
-  .cx .btn-walk { background: var(--ink); color: var(--bg); border-color: var(--ink); }
-  .cx h2 { font-size: var(--step-1); margin: var(--space-8) 0 var(--space-3); display: flex; align-items: baseline; gap: var(--space-2); }
-  .cx h2 small { color: var(--ink-muted); font-weight: 400; font-size: var(--step--1); }
-  .cx .empty { color: var(--ink-muted); margin: 0; }
-  .cx .tag { display: inline-block; font-size: 0.75rem; color: var(--ink-muted); border: 1px solid var(--line); border-radius: 999px; padding: 0 7px; margin-left: 6px; vertical-align: 2px; font-weight: 400; }
-  .cx .links { display: flex; flex-wrap: wrap; gap: 6px 8px; margin: 0; padding: 0; list-style: none; }
-  .cx .links li:not(:last-child)::after { content: '·'; color: var(--ink-muted); margin-left: 8px; }
-  .cx .rows { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-2); }
-  .cx .row { display: flex; align-items: flex-start; gap: var(--space-3); padding: var(--space-3) var(--space-4); background: var(--bg-raised); border: 1px solid var(--line); border-radius: var(--radius); }
-  .cx .row > div { flex: 1; min-width: 0; }
-  .cx .row .name { font-weight: 700; text-decoration: none; }
-  .cx .row .name:hover { text-decoration: underline; }
-  .cx .row small { display: block; color: var(--ink-muted); font-size: var(--step--1); margin-top: 2px; }
-  .cx .row .mark { width: 10px; height: 10px; margin-top: 8px; flex: none; border-radius: 50%; box-shadow: 0 0 0 1px var(--line); }
-  .cx .row .out { color: var(--ink-muted); padding: 4px; }
-  .cx .grouped { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-4); }
-  .cx .grouped > li { border-top: 1px solid var(--line); padding-top: var(--space-3); }
-  .cx .grouped > li:first-child { border-top: 0; padding-top: 0; }
-  .cx .grouped .n { color: var(--ink-muted); font-size: var(--step--1); }
-  .cx .grouped .links { margin-top: var(--space-2); }
-  .cx .grown { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
-  .cx .grown li { position: relative; display: flex; justify-content: space-between; gap: var(--space-3); padding: 6px 12px; border-radius: var(--radius-sm); overflow: hidden; background: var(--bg-raised); }
-  .cx .grown li i { position: absolute; left: 0; top: 0; bottom: 0; background: color-mix(in srgb, var(--ink) 10%, transparent); }
-  .cx .grown li span { position: relative; }
-  .cx .grown .n { color: var(--ink-muted); font-size: var(--step--1); }
-  .cx .cover { float: right; width: 120px; aspect-ratio: 2 / 3; margin: 0 0 var(--space-3) var(--space-4); border-radius: 3px 6px 6px 3px; overflow: hidden; position: relative; background: var(--bg-raised); display: flex; align-items: flex-end; padding: 10px; font-weight: 700; font-size: var(--step--1); }
-  .cx .cover img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-  .cx .photo { margin: var(--space-2) 0 var(--space-4); }
-  .cx .photo img { display: block; width: 100%; height: auto; max-height: 420px; object-fit: cover; border-radius: var(--radius); background: var(--bg-raised); }
-  .cx .photo figcaption { font-size: var(--step--1); color: var(--ink-muted); margin-top: var(--space-2); }
-  .cx .correct { margin-top: var(--space-12); padding-top: var(--space-4); border-top: 1px solid var(--line); color: var(--ink-muted); font-size: var(--step--1); }
+/* One cuisine, dish or ingredient (src/pages/explore/[type]/[slug].astro), and the same
+   markup as a browse page's About section. finDish's look since 2026-11-26 (design/PLAN.md,
+   "Explore"): ruled lines instead of cards, words instead of pills, no dots. The renderer's
+   markup is the explorer's own (vendor/explore/render_item.js), so what finDish doesn't
+   show (the colored marks) is hidden here, not taken out there. */
+.cx-top { max-width: 42rem; margin: var(--space-8) auto 0; padding: 0 var(--space-4); font-size: var(--step--1); color: var(--ink-muted); display: flex; gap: var(--space-2); }
+.cx-top a { color: inherit; }
+.cx { max-width: 42rem; margin: var(--space-4) auto var(--space-16); padding: 0 var(--space-4); }
+.cx a { color: var(--accent-ink); text-underline-offset: 3px; }
+.cx a:focus-visible { outline: 3px solid var(--accent-ink); outline-offset: 2px; border-radius: 2px; }
+.cx .crumb { color: var(--ink-muted); font-size: var(--step--1); margin: 0 0 var(--space-2); }
+.cx .crumb a { color: inherit; }
+.cx h1 { font-family: var(--font-display); font-size: var(--step-4); line-height: 1.05; margin: 0 0 var(--space-2); }
+.cx .sub { color: var(--ink-muted); margin: 0 0 var(--space-3); }
+/* The explorer's colors say which part of the world on its globe. Here they'd be a dot
+   beside a sentence that already says it, so they aren't shown. */
+.cx .sub i, .cx .row .mark { display: none; }
+.cx .intro { font-size: var(--step-1); line-height: 1.5; }
+.cx .intro p { margin: 0 0 var(--space-3); }
+.cx .source { color: var(--ink-muted); font-size: var(--step--1); margin: 0 0 var(--space-2); }
+.cx .source a { color: inherit; }
+
+/* What to do next: the globe in ink, square-shouldered like "Search all" on a browse page,
+   and the rest as plain links beside it. */
+.cx .actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-6); margin: var(--space-4) 0; }
+.cx .btn { display: inline-flex; align-items: center; gap: var(--space-2); min-height: 44px; font-weight: 600; }
+.cx .btn svg, .cx .out svg { width: 16px; height: 16px; flex: none; }
+.cx .btn:first-child { padding: 0 var(--space-4); border-radius: 0.5rem; background: var(--ink); color: var(--bg); font-weight: 700; text-decoration: none; }
+.cx .btn:first-child:hover { text-decoration: underline; }
+
+.cx h2 { font-size: var(--step-1); margin: var(--space-8) 0 var(--space-3); display: flex; align-items: baseline; gap: var(--space-2); }
+.cx h2 small { color: var(--ink-muted); font-weight: 400; font-size: var(--step--1); }
+.cx .empty { color: var(--ink-muted); margin: 0; }
+/* "Suggested" is a plain muted word after the name, not a badge. */
+.cx .tag { margin-left: var(--space-2); color: var(--ink-muted); font-size: var(--step--1); font-weight: 400; }
+
+/* Lists of names (dishes, ingredients, cuisines) are words with room between them, as on
+   Every ingredient. Every word is a link, so they go without underlines until pointed at. */
+.cx .links { display: flex; flex-wrap: wrap; gap: 0 var(--space-4); margin: 0; padding: 0; list-style: none; line-height: 1.4; }
+.cx .links a { display: inline-block; padding: 0.3rem 0; color: inherit; text-decoration: none; }
+.cx .links a:hover { text-decoration: underline; }
+
+/* Recipe sites and cookbooks: ruled lines, a name and a muted sentence under it. */
+.cx .rows { list-style: none; margin: 0; padding: 0; display: block; border-bottom: 1px solid var(--line); }
+.cx .rows .row { display: flex; align-items: flex-start; gap: var(--space-3); padding: var(--space-3) 0; border-top: 1px solid var(--line); }
+.cx .row > div { flex: 1; min-width: 0; }
+.cx .row .name { font-weight: 700; color: inherit; text-decoration: none; }
+.cx .row .name:hover { text-decoration: underline; }
+.cx .row small { display: block; color: var(--ink-muted); font-size: var(--step--1); margin-top: 2px; }
+.cx .row .out { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; margin: -6px -12px -6px 0; color: var(--ink-muted); }
+
+.cx .grouped { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-3); }
+.cx .grouped > li { border-top: 1px solid var(--line); padding-top: var(--space-3); }
+.cx .grouped b a { color: inherit; }
+.cx .grouped .n { color: var(--ink-muted); font-size: var(--step--1); }
+.cx .grouped .links { margin-top: var(--space-1); }
+
+/* Where it's grown: each country's bar is its share of the biggest grower's harvest. */
+.cx .grown { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.cx .grown li { position: relative; display: flex; justify-content: space-between; gap: var(--space-3); padding: 6px 10px; overflow: hidden; }
+.cx .grown li i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 2px; background: var(--scallion-fill); }
+.cx .grown li span { position: relative; }
+.cx .grown li a { color: inherit; }
+.cx .grown .n { color: var(--ink-muted); font-size: var(--step--1); }
+
+.cx .cover { float: right; width: 120px; aspect-ratio: 2 / 3; margin: 0 0 var(--space-3) var(--space-4); border-radius: 2px 4px 4px 2px; overflow: hidden; position: relative; background: var(--bg-raised); display: flex; align-items: flex-end; padding: 10px; font-weight: 700; font-size: var(--step--1); }
+.cx .cover img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.cx .photo { margin: var(--space-2) 0 var(--space-4); }
+.cx .photo img { display: block; width: 100%; height: auto; max-height: 420px; object-fit: cover; border-radius: 0.35rem; background: var(--line); }
+.cx .photo figcaption { font-size: var(--step--1); color: var(--ink-muted); margin-top: var(--space-2); }
+.cx .photo figcaption a { color: inherit; }
+.cx .correct { margin-top: var(--space-12); padding-top: var(--space-4); border-top: 1px solid var(--line); color: var(--ink-muted); font-size: var(--step--1); }
+.cx .correct a { color: inherit; }
 
 .explore-page .more { margin: var(--space-3) 0 0; }
 .explore-page .more a { font-weight: 700; color: inherit; }
@@ -101,4 +128,4 @@
 
 /* A recipe site's address or a long dish name with no spaces must wrap, not push the page
    wide on a small phone (found on /cuisine/italian/ at 320px by the page check). */
-.cx .row small, .cx .row .name, .cx .links a, .cx .grown span { overflow-wrap: anywhere; }
+.cx h1, .cx h2, .cx h3, .cx .sub, .cx .row small, .cx .row .name, .cx .links a, .cx .grown span, .cx .btn { overflow-wrap: anywhere; }

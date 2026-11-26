@@ -32,8 +32,9 @@ link, recipes for it from finDish, the creators who cook it, and related pages.
 1. **Serve the explorer here, unlisted.** Done 2026-11-26, in the `explore-section` pull
    request: `/explore/`, `/explore/app/`, `/explore/<type>/<slug>/` and `/explore/img/` work
    behind `EXPLORE_LISTED = false`. See "Explore" in AGENTS.md for how.
-   Left in this stage: the Every ingredient page, About and How it's built for the explorer,
-   and its own share card.
+   The Every ingredient page (`/explore/ingredients/`) came over the same day.
+   Left in this stage: About and How it's built for the explorer (they fold into finDish's
+   own About in stage 3) and finDish share cards.
 2. **Merge the overlapping pages.** `/cuisine/korean/` and `/with/tofu/` take in the
    explorer's intro, photo, dishes and related links; `/explore/cuisine/korean-cuisine/` and
    `/explore/ingredient/tofu/` then forward to them. Needs a map from the explorer's slugs to
@@ -54,7 +55,7 @@ link, recipes for it from finDish, the creators who cook it, and related pages.
 
 ## Open before the flag goes on
 
-- `opened_from` on "Opened Full Search" in the Amplitude tracking plan, plus whatever events
+- In the Amplitude tracking plan: `opened_from` on "Opened Full Search", and "Opened Ingredient", "Searched Ingredients" and "Changed Ingredient Filter" from the Every ingredient page, plus whatever events
   the globe needs (it sends none of its own from here yet).
 - Confluence: the Findish page (6848557) and World cuisine's page in the Labs space.
 - `docs/web-and-app.md`: a row for Explore in the feature table.

@@ -48,8 +48,7 @@ link, recipes for it from finDish, the creators who cook it, and related pages.
    one-cuisine search links to its page here, and About and the privacy page mention it.
    Left in this stage: finDish share cards for Explore (it still uses World cuisine's),
    the ideas row offering a cuisine or dish, dish and ingredient searches linking to their
-   pages, the explorer's own About and How it's built folded into finDish's, a row in
-   `docs/web-and-app.md`, and Confluence.
+   pages, the explorer's own About and How it's built folded into finDish's, and Confluence.
 4. **Retire the old home.** kylepace.dev/world-cuisine/ forwards here (the hub's
    `_redirects`, then remove the Worker's routes), the hub's Labs listing and the iOS app's
    share links point here, World cuisine's weekly refresh either moves into this repo or
@@ -60,7 +59,6 @@ link, recipes for it from finDish, the creators who cook it, and related pages.
 ## Still open
 
 - Confluence: the Findish page (6848557) and World cuisine's page in the Labs space.
-- `docs/web-and-app.md`: a row for Explore in the feature table.
 - Keeping the copy fresh: nothing syncs `vendor/explore/` automatically yet.
 - The About sections and `/explore/` pages still wear the explorer's look; they haven't
   been through `design/PLAN.md`.

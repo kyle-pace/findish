@@ -63,7 +63,7 @@ const app = '/explore/app/web.html';
 const html = item
   ? renderItem(item, {
       href: (r: string) => (r.includes('/') && !r.includes('#') ? `/explore/${r}/` : `${app}#/${r}`),
-      globe: (hash: string) => `/explore/#${hash}`,
+      globe: (hash: string) => `/explore/globe/#${hash}`,
       correct: (name: string) => `https://github.com/kyle-pace/world-cuisines/issues/new?title=${encodeURIComponent('Correction: ' + name)}`,
       extraActions: `<a class="btn btn-walk" href="${app}#/walk/${ref}">Explore on the map</a>`,
     })

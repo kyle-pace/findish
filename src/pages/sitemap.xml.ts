@@ -8,7 +8,7 @@ import { EXPLORE_LISTED } from '../lib/site';
 export const prerender = true;
 
 // Pages written by hand. They carry no lastmod: a date nobody keeps is worse than none.
-const PAGES = ['/about/', '/how-its-built/', '/assistants/', '/privacy/', ...(EXPLORE_LISTED ? ['/explore/ingredients/'] : [])];
+const PAGES = ['/about/', '/how-its-built/', '/assistants/', '/privacy/', ...(EXPLORE_LISTED ? ['/explore/ingredients/', '/explore/globe/'] : [])];
 // Pages built from the index change with every weekly crawl, so their lastmod is its date.
 const FROM_INDEX = ['/', '/creators/', '/browse/', ...(EXPLORE_LISTED ? ['/explore/'] : [])];
 

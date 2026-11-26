@@ -66,3 +66,14 @@ link, recipes for it from finDish, the creators who cook it, and related pages.
 - The explorer's About and How it's built pages stay out (Kyle wasn't sure about them, 2026-11-26).
 - The home page's way in is "Explore cuisines" beside "Pick one at random", on every
   screen size (2026-11-26; it was a line hidden on short phones before the home page was trimmed).
+
+## Reordered, recipes first (2026-11-26)
+
+Kyle, after seeing it live: the globe is a cool feature but not the most effective way to
+find something, so it shouldn't take the first screen. He wants it on its own page and still
+very findable, and Explore about finding recipes and creators, with what's in season.
+`/explore/` is now the week's shelves and Browse (top cuisines and ingredients, the courses,
+a line to creators), with one ink button at the top, "The globe", to `/explore/globe/`, which
+is the old top of the page. Still to think through with Kyle: whether `/browse/` folds in
+fully, how creators show up here beyond one line, and whether the globe also wants a link
+from the home page or footer.

@@ -322,3 +322,11 @@ creator lines only show under "nothing found". On a phone the group sits lower, 
 thumb.
 
 Later the same day: "About this site" left the page (the footer's About covers it) and the footer was cut to five links plus "Send feedback".
+
+## Explore, reordered (2026-11-26)
+
+For someone who doesn't know what to search for. Top to bottom: two plain links to the
+page's parts and one ink button with a small line-drawn globe, "The globe" (its own page,
+`/explore/globe/`, where the framed globe and its big full-screen button live); the week's
+shelves (unchanged, the tomato shelf edge is still the bold thing); Browse, as ruled lists
+of names with counts, two to a row on a phone. No cards, no pills.

@@ -129,3 +129,29 @@
 /* A recipe site's address or a long dish name with no spaces must wrap, not push the page
    wide on a small phone (found on /cuisine/italian/ at 320px by the page check). */
 .cx h1, .cx h2, .cx h3, .cx .sub, .cx .row small, .cx .row .name, .cx .links a, .cx .grown span, .cx .btn { overflow-wrap: anywhere; }
+
+/* Explore's own page since 2026-11-26: the week's shelves first, then Browse, then the globe
+   as one banner (design/PLAN.md, "Explore, reordered"). The shelves and Browse borrow the
+   creator and browse pages' lists, so they give up those pages' width and padding. */
+.explore-page > header + .discover { margin-top: var(--space-8); }
+.explore-page .explore-browse { width: auto; max-width: none; margin: var(--space-16) 0 0; padding: 0; scroll-margin-top: var(--space-4); }
+.explore-page .explore-browse .shelves-h { font-size: var(--step-3); line-height: 1.1; margin: 0 0 var(--space-4); }
+.explore-page .explore-browse .group h3 { font-size: var(--step-1); margin: var(--space-6) 0 var(--space-3); }
+.explore-page .all { margin: var(--space-3) 0 0; }
+.explore-page .all a { font-weight: 700; color: inherit; }
+/* The page's two parts and the globe's own page, said once at the top. The globe is the
+   one ink button, so it is easy to find without taking the screen. */
+.explore-page .jump { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-6); margin: calc(-1 * var(--space-2)) 0 0; }
+.explore-page .jump a { min-height: 2.75rem; display: inline-flex; align-items: center; color: var(--ink); font-weight: 700; }
+/* On a phone the Browse lists run two to a row, so thirty links aren't thirty rows. */
+@media (max-width: 40rem) {
+  .explore-page .explore-browse .list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(9rem, 100%), 1fr)); column-gap: var(--space-4); }
+}
+.explore-page .jump .globe-open {
+  gap: var(--space-2); padding: 0 var(--space-4) 0 var(--space-3); border-radius: 0.5rem;
+  background: var(--ink); color: var(--bg); text-decoration: none;
+}
+.explore-page .jump .globe-open:hover { background: var(--accent-ink); }
+.explore-page .jump .globe-open:focus-visible { outline: 3px solid var(--accent-ink); outline-offset: 3px; }
+.explore-page .crumb { margin: 0 0 var(--space-2); font-size: var(--step--1); }
+.explore-page .crumb a { color: var(--ink-muted); }

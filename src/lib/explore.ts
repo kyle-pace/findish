@@ -66,7 +66,7 @@ export function aboutHtml(b: Browse): { ref: string; name: string; html: string 
   const app = '/explore/app/web.html';
   let html: string = renderItem(model, {
     href: (r: string) => (r.includes('/') && !r.includes('#') ? `/explore/${r}/` : `${app}#/${r}`),
-    globe: (hash: string) => `/explore/#${hash}`,
+    globe: (hash: string) => `/explore/globe/#${hash}`,
     correct: (name: string) => `https://github.com/kyle-pace/world-cuisines/issues/new?title=${encodeURIComponent('Correction: ' + name)}`,
     extraActions: `<a class="btn" href="${app}#/walk/${ref}">Explore on the map</a>`,
   });

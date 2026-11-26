@@ -28,6 +28,7 @@
 // under the empty box when it's focused, each one removable; "saved" is also a view (&saved=1).
 import { track } from 'kp-design/analytics';
 import { ASK_ENABLED } from '../lib/site';
+import { knownTerm } from '../lib/known-term.mjs';
 import * as core from '../lib/search-core.mjs';
 import type { Creator, Hit, Ready, Recipe, Understood } from '../lib/search-core.mjs';
 import { looksLikeAsk, words } from '../lib/search-core.mjs';
@@ -1880,7 +1881,34 @@ function searched() {
     creator_count: state.sites.size,
     filter_count: filterCount(),
     result_count: lastHits.length,
+    ...searchedFor(),
   });
+}
+
+/**
+ * What the search was for, only as values from finDish's own lists, never typed text
+ * (src/lib/known-term.mjs): the dish, ingredient, cuisine or creator the words are exactly,
+ * and the tags and filters picked. Words that aren't a listed thing send `term_kind: 'none'`.
+ */
+function searchedFor() {
+  const out: Record<string, string | string[]> = {};
+  if (state.q) {
+    const known = knownTerm(state.q, {
+      norm: (t: string) => words(t).join(' '),
+      dishes: [...TRY, ...(data.phrases || [])],
+      ingredients: data.ing.map((g) => ({ id: g[0] as string, names: [g[1] as string, ...(g.slice(4) as string[])] })),
+      cuisines: data.cuisines.map(([c]) => c),
+      creators: creators.map((c) => ({ id: c.id, name: c.name })),
+    });
+    out.term_kind = known ? known.kind : 'none';
+    if (known) out.term = known.term;
+  }
+  if (state.with.length) out.ingredient_ids = state.with.map((p) => data.ing[p][0] as string);
+  if (state.sites.size) out.creator_ids = [...state.sites];
+  if (state.cuisine) out.cuisine = state.cuisine;
+  if (state.course) out.course = state.course;
+  if (state.diet) out.diet = state.diet;
+  return out;
 }
 
 function openedRecipe(source: string, position: number, from: string, key = '') {

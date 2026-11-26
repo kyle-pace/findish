@@ -94,3 +94,5 @@ Last checked: 2026-11-21 (web at recipe-search `7774072`, app 0.6.0 after the pa
 | Recipes for a shopping list (`/api/with`) | Yes | No | Web only: used by the Grocery Deals app |
 | Send feedback (email to Kyle) | Yes (footer) | Yes (Settings) | Same words, "Send feedback", and the same event, "Opened Feedback Link" (`opened_from`: welcome, footer, settings). Added 2026-11-23 |
 | About (what finDish is) | Yes (the About page, linked from the footer; the short "About this site" dialog was removed 2026-11-26) | Yes (Settings has an About section) | Web only: the page. |
+
+**Search terms (2026-11-26, web only so far):** the web's "Searched Recipes" now carries `term_kind`, `term`, `ingredient_ids`, `creator_ids`, `cuisine`, `course` and `diet`, all values from finDish's own lists (`src/lib/known-term.mjs`), never typed text. The app should send the same properties with the same rule before the two are compared in one chart.

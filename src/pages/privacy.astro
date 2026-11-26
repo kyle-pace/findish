@@ -35,8 +35,8 @@ const updated = 'November 26, 2026';
     <section aria-labelledby="short">
       <h2 id="short">The short version</h2>
       <p>
-        There are no accounts, ads or sign-ups, and nothing is sold or shared for advertising. What you type into the search stays on your
-        device. The server for AI assistants answers each question and keeps nothing about it. The only thing collected is anonymous usage
+        There are no accounts, ads or sign-ups, and nothing is sold or shared for advertising. The words you type into the search aren’t
+        recorded; a search is only counted by what it matched on finDish’s own lists, like a dish or an ingredient. The server for AI assistants answers each question and keeps nothing about it. The only thing collected is anonymous usage
         from the search page, and you can turn that off below.
       </p>
     </section>
@@ -44,8 +44,8 @@ const updated = 'November 26, 2026';
     <section aria-labelledby="page">
       <h2 id="page">The search page</h2>
       <p>
-        The whole index of recipes downloads to your browser once, and the search runs there. What you type is never sent to this site or
-        anyone else.
+        The whole index of recipes downloads to your browser once, and the search runs there. What you type is never sent to this site. The
+        only thing counted about a search is described under <a href="#analytics">Anonymous usage</a>.
       </p>
       <p id="kept">
         Three short lists are kept only on this device, in your browser’s own storage, so the page can offer them again: your last 8
@@ -67,7 +67,7 @@ const updated = 'November 26, 2026';
       <p>
         finDish uses <a href="https://amplitude.com">Amplitude</a> to see which pages are viewed
         and what gets clicked, so it can be improved. It records things like “searched with 2 ingredients and got 14 results”, “added tofu from the
-        suggestions” or “opened the third result, from The Woks of Life”, never the words you typed. A page’s address is recorded
+        suggestions” or “opened the third result, from The Woks of Life”. When a search is exactly a dish, ingredient, cuisine or creator on finDish’s own lists (“mapo tofu”, “tofu”, “Thai”), that list entry is counted, along with any tags and filters you picked. Words that aren’t on a list are never recorded: a search for anything else is counted only as “a search”. A page’s address is recorded
         without the search in it: “findish.now/”, not what comes after the question mark. A click is recorded as which button or link
         it was, without the words on it or on the things around it, so a tag you made (“no cilantro”) and your recent searches aren’t
         copied either. It stores no IP address and sets

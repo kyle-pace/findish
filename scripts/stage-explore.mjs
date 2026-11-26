@@ -19,6 +19,11 @@ export const RULES = [
   ['/world-cuisine/', '/explore/', 'html'],
   ['hostname.endsWith("kylepace.dev")', 'hostname.endsWith("findish.now")', 'html'],
   ['Back to World cuisine', 'Back to Explore', 'html'],
+  // Cookbook covers come from finDish's own copies (public/covers/, npm run covers), never
+  // from Open Library while someone is looking at a page. A book with no copy here shows
+  // its title on a plain cover, as the explorer already does when a cover won't load.
+  ['https://covers.openlibrary.org/b/isbn/${attr(b.isbn)}-M.jpg?default=false', '/covers/${attr(b.isbn)}.webp', 'html'],
+  ['https://covers.openlibrary.org/b/isbn/${esc(m.isbn)}-M.jpg?default=false', '/covers/${esc(m.isbn)}.webp', 'js'],
 ];
 
 /** One file's text with every old address changed; `seen` counts what each rule matched. */

@@ -28,6 +28,7 @@ test('the real copy stages with nothing pointing at its old home', () => {
   for (const f of FILES) {
     const text = readFileSync(join(out, f), 'utf8');
     assert.ok(!text.includes('/world-cuisine/'), `${f} still says /world-cuisine/`);
+    assert.ok(!text.includes('covers.openlibrary.org'), `${f} still loads covers from Open Library`);
   }
   const items = join(out, 'data/web/items');
   for (const f of readdirSync(items)) assert.ok(!readFileSync(join(items, f), 'utf8').includes('/world-cuisine/'), `${f} still says /world-cuisine/`);

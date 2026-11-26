@@ -20,9 +20,20 @@ mkdirSync(dir, { recursive: true });
 const isbns = new Set();
 for (const v of Object.values(readSources().support)) for (const b of v.books) isbns.add(b.isbn);
 
+// Explore's cookbooks too (vendor/explore/data/picks.json and suggestions.json, since
+// 2026-11-26): the explorer used to load these straight from Open Library, and finDish
+// never hotlinks covers. scripts/stage-explore.mjs points its pages at these files.
+// Only the creators' books above get a line in covers.json; Explore's pages size their own.
+const all = new Set(isbns);
+for (const f of ['picks.json', 'suggestions.json']) {
+  const file = join(root, 'vendor/explore/data', f);
+  if (!existsSync(file)) continue;
+  for (const [, isbn] of readFileSync(file, 'utf8').matchAll(/"isbn":\s*"([0-9Xx]{10,13})"/g)) all.add(isbn);
+}
+
 const missing = [];
 let added = 0;
-for (const isbn of isbns) {
+for (const isbn of all) {
   const file = join(dir, `${isbn}.webp`);
   if (existsSync(file)) continue;
   try {
@@ -51,5 +62,5 @@ for (const isbn of isbns) {
 }
 writeFileSync(join(dir, 'covers.json'), JSON.stringify(sizes, null, 1) + '\n');
 
-console.log(`Covers: ${added} added, ${isbns.size - missing.length} of ${isbns.size} books have one.`);
+console.log(`Covers: ${added} added, ${all.size - missing.length} of ${all.size} books have one (${isbns.size} from creators, the rest Explore's).`);
 if (missing.length) console.log(`No cover yet (shown as text): ${missing.join(', ')}`);

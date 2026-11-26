@@ -3,7 +3,7 @@
 // from World cuisine on 2026-11-26. Rendered on request (there are about 3,600), so the site
 // build stays fast: each page reads one small file of page models from the static assets
 // (/explore/app/data/web/items/, staged by scripts/stage-explore.mjs) and renders it with
-// the explorer's own code (vendor/explore/render_item.js), the same code its page browser
+// the explorer's own code (render_item.js), the same code its page browser
 // uses.
 //
 // Kept out of search engines for now (noindex), whatever EXPLORE_LISTED says: most of
@@ -13,8 +13,10 @@ import { env } from 'cloudflare:workers';
 import LabLayout from 'kp-design/layouts/LabLayout.astro';
 import { SITE } from '../../../lib/site';
 import SiteHead from '../../../components/SiteHead.astro';
+// The staged copy, not vendor/explore/: staging is what points its addresses and cookbook
+// covers at finDish (scripts/stage-explore.mjs runs before every build and dev run).
 // @ts-expect-error: plain JS shared with the explorer's page browser
-import { renderItem, bucketOf, summaryOf } from '../../../../vendor/explore/render_item.js';
+import { renderItem, bucketOf, summaryOf } from '../../../../public/explore/app/render_item.js';
 import '../../../styles/theme.css';
 import '../../../styles/explore.css';
 

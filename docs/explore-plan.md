@@ -24,6 +24,7 @@ link, recipes for it from finDish, the creators who cook it, and related pages.
 | finDish's `/cuisine/<slug>/` and `/with/<id>/` vs the explorer's own cuisine and ingredient pages | Merge into one page. The finDish page gains the intro, photo, dishes and related links; dishes and anything without recipes get pages of their own. |
 | Explore and Discover | One section. Explore holds the globe and the shelves, with one link from the home page. |
 | Home page | Stays one screen with no scrolling. One "Explore cuisines" link under the ideas; the globe is one click away, never on the home page. |
+| Outside hosts | Wikipedia's API approved "for now" for live intros. Cookbook covers self-hosted in `public/covers/`, never loaded from Open Library. |
 | Search engines | Index only pages that have finDish recipes on them; the rest stay noindex. |
 
 ## Stages
@@ -53,9 +54,6 @@ link, recipes for it from finDish, the creators who cook it, and related pages.
 
 ## Open before the flag goes on
 
-- Kyle's OK for two outside hosts in this project: `en.wikipedia.org` (live intros) and
-  `covers.openlibrary.org` (cookbook covers), both approved for world-cuisines on 2026-11-08.
-  finDish self-hosts its own cookbook covers, so the covers could go that way instead.
 - `opened_from` on "Opened Full Search" in the Amplitude tracking plan, plus whatever events
   the globe needs (it sends none of its own from here yet).
 - Confluence: the Findish page (6848557) and World cuisine's page in the Labs space.

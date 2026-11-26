@@ -92,3 +92,7 @@
 .browse .cx.about > h2 { font-size: var(--step-2); margin: 0 0 var(--space-2); display: block; }
 .browse .cx.about h3 { font-size: var(--step-1); margin: var(--space-8) 0 var(--space-3); display: flex; align-items: baseline; gap: var(--space-2); }
 .browse .cx.about h3 small { color: var(--ink-muted); font-weight: 400; font-size: var(--step--1); }
+
+/* A recipe site's address or a long dish name with no spaces must wrap, not push the page
+   wide on a small phone (found on /cuisine/italian/ at 320px by the page check). */
+.cx .row small, .cx .row .name, .cx .links a, .cx .grown span { overflow-wrap: anywhere; }

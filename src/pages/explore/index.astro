@@ -43,13 +43,16 @@ const round = (n: number) => Math.floor(n / 10) * 10;
       </p>
     </header>
 
-    <a class="fullscreen" href="/explore/app/">Open the globe full screen</a>
+    <a class="fullscreen" href="/explore/app/" data-fullscreen="top">
+      <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" /></svg>
+      Open the globe full screen
+    </a>
     <div class="frame">
       <iframe data-src="/explore/app/?embed" title="An interactive globe of the world’s cuisines" allow="fullscreen"></iframe>
       <noscript><p class="noscript">The globe needs JavaScript. <a href="/explore/app/">Open it on its own</a>.</p></noscript>
     </div>
     <p class="open">
-      <a href="/explore/app/">Open the globe full screen</a>, or <a href="/explore/app/web.html#/">browse every cuisine, dish and ingredient as pages</a>
+      Or <a href="/explore/app/web.html#/">browse every cuisine, dish and ingredient as pages</a>.
     </p>
 
     <p class="more"><a href="/explore/ingredients/">Every ingredient</a>, each under the part of the world where it’s most at home.</p>
@@ -70,9 +73,12 @@ const round = (n: number) => Math.floor(n / 10) * 10;
 </LabLayout>
 
 <script>
+  import { track } from 'kp-design/analytics';
   // Load the globe, passing through a #cuisine link (findish.now/explore/#thai-cuisine)
   const frame = document.querySelector<HTMLIFrameElement>('.frame iframe');
   if (frame?.dataset.src) frame.src = frame.dataset.src + location.hash;
+  // The big button over the globe: does anyone take the full-screen view?
+  document.querySelector('[data-fullscreen]')?.addEventListener('click', () => track('Opened Full Screen Globe', { opened_from: 'explore' }));
   addEventListener('hashchange', () => {
     const win = frame?.contentWindow;
     if (win && win.location.hash !== location.hash) win.location.hash = location.hash;

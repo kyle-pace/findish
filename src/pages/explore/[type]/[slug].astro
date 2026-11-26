@@ -27,12 +27,28 @@ const LABEL: Record<string, string> = { cuisine: 'Cuisine', dish: 'Dish', ingred
 const { type = '', slug = '' } = Astro.params;
 const ref = `${type}/${slug}`;
 
+// A cuisine or ingredient that has a browse page here is that page now (src/lib/explore.ts):
+// /explore/cuisine/korean-cuisine/ forwards to /cuisine/korean/#about. The list is a small
+// file written at build time. If it can't be read, the page is shown here as before.
+const assets = (env as unknown as { ASSETS?: { fetch(r: Request): Promise<Response> } }).ASSETS;
+const fromAssets = (path: string) => {
+  const url = new URL(path, Astro.url);
+  return assets ? assets.fetch(new Request(url)) : fetch(url);
+};
+if (TYPES.has(type) && /^[a-z0-9-]+$/.test(slug) && type !== 'dish') {
+  try {
+    const res = await fromAssets('/explore/merged.json');
+    const home = res.ok ? ((await res.json()) as Record<string, string>)[ref] : undefined;
+    if (home && /^\/(cuisine|with)\/[a-z0-9-]+\/#about$/.test(home)) return Astro.redirect(home, 301);
+  } catch (error) {
+    console.error('Explore page could not read the merged list', ref, error);
+  }
+}
+
 let item: any = null;
 if (TYPES.has(type) && /^[a-z0-9-]+$/.test(slug)) {
-  const url = new URL(`/explore/app/data/web/items/${bucketOf(ref)}.json`, Astro.url);
-  const assets = (env as unknown as { ASSETS?: { fetch(r: Request): Promise<Response> } }).ASSETS;
   try {
-    const res = assets ? await assets.fetch(new Request(url)) : await fetch(url);
+    const res = await fromAssets(`/explore/app/data/web/items/${bucketOf(ref)}.json`);
     if (res.ok) item = ((await res.json()) as Record<string, unknown>)[ref] ?? null;
   } catch (error) {
     console.error('Explore page failed to load its data', ref, error);

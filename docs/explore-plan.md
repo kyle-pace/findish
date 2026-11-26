@@ -40,26 +40,27 @@ link, recipes for it from finDish, the creators who cook it, and related pages.
    `/explore/cuisine/korean-cuisine/` and `/explore/ingredient/tofu/` forward there (40
    cuisines, 132 ingredients; `src/lib/explore.ts`). Ingredient intros are left out.
    Left in this stage: dish pages don't show finDish recipes yet (a search for the dish's
-   name is the plan), the 20 cuisine pages and 68 ingredient pages with no match, and a
-   design pass so the About sections and `/explore/` pages share finDish's look.
+   name is the plan) and the 20 cuisine pages and 68 ingredient pages with no match.
+   The design pass was done the same day (`design/PLAN.md`, "Explore").
 3. **One Explore section.** Done 2026-11-26: `/explore/` shows the globe and then the
    shelves, `/discover/` forwards there, the home page and footer link to it,
    `EXPLORE_LISTED` is on, `/explore/` and `/explore/ingredients/` are in the sitemap, a
    one-cuisine search links to its page here, and About and the privacy page mention it.
-   Left in this stage: finDish share cards for Explore (it still uses World cuisine's),
-   the ideas row offering a cuisine or dish, dish and ingredient searches linking to their
+   Share cards for Explore are finDish's own since the design pass.
+   Left in this stage: the ideas row offering a cuisine or dish, dish and ingredient searches linking to their
    pages, the explorer's own About and How it's built folded into finDish's, and Confluence.
-4. **Retire the old home.** kylepace.dev/world-cuisine/ forwards here (the hub's
-   `_redirects`, then remove the Worker's routes), the hub's Labs listing and the iOS app's
-   share links point here, World cuisine's weekly refresh either moves into this repo or
-   opens a sync here, and its events move from the kylepace.dev Amplitude project to
-   finDish's. The World cuisines demo app folds into the finDish app as a tab.
-   Removing the old Worker needs Kyle's OK first.
+4. **Retire the old home.** Done 2026-11-26 (Kyle's OK): every address under
+   kylepace.dev/world-cuisine/ answers with a 301 to the same place here. World cuisine's
+   own Worker does it and keeps its routes (kyle-pace/world-cuisines,
+   `src/lib/forward.mjs`); the hub's `_redirects` has the same rules as a fallback, and
+   its Labs card opens `/explore/`. The iOS demo app's share links ride the same redirect.
+   World cuisine's weekly refresh stays in its repo, and `.github/workflows/explore.yml`
+   here copies the result every Monday. Its events are finDish's since stage 1.
+   Not done, and not planned without Kyle asking: removing the old Worker or its repo,
+   and folding the World cuisines demo app into the finDish app as a tab.
 
 ## Still open
 
-- Confluence: the Findish page (6848557) and World cuisine's page in the Labs space.
-- Keeping the copy fresh: nothing syncs `vendor/explore/` automatically yet.
 - A dish's page (`/explore/dish/…`) shows no finDish recipes yet.
 - On phones shorter than 780px the home page's Explore line is hidden so the page fits one
   screen; the footer link is the way in there.

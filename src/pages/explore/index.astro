@@ -2,10 +2,12 @@
 // Explore (/explore/, added 2026-11-26): World cuisine's globe, framed with finDish's own
 // header and footer. The globe itself is the explorer's index.html, staged at /explore/app/
 // (scripts/stage-explore.mjs); a #cuisine link on this page is passed through to it.
-// Unlisted until EXPLORE_LISTED in src/lib/site.ts is on.
+// Under the globe are the week's recipe shelves (src/components/DiscoverShelves.astro), which
+// were the Discover page. Listed while EXPLORE_LISTED in src/lib/site.ts is on.
 import LabLayout from 'kp-design/layouts/LabLayout.astro';
 import { SITE, EXPLORE_LISTED } from '../../lib/site';
 import SiteHead from '../../components/SiteHead.astro';
+import DiscoverShelves from '../../components/DiscoverShelves.astro';
 import cuisineData from '../../../vendor/explore/data/cuisines.json';
 import foodData from '../../../vendor/explore/data/food.json';
 import '../../styles/theme.css';
@@ -23,7 +25,7 @@ const round = (n: number) => Math.floor(n / 10) * 10;
   bar={false}
   lab={{ name: 'the search', href: '/' }}
   about="/about/"
-  title="Explore the world’s cuisines on finDish"
+  title="Explore the world’s cuisines and this week’s recipes: finDish"
   description={`More than ${round(cuisines.length)} of the world’s cuisines and ${round(dishCount).toLocaleString('en-US')} dishes on one globe. Find where a dish is from and what goes in it, then find recipes from independent cooks.`}
   image="/explore/share.png"
   imageAlt="A dark globe with countries colored by continent and thin routes arcing between them."
@@ -43,16 +45,21 @@ const round = (n: number) => Math.floor(n / 10) * 10;
       </p>
     </header>
 
-    <a class="fullscreen" href="/explore/app/">Open the globe full screen</a>
+    <a class="fullscreen" href="/explore/app/" data-fullscreen="top">
+      <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" /></svg>
+      Open the globe full screen
+    </a>
     <div class="frame">
       <iframe data-src="/explore/app/?embed" title="An interactive globe of the world’s cuisines" allow="fullscreen"></iframe>
       <noscript><p class="noscript">The globe needs JavaScript. <a href="/explore/app/">Open it on its own</a>.</p></noscript>
     </div>
     <p class="open">
-      <a href="/explore/app/">Open the globe full screen</a>, or <a href="/explore/app/web.html#/">browse every cuisine, dish and ingredient as pages</a>
+      Or <a href="/explore/app/web.html#/">browse every cuisine, dish and ingredient as pages</a>.
     </p>
 
     <p class="more"><a href="/explore/ingredients/">Every ingredient</a>, each under the part of the world where it’s most at home.</p>
+
+    <DiscoverShelves />
 
     <div class="fine-print">
       <p>
@@ -70,9 +77,12 @@ const round = (n: number) => Math.floor(n / 10) * 10;
 </LabLayout>
 
 <script>
+  import { track } from 'kp-design/analytics';
   // Load the globe, passing through a #cuisine link (findish.now/explore/#thai-cuisine)
   const frame = document.querySelector<HTMLIFrameElement>('.frame iframe');
   if (frame?.dataset.src) frame.src = frame.dataset.src + location.hash;
+  // The big button over the globe: does anyone take the full-screen view?
+  document.querySelector('[data-fullscreen]')?.addEventListener('click', () => track('Opened Full Screen Globe', { opened_from: 'explore' }));
   addEventListener('hashchange', () => {
     const win = frame?.contentWindow;
     if (win && win.location.hash !== location.hash) win.location.hash = location.hash;

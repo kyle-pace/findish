@@ -399,7 +399,11 @@ if (existsSync(notesFile)) {
   for (const [c] of cuisines) {
     const k = c.toLowerCase();
     const note = wc.cuisines[NOTE_CUISINE[k] || k];
-    if (note?.page) notes.cuisines[c] = { name: note.name, page: note.page };
+    // The cuisine's page here: /explore/cuisine/<slug>/, which forwards to its browse page
+    // (/cuisine/<slug>/#about) when it has one (src/lib/explore.ts). Until 2026-11-26 this
+    // was its page on kylepace.dev/world-cuisine/.
+    const slug = note?.page?.match(/\/cuisine\/([a-z0-9-]+)\/?$/)?.[1];
+    if (slug) notes.cuisines[c] = { name: note.name, page: `/explore/cuisine/${slug}/` };
   }
   writeFileSync(join(dirname(out), 'notes.json'), JSON.stringify(notes));
   console.log(`World cuisine links: ${Object.keys(notes.cuisines).length} of ${cuisines.length} cuisines`);

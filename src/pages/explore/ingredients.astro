@@ -260,7 +260,7 @@ const data_ = (p: Part) => ({ 'data-part': p.id, 'data-cont': p.continent ? cont
       ingredient_slug: a.pathname.split('/').filter(Boolean).at(-1) ?? '',
       region: a.closest<HTMLElement>('li')?.dataset.part ?? '',
       order: a.closest('#a-to-z') ? 'a-z' : 'place',
-      from: 'ingredients page',
+      opened_from: 'ingredients',
     });
   });
 </script>

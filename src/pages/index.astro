@@ -11,7 +11,7 @@
 // settings and analytics; its look is src/styles/theme.css.
 import LabLayout from 'kp-design/layouts/LabLayout.astro';
 import { jsonForScript } from '../lib/json-script.mjs';
-import { SITE } from '../lib/site';
+import { SITE, EXPLORE_LISTED } from '../lib/site';
 import Wordmark from '../components/Wordmark.astro';
 import { DISCOVER } from '../lib/discover';
 import indexFiles from '../../public/index-files.json';
@@ -300,6 +300,11 @@ const FILTERS = [
         <p id="try"></p>
         <p id="popular"></p>
         <p id="creators"></p>
+        {EXPLORE_LISTED && (
+          <p id="explore-line">
+            Not sure yet? <a href="/explore/" data-explore="home">Explore cuisines and this week’s recipes</a>
+          </p>
+        )}
         <p id="kept-line" hidden></p>
         <script is:inline>
           // Someone with saved recipes sees the way back to them from the first paint, so the
@@ -569,6 +574,30 @@ const FILTERS = [
   @media (max-height: 680px) and (max-width: 40rem), (max-height: 540px) {
     [data-mode='home'] .start #creators,
     [data-mode='home'] .start #kept-line {
+      display: none;
+    }
+  }
+
+  /* The way into Explore is the home page's one line that isn't about searching. It is
+     written at build time, so nothing moves when the recipes arrive, it holds one line
+     even on a phone, and it only shows on the home page (not under "nothing found"). It
+     stays on short windows after the creator line has stepped out. */
+  .start #explore-line {
+    display: none;
+  }
+
+  [data-mode='home'] .start #explore-line {
+    display: block;
+    min-height: 1lh;
+    margin-top: clamp(var(--space-2), 2svh, var(--space-4));
+  }
+
+  /* A phone's browser leaves about 660 to 750px of height, and the name, box and ideas
+     already fill it. The line would make the home page scroll there (measured 2026-11-26:
+     31 to 54px more at 320 to 412px wide), so on a phone shorter than 780px it steps out
+     and the footer's Explore link, on the same screen, is the way in. */
+  @media (max-height: 780px) and (max-width: 40rem), (max-height: 460px) {
+    [data-mode='home'] .start #explore-line {
       display: none;
     }
   }

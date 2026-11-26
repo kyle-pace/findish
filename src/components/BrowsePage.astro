@@ -9,7 +9,9 @@ import { jsonForScript } from '../lib/json-script.mjs';
 import { SITE } from '../lib/site';
 import SiteHead from './SiteHead.astro';
 import { andList, fmtTime, n, pagePath } from '../lib/creators';
-import { cuisinesFor, signatureIngredients, worldCuisine, QUICK_MINUTES, type Browse } from '../lib/browse';
+import { cuisinesFor, signatureIngredients, QUICK_MINUTES, type Browse } from '../lib/browse';
+import { aboutHtml } from '../lib/explore';
+import '../styles/explore.css';
 import '../styles/theme.css';
 import '../styles/creators.css';
 import '../styles/browse.css';
@@ -63,7 +65,10 @@ const quickSearch = `${b.search}&time=${QUICK_MINUTES}`;
 // cuisine pages that cook with it most.
 const lean = b.kind === 'cuisine' ? signatureIngredients(b) : [];
 const courseWords = b.courses.map((c) => COURSE_WORDS[c.id]).filter(Boolean).slice(0, 3);
-const world = b.kind === 'cuisine' ? worldCuisine(b.name) : undefined;
+// What Explore knows about this cuisine or ingredient (its photo, dishes and where it's
+// cooked), shown as this page's About section since 2026-11-26. It used to be a link out to
+// World cuisine; the explorer's own page for it now forwards here (src/lib/explore.ts).
+const about = aboutHtml(b);
 const related = b.kind === 'with' ? cuisinesFor(b) : lean;
 const cap = (s: string) => s.replace(/^./, (c) => c.toUpperCase());
 const searchAll = `Search all ${count} ${what}`;
@@ -130,11 +135,9 @@ const ld = {
         )
       }
       {
-        world && (
+        about && (
           <p class="world">
-            <a href={world.page} data-note="cuisine" data-note-id={b.name} data-note-link="world-cuisine">
-              Explore {world.name} on World cuisine
-            </a>
+            <a href="#about" data-explore="jump">About {about.name.replace(/^[A-Z]/, (c) => (b.kind === 'with' ? c.toLowerCase() : c))}: {b.kind === 'cuisine' ? 'its dishes and where it’s from' : 'where in the world it’s cooked with'}</a>
           </p>
         )
       }
@@ -270,6 +273,15 @@ const ld = {
         }
       </ul>
     </section>
+
+    {
+      about && (
+        <section class="cx about" id="about" data-section="about" aria-labelledby="about-h">
+          <h2 id="about-h">About {about.name.replace(/^[A-Z]/, (c) => (b.kind === 'with' ? c.toLowerCase() : c))}</h2>
+          <Fragment set:html={about.html} />
+        </section>
+      )
+    }
 
     <p class="more"><a href="/browse/">Browse other cuisines, courses and ingredients</a></p>
   </article>

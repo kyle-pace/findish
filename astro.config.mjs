@@ -9,5 +9,8 @@ import cloudflare from '@astrojs/cloudflare';
 export default defineConfig({
   site: 'https://findish.now',
   session: false,
+  // Discover became the second half of Explore on 2026-11-26. Its data files
+  // (/discover.json, /discover/keys.json) stay where they are.
+  redirects: { '/discover': '/explore/#shelves' },
   adapter: cloudflare({ imageService: 'compile' }),
 });

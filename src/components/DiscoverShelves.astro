@@ -1,14 +1,12 @@
 ---
-// Discover (/discover/, added 2026-11-22): shelves of recipes picked by rules from the index
-// (src/lib/collections.mjs), new every Monday crawl. Unlisted until DISCOVER_LISTED in
-// src/lib/site.ts is on. Plan: design/PLAN.md, "Discover". Like the browse pages it is a
-// list of links out to the cooks' own sites; never the method, never Recipe markup.
-import LabLayout from 'kp-design/layouts/LabLayout.astro';
-import { SITE, DISCOVER_LISTED } from '../lib/site';
-import SiteHead from '../components/SiteHead.astro';
+// The week's shelves: recipes picked by rules from the index (src/lib/collections.mjs), new
+// every Monday crawl. This was the Discover page (/discover/, 2026-11-22); since 2026-11-26
+// it is the second half of Explore (/explore/#shelves), and /discover/ forwards there
+// (Kyle's call: Explore and Discover are one section). Like the browse pages it is a list
+// of links out to the cooks' own sites; never the method, never Recipe markup.
+// Its events are src/scripts/discover.ts; they look for data-page="discover".
 import { fmtTime, n, pagePath } from '../lib/creators';
-import { DISCOVER, TOTAL } from '../lib/discover';
-import '../styles/theme.css';
+import { DISCOVER } from '../lib/discover';
 import '../styles/creators.css';
 import '../styles/browse.css';
 import '../styles/discover.css';
@@ -16,30 +14,12 @@ import '../styles/discover.css';
 const { shelves } = DISCOVER;
 ---
 
-<LabLayout
-  favicon="/favicon-v4.svg"
-  site={SITE}
-  bar={false}
-  lab={{ name: 'the search', href: '/' }}
-  about="/about/"
-  title="Discover recipes on finDish: this week’s shelves"
-  description={`Recipes from independent cooks, grouped for the week: ${shelves.slice(0, 3).map((s) => s.title.toLowerCase()).join(', ')} and more. Every one opens on the cook’s own site.`}
-  image="/og.png"
-  imageAlt="finDish: a search box holding ginger and tofu. Recipes from The Woks of Life, Hot Thai Kitchen, Smitten Kitchen and more."
-  themeColor={{ light: '#fbf5ec', dark: '#1d1714' }}
-  noindex={!DISCOVER_LISTED}
->
-  <link slot="head" rel="manifest" href="/manifest.webmanifest" />
-  <SiteHead wide />
-
-  <article class="creators-page browse discover" data-page="discover">
-    <h1>Discover</h1>
-    <p class="lede">
-      Recipes picked from the {TOTAL.toLocaleString('en-US')} here, grouped for the week. New shelves every Monday. Or <a href="/">search for anything</a>.
-    </p>
+<section class="creators-page browse discover" id="shelves" data-page="discover" aria-labelledby="shelves-h">
+  <h2 id="shelves-h" class="shelves-h">Recipes for this week</h2>
+  <p class="lede">Grouped for the week from the recipes here, and new every Monday. Every one opens on the cook’s own site.</p>
 
     <nav class="contents" aria-labelledby="contents">
-      <h2 id="contents">On the shelves this week</h2>
+      <h3 id="contents">On the shelves</h3>
       <ul class="list">
         {
           shelves.map((s, k) => (
@@ -58,7 +38,7 @@ const { shelves } = DISCOVER;
       shelves.map((s) => (
         <section class="shelf-of" id={s.id} data-collection={s.id} aria-labelledby={`${s.id}-h`}>
           <header>
-            <h2 id={`${s.id}-h`}>{s.title}</h2>
+            <h3 id={`${s.id}-h`}>{s.title}</h3>
             <span class="has">{n(s.count, 'recipe')}</span>
           </header>
           <p class="blurb">{s.blurb}</p>
@@ -67,11 +47,11 @@ const { shelves } = DISCOVER;
               <li>
                 <article class="row">
                   <div class="text">
-                    <h3>
+                    <h4>
                       <a href={r.url} data-src-id={r.source} data-key={r.key} data-pos={k + 1}>
                         {r.name}
                       </a>
-                    </h3>
+                    </h4>
                     <p class="meta">{[r.minutes ? fmtTime(r.minutes) : '', s.creator ? r.cuisine : `from ${r.creator}`].filter(Boolean).join(', ')}</p>
                   </div>
                   <div class="photo">
@@ -104,10 +84,8 @@ const { shelves } = DISCOVER;
       ))
     }
 
-    <p class="more"><a href="/browse/">Browse by cuisine, course or ingredient</a></p>
-  </article>
+</section>
 
-  <script>
-    import '../scripts/discover';
-  </script>
-</LabLayout>
+<script>
+  import '../scripts/discover';
+</script>

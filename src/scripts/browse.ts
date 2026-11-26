@@ -29,7 +29,13 @@ document.addEventListener('click', (e) => {
   const d = a.dataset;
   const section = a.closest<HTMLElement>('[data-section]')?.dataset.section;
   const where = section ? { browse_section: section } : {};
-  if (d.noteLink) track('Opened World Cuisine', { note_kind: d.note, note_id: d.noteId, link: d.noteLink });
+  // The About section (Explore's photo, dishes and links for this cuisine or ingredient):
+  // the jump to it from the top of the page, and any link in it to another Explore page.
+  if (d.explore === 'jump') track('Opened About Section', { browse_kind: kind, browse_page: slug });
+  else if (section === 'about' && /^\/explore\//.test(a.getAttribute('href') || '')) {
+    const m = (a.getAttribute('href') || '').match(/^\/explore\/(cuisine|dish|ingredient)\//);
+    track('Opened Explore Page', { explore_kind: m ? m[1] : 'globe', opened_from: kind, browse_page: slug });
+  } else if (d.noteLink) track('Opened World Cuisine', { note_kind: d.note, note_id: d.noteId, link: d.noteLink });
   else if (d.srcId) {
     opened(d.key);
     track('Opened Recipe', {

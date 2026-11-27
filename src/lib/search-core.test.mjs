@@ -32,7 +32,7 @@ const said = (text, opts) => {
 // --- words ---------------------------------------------------------------------------
 
 test('singular and plural share a stem: cookie and cookies, pie and pies, leaf and leaves', () => {
-  for (const [a, b] of [['cookie', 'cookies'], ['pie', 'pies'], ['brownie', 'brownies'], ['smoothie', 'smoothies'], ['veggie', 'veggies'], ['leaf', 'leaves'], ['loaf', 'loaves'], ['berry', 'berries'], ['tomato', 'tomatoes'], ['sandwich', 'sandwiches'], ['dish', 'dishes'], ['olive', 'olives'], ['clove', 'cloves'], ['quiche', 'quiches'], ['taco', 'tacos'], ['noodle', 'noodles']])
+  for (const [a, b] of [['cookie', 'cookies'], ['pie', 'pies'], ['brownie', 'brownies'], ['smoothie', 'smoothies'], ['veggie', 'veggies'], ['leaf', 'leaves'], ['loaf', 'loaves'], ['berry', 'berries'], ['tomato', 'tomatoes'], ['sandwich', 'sandwiches'], ['dish', 'dishes'], ['olive', 'olives'], ['clove', 'cloves'], ['quiche', 'quiches'], ['taco', 'tacos'], ['noodle', 'noodles'], ['idli', 'idlis'], ['stromboli', 'strombolis'], ['pastor', 'pastores']])
     assert.equal(stem(a), stem(b), `${a} / ${b}`);
 });
 

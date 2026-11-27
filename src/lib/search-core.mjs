@@ -50,6 +50,8 @@ const IRREGULAR = {
   herbes: 'herb', leches: 'leche', nopales: 'nopal', tamal: 'tamale',
   // Colombian and Filipino sites (2026-11-19).
   colores: 'color', pasteles: 'pastel', camarones: 'camaron', frijoles: 'frijol', chicharrones: 'chicharron', orientales: 'oriental', minis: 'mini', pipis: 'pipi',
+  // Met in the crawl of 2026-11-26.
+  idlis: 'idli', strombolis: 'stromboli', pastores: 'pastor',
 };
 
 /** A word's singular: cookies and cookie -> cooky, pies -> pie, tomatoes -> tomato. Latin words only. */

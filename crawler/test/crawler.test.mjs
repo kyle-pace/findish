@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { robotsFor, robotsForNames } from '../lib/robots.mjs';
-import { parseSitemap, readSitemaps } from '../lib/sitemap.mjs';
+import { parseSitemap, readSitemaps, shortSitemap } from '../lib/sitemap.mjs';
 import { extractRecipe, firstName } from '../lib/extract.mjs';
 import { sourcesOf, overlaps, ahead, mergeStatus, turn } from '../lib/turns.mjs';
 import { ingredientName } from '../lib/ingredients.mjs';
@@ -47,6 +47,15 @@ test('sitemap: index and urlset, with skipped child sitemaps', async () => {
   assert.equal(got.length, 4);
   assert.equal(got[0].lastmod, '2026-10-01T10:00:00+00:00');
   assert.equal(got[1].loc, 'https://x.com/b1/?a=1&b=2');
+});
+
+test('sitemap: a sitemap far shorter than what we know removes nothing the first time', () => {
+  // RecipeTin Japan, 2026-11-26: an empty sitemap took all 431 recipes and stopped the build.
+  assert.match(shortSitemap({ listed: 0, known: 442 }), /listed 0 of the 442 pages/);
+  assert.ok(shortSitemap({ listed: 390, known: 442 }), 'under 90% is held back');
+  assert.equal(shortSitemap({ listed: 400, known: 442 }), null, 'a few posts taken down is believed');
+  assert.equal(shortSitemap({ listed: 0, known: 442, shortLastRun: true }), null, 'short two runs in a row is believed');
+  assert.equal(shortSitemap({ listed: 0, known: 12 }), null, 'a small site is not held back');
 });
 
 test('sitemap: include pattern keeps only recipe pages', async () => {

@@ -226,13 +226,14 @@
    "fetched": 0,
    "added": 0,
    "updated": 0,
-   "removed": 431,
+   "removed": 0,
    "noRecipe": 0,
    "httpErrors": {},
    "sitemapPages": 0,
    "waiting": 0,
-   "count": 0,
-   "previous": 431
+   "count": 431,
+   "previous": 431,
+   "note": "its sitemap came back empty on 2026-11-26 and the crawl removed all its recipes; put back by hand from the crawl before (3621b71), as the crawler now does by itself."
   },
   "sudachi": {
    "id": "sudachi",
@@ -839,7 +840,6 @@
   }
  },
  "alerts": [
-  "sk: blocked (HTTP 403 on robots.txt)",
-  "rtj: recipe count dropped from 431 to 0"
+  "sk: blocked (HTTP 403 on robots.txt)"
  ]
 }

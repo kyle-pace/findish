@@ -65,9 +65,10 @@ const FOLD = {
   'cubana': 'Cuban',
   'south america': 'South American',
   'american-chinese': 'Chinese American',
+  'europian': 'European', // Just One Cookbook's "Europian/Japanese"
 };
 // Labels that aren't a cuisine: the recipe is left without one.
-const NOT_A_CUISINE = /^(christmas|easter|holiday( recipes)?|festive|baking|desserts?|dinner|soups?|dog food|vegan|cookies|cakes?|cheesecake|candy|chocolate|donuts|doughnuts|pies?|cupcakes|muffins|scones|smoothies?|drinks|seafood|instant pot|bread|basics|french toast|breakfast|beef|egg|main course|street food|summer( dessert)?|modern|brownies|pudding|ice cream|waffles|barbecue|lemon|steak|campfire|cinnamon rolls|miscellaneous|universal|anime|bbq|tropical!?|any flavour you want!?)$/;
+const NOT_A_CUISINE = /^(christmas|easter|holiday( recipes)?|festive|baking|desserts?|dinner|soups?|dog food|vegan|cookies|cakes?|cheesecake|candy|chocolate|donuts|doughnuts|pies?|cupcakes|muffins|scones|smoothies?|drinks|seafood|instant pot|bread|basics|french toast|breakfast|beef|egg|main course|street food|summer( dessert)?|modern|brownies|pudding|ice cream|waffles|barbecue|lemon|steak|campfire|cinnamon rolls|miscellaneous|universal|anime|bbq|tropical!?|any flavour you want!?|gluten[ -]free)$/;
 // "Thai-ish", "Greek(ish)", "French-style", "Portuguese inspired", "Mediterranean vibes", "Modern Vietnamese".
 const HEDGE = /(\s*\(ish\)|-ish|[\s-]*esque|[\s-]+(style|syle|inspired|influence|vibes))$/;
 

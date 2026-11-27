@@ -55,12 +55,30 @@ if (TYPES.has(type) && /^[a-z0-9-]+$/.test(slug)) {
   }
 }
 
+// A dish finDish has recipes for gets "Find recipes" (2026-11-27; /explore/links.json, written
+// at build time by src/lib/explore-links.mjs). The same words as the app's button. Without
+// the list, or for a dish with nothing here, the page is as it was.
+let dishSearch = '';
+if (item && type === 'dish') {
+  try {
+    const res = await fromAssets('/explore/links.json');
+    const found = res.ok ? ((await res.json()) as { dishes?: Record<string, { name?: unknown }> }).dishes?.[ref] : undefined;
+    if (found && typeof found.name === 'string') dishSearch = found.name;
+  } catch (error) {
+    console.error('Explore page could not read the dish list', ref, error);
+  }
+}
+const attr = (text: string) => text.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const findRecipes = dishSearch
+  ? `<a class="btn" href="/?q=${attr(encodeURIComponent(dishSearch))}" data-recipes-dish="${attr(slug)}">Find recipes for ${attr(dishSearch)}</a>`
+  : '';
+
 if (!item) Astro.response.status = 404;
 // Browsers keep a page for an hour; the data changes weekly at most
 Astro.response.headers.set('cache-control', item ? 'public, max-age=3600' : 'no-store');
 
 const app = '/explore/app/web.html';
-const html = item
+const rendered: string = item
   ? renderItem(item, {
       href: (r: string) => (r.includes('/') && !r.includes('#') ? `/explore/${r}/` : `${app}#/${r}`),
       globe: (hash: string) => `/explore/globe/#${hash}`,
@@ -68,6 +86,10 @@ const html = item
       extraActions: `<a class="btn btn-walk" href="${app}#/walk/${ref}">Explore on the map</a>`,
     })
   : '';
+// Recipes first, as everywhere in Explore: the button leads the row, where the page's styles
+// make the first one the ink button. If the explorer's markup ever drops its actions row,
+// the button is left out rather than put somewhere odd.
+const html = findRecipes ? rendered.replace('<div class="actions">', `<div class="actions">${findRecipes}`) : rendered;
 const title = item ? `${item.t === 'cuisine' ? item.n : `${item.n}: ${LABEL[item.t]}`} on finDish` : 'Page not found on finDish';
 const description = item ? summaryOf(item, 160) : 'Nothing here by that name.';
 // A page with a photo uses it for link previews; otherwise Explore's share card
@@ -118,5 +140,8 @@ const shareAlt = item?.img ? `Photo of ${item.img.of ?? item.n}` : 'A dark globe
   document.addEventListener('click', (e) => {
     const link = (e.target as Element | null)?.closest<HTMLAnchorElement>('a[data-recipes]');
     if (link) track('Opened Full Search', { browse_kind: 'ingredient', browse_page: link.dataset.recipes, opened_from: 'explore' });
+    // A dish page's "Find recipes": the page's own slug, which the site published
+    const dish = (e.target as Element | null)?.closest<HTMLAnchorElement>('a[data-recipes-dish]');
+    if (dish) track('Opened Full Search', { browse_kind: 'dish', browse_page: dish.dataset.recipesDish, opened_from: 'explore' });
   });
 </script>

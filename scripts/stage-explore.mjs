@@ -76,4 +76,6 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   console.log(`Staged the explorer in public/explore/app/ (${total} addresses pointed at /explore/).`);
   const daily = writeDaily(join(root, 'vendor/explore'), join(root, 'public/explore/app'));
   console.log(`Today's dish: ${daily.featured} of ${daily.dishes} dishes can be featured (left out: ${Object.entries(daily.left).map(([k, n]) => `${n} ${k}`).join(', ')}).`);
+  console.log(`Today's dish: ${daily.lines} have a line under them, and ${daily.dates} days are hand-picked for a holiday.`);
+  for (const why of daily.skipped) console.warn(`Today's dish, holiday skipped: ${why}`);
 }

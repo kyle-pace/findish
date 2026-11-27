@@ -74,6 +74,48 @@ A decision isn't finished until both lines are filled in. *Later* is a fine answ
 other side out without saying so is not. Newest first. When an entry stops being true, change
 it rather than adding a contradicting one below it.
 
+### 2026-11-27: Explore's loose ends (Kyle: "all four")
+
+Four small decisions from one clean-up session.
+
+**Today's dish gets a line and holidays.**
+- **Web:** still shows no dish of the day. It publishes more for the app in `daily.json`:
+  `lines`, a sentence per dish built from the explorer's own links ("A Korean dish made with
+  gochujang, rice and egg."), and `dates`, the days a dish is hand-picked for a holiday.
+- **App:** shows the sentence under the dish ("Today's dish. …", or "Today's dish, for Burns
+  Night. …"), picks the holiday's dish on its day, and leaves today's dish out of "Pick up
+  where you left off". All written 2026-11-27 in [findish-app#7](https://github.com/kyle-pace/findish-app/pull/7), a draft: the session couldn't reach the Mac, so it hasn't been built, run or sent to TestFlight.
+- **How they relate:** *app only* on screen (the website has no front page for Explore's
+  dishes; its Explore leads with recipes). The wording and the holiday list are the web's.
+
+**A dish finDish has recipes for says so.**
+- **Web:** a dish's page under `/explore/dish/` leads with "Find recipes for <dish>" when
+  three or more recipe names carry the dish's name (`/explore/links.json`,
+  `src/lib/explore-links.mjs`). No button otherwise.
+- **App:** every Explore page has had "Find recipes" since 2026-11-26, whether or not the
+  search finds anything.
+- **How they relate:** *same* words, "Find recipes". *Adapted*: the web shows it only when
+  it leads somewhere, because a web page with a dead-end button reads as broken; the app's
+  button opens the Search tab, where "nothing found" offers ways on. *Later*: the app could
+  read `/explore/links.json` and do the same.
+
+**A search that is exactly one dish or one ingredient points at its Explore page.**
+- **Web:** one line above the results, "About Bibimbap, in Explore", like the line a
+  one-cuisine search has had since 2026-11-16.
+- **App:** nothing yet. The app has no line above results for cuisines either.
+- **How they relate:** *web only* for now; *later* for the app, together with the cuisine line.
+
+**The week's shelves and Surprise me reach the app.**
+- **Web:** unchanged: shelves lead `/explore/`, and the die is in the home page's box and
+  over a search's results.
+- **App:** "Recipes for this week" in Explore's Cuisines (the first three shelves, "All" for
+  the rest), and a die at the left of the ask box on the home screen. Both written 2026-11-27 in [findish-app#7](https://github.com/kyle-pace/findish-app/pull/7), a draft: the session couldn't reach the Mac, so it hasn't been built, run or sent to TestFlight.
+- **How they relate:** *same* shelf names, blurbs and ids, and the same events ("Viewed
+  Collection", "Opened Recipe" with `opened_from: discover`, "Picked Random Recipe").
+  *Adapted*: the app shows three shelves in Cuisines with a page for all of them, since
+  Cuisines also holds the continents. *Later* for the app: "See all" for one shelf (the web
+  holds the search to the shelf's keys; the app's search can't yet), and the die over results.
+
 ### 2026-11-26: Search and Explore, one word for one place (Kyle, model A)
 
 Search is for when you know what you want; Explore is for when you don't, and holds
@@ -105,7 +147,7 @@ everything else: the week's shelves, cuisines, ingredients, courses, creators an
 
 ## Feature table
 
-Last checked: 2026-11-21 (web at recipe-search `7774072`, app 0.6.0 after the parity pass).
+Last checked: 2026-11-21 (web at recipe-search `7774072`, app 0.6.0 after the parity pass). Rows touched since carry their own dates.
 
 | Feature | Web | App | Notes |
 | --- | --- | --- | --- |
@@ -126,11 +168,13 @@ Last checked: 2026-11-21 (web at recipe-search `7774072`, app 0.6.0 after the pa
 | Related dishes | Yes | Yes | App bundles `related.mjs` with the search |
 | New this week | Yes (footer) | Yes | App: a home shortcut and a filter |
 | Pages for each cuisine, course and ingredient (`/browse/` lists them) | Yes | No | Web only: they're there for search engines |
-| Surprise me (a random recipe) | Yes: a die in the home page's box, and in the count line | Not yet | See the decision log, 2026-11-26 |
-| The week's shelves (collections) | Yes, on `/explore/#shelves` since 2026-11-26 (`/discover/` forwards there) | Not yet | Built from `/discover.json`, which the app can read as is when it gets a Discover tab; "See all" is the search held to a shelf (`collection=`, keys in `/discover/keys.json`); same shelf ids and event names |
+| Surprise me (a random recipe) | Yes: a die in the home page's box, and in the count line | Written, not built (findish-app#7, 2026-11-27): a die in the ask box on the home screen | See the decision log, 2026-11-27. The app has no die over results yet |
+| The week's shelves (collections) | Yes, on `/explore/#shelves` since 2026-11-26 (`/discover/` forwards there) | Written, not built (findish-app#7, 2026-11-27): "Recipes for this week" in Explore's Cuisines, three shelves and "All" | Built from `/discover.json`, which the app reads as is. The app has no "See all" for one shelf yet; "See all" is the search held to a shelf (`collection=`, keys in `/discover/keys.json`); same shelf ids and event names |
 | Explore: the globe, a page for every cuisine, dish and ingredient, Every ingredient | Yes (`/explore/`, 2026-11-26; moved in from World cuisine) | Yes (2026-11-26, internal TestFlight): an Explore tab with Cuisines, Globe and Wander (Cuisines was Browse until the "one word for one place" decision), and "Find recipes" on every page | The World cuisines app's screens moved into the app; it reads `/explore/app/data/` and `/covers/`. Checked on the iPhone simulator only: iPad, largest text and VoiceOver still need a look. The app adds "Changed Explore View" |
-| Today's dish on Explore | No (the site publishes the list the app picks from: `/explore/app/data/web/daily.json`, from `scripts/featured-dishes.mjs`) | Yes: one a day from that list, in order; before the list has loaded, a dish with a photo, a cuisine and two ingredients | Which dishes can be featured, and their order, are decided on the site so both stay in step: nothing that isn't a dish (sauces, pastes, cheeses, drinks, restaurants), only fuller pages, and no cuisine twice in a week. `version: 1`; fields only ever added |
+| Today's dish on Explore | No (the site publishes the list the app picks from: `/explore/app/data/web/daily.json`, from `scripts/featured-dishes.mjs`; since 2026-11-27 also a sentence per dish and the holidays' dishes) | Yes: one a day from that list, in order; before the list has loaded, a dish with a photo, a cuisine and two ingredients. The sentence, the holidays and not repeating it in "Pick up where you left off" are written, not built (findish-app#7) | Which dishes can be featured, and their order, are decided on the site so both stay in step: nothing that isn't a dish (sauces, pastes, cheeses, drinks, restaurants), only fuller pages, and no cuisine twice in a week. `version: 1`; fields only ever added |
 | About sections on cuisine and ingredient pages | Yes (2026-11-26) | Not yet | The app has no browse pages |
+| "Find recipes" on a dish's Explore page | Yes, only for a dish with three or more recipes here (2026-11-27) | Yes, on every page | See the decision log, 2026-11-27 |
+| A line to Explore above a one-dish or one-ingredient search | Yes (2026-11-27) | Not yet | With the cuisine line, when the app gets one |
 | World cuisine notes on cuisine searches | Yes (link) | Not yet | |
 | Recently opened, saved recipes | Yes (this browser) | Yes (Saved, offline) | |
 | Clean recipe card, scaling, cook mode | No | Yes | App only: reads the creator's page inside the app |

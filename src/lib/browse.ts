@@ -239,7 +239,8 @@ export function cuisinesFor(b: Browse, max = 6): Browse[] {
 // above a one-cuisine search. Only the name and page: Kyle dropped the Wikipedia sentences as
 // filler on 2026-11-16.
 const world: any = worldJson;
-const NOTE_CUISINE: Record<string, string> = { 'chinese american': 'american chinese', 'italian american': 'italian-american' };
+// Names the two sides spell differently. The same list is in scripts/build-index.mjs; change both.
+const NOTE_CUISINE: Record<string, string> = { 'chinese american': 'american chinese', 'italian american': 'italian-american', argentinian: 'argentine', persian: 'iranian', taiwanese: 'taiwan', 'indo chinese': 'indian chinese', nyonya: 'peranakan', latin: 'latin american', 'south western': 'southwestern american' };
 export function worldCuisine(name: string): { name: string; page: string } | undefined {
   const k = name.toLowerCase();
   const note = world.cuisines?.[NOTE_CUISINE[k] || k];

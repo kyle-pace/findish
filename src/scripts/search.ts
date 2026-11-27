@@ -237,6 +237,9 @@ async function load() {
       // for videos says so instead of "none match".
       videosMissing = got === false;
       videosLanded();
+      // Last of all, and only when the browser has nothing else to do: Explore's links
+      const idle = (window as any).requestIdleCallback as ((f: () => void) => void) | undefined;
+      idle ? idle(loadLinks) : setTimeout(loadLinks, 1500);
     });
 }
 /**
@@ -853,6 +856,49 @@ type Note = { name: string; page: string };
 let notes: { cuisines: Record<string, Note> } | null = null;
 let notesLoading = false;
 
+// The same line for a search that is exactly one dish Explore has a page for, or exactly one
+// ingredient whose page has an About section (2026-11-27): /explore/links.json, written at
+// build time. It is fetched once the recipes are in, while the browser is idle, and a search
+// drawn before it lands simply has no line: nothing is held open for it and nothing moves.
+type Links = { dishes: Map<string, Note>; ingredients: Record<string, Note> };
+let links: Links | null = null;
+function loadLinks() {
+  fetch('/explore/links.json')
+    .then((r) => (r.ok ? r.json() : null))
+    .then((l) => {
+      if (!l || typeof l.dishes !== 'object' || typeof l.ingredients !== 'object') return;
+      const dishes = new Map<string, Note>();
+      for (const [ref, d] of Object.entries(l.dishes as Record<string, { name?: unknown }>)) {
+        if (typeof d?.name !== 'string' || !/^dish\/[a-z0-9-]+$/.test(ref)) continue;
+        const key = words(d.name).join(' ');
+        if (key && !dishes.has(key)) dishes.set(key, { name: d.name, page: `/explore/${ref}/` });
+      }
+      const ingredients: Record<string, Note> = {};
+      for (const [id, n] of Object.entries(l.ingredients as Record<string, Partial<Note>>))
+        if (typeof n?.name === 'string' && typeof n.page === 'string' && /^\/with\/[a-z0-9-]+\/#about$/.test(n.page)) ingredients[id] = { name: n.name, page: n.page };
+      links = { dishes, ingredients };
+    })
+    .catch(() => {});
+}
+
+/** A dish or ingredient page in Explore for this search, when the search is exactly that one thing. */
+function exploreNote(): string {
+  if (!links || state.picked >= 0) return '';
+  const others = state.sites.size || state.without.length || state.notWords.length || state.fresh || state.cuisine || state.course || state.diet || state.time || state.keep;
+  if (others) return '';
+  if (state.q && !state.with.length) {
+    const dish = links.dishes.get(words(state.q).join(' '));
+    // The name shown is the list's own, never what was typed
+    return dish ? `<a href="${esc(dish.page)}" data-explore-note="dish">About ${esc(dish.name)}, in Explore</a>` : '';
+  }
+  if (!state.q && state.with.length === 1) {
+    const id = data.ing[state.with[0]]?.[0] as string | undefined;
+    const ing = id ? links.ingredients[id] : undefined;
+    return ing ? `<a href="${esc(ing.page)}" data-explore-note="ingredient">About ${esc(ing.name.toLowerCase())}, in Explore</a>` : '';
+  }
+  return '';
+}
+
 function noteFor(): string | null {
   const others = state.sites.size || state.without.length || state.notWords.length || state.fresh || state.picked >= 0;
   if (others || !state.cuisine || state.q || state.with.length) return null;
@@ -876,6 +922,12 @@ function renderNote() {
   if (creator) {
     box.removeAttribute('data-waiting');
     box.innerHTML = creator;
+    return void (box.hidden = false);
+  }
+  const explore = cuisine ? '' : exploreNote();
+  if (explore) {
+    box.removeAttribute('data-waiting');
+    box.innerHTML = explore;
     return void (box.hidden = false);
   }
   if (!cuisine) return void (box.hidden = true);
@@ -2298,6 +2350,8 @@ app.addEventListener('click', (e) => {
   } else if (el.dataset.explore === 'home-globe') {
     // The globe has its own page and its own link on the home page (Kyle, 2026-11-26).
     track('Opened Explore Page', { explore_kind: 'globe', opened_from: 'home' });
+  } else if (el.dataset.exploreNote) {
+    track('Opened Explore Page', { explore_kind: el.dataset.exploreNote, opened_from: 'results' });
   } else if (el.dataset.noteLink) {
     track('Opened World Cuisine', { note_kind: el.dataset.note, note_id: el.dataset.noteId, link: el.dataset.noteLink });
   } else if (el.dataset.srcId) {

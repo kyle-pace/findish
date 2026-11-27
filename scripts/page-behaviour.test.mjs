@@ -298,3 +298,35 @@ check('a shelf\'s "See all" link is laid out as results, with its tag, before th
   assert.match(await page.evaluate(() => document.getElementById('with-chips').textContent), /easy curries/);
   await context.close();
 });
+
+check('a search that is exactly one dish, or one ingredient, Explore has a page for gets one line to it', async () => {
+  const page = await open('/');
+  // The links arrive after the recipes and videos, when the browser is idle
+  const links = JSON.parse(readFileSync(join(dist, 'explore/links.json'), 'utf8'));
+  assert.ok(links.dishes['dish/bibimbap'], 'the built list has bibimbap');
+  await page.waitForResponse((r) => r.url().endsWith('/explore/links.json'), { timeout: 15000 }).catch(() => {});
+  await page.waitForTimeout(300);
+  await searchFor(page, 'bibimbap');
+  const note = page.locator('#note a[data-explore-note="dish"]');
+  assert.equal(await note.getAttribute('href'), '/explore/dish/bibimbap/');
+  assert.match(await note.innerText(), /^About Bibimbap, in Explore$/);
+  // One more word and it is no longer exactly that dish
+  await searchFor(page, 'easy weeknight bibimbap bowls');
+  assert.equal(await page.locator('#note:visible a[data-explore-note]').count(), 0);
+  // A filter beside the dish: not just the dish any more
+  await page.goto(`${origin}/?q=bibimbap&time=30`);
+  await page.waitForSelector('#app[data-state="ready"]');
+  await page.waitForTimeout(1200);
+  assert.equal(await page.locator('#note:visible a[data-explore-note]').count(), 0);
+  // One ingredient tag whose page has an About section
+  const [id, ing] = Object.entries(links.ingredients)[0];
+  await page.goto(`${origin}/?with=${id}`);
+  await page.waitForSelector('#app[data-state="ready"]');
+  await page.waitForResponse((r) => r.url().endsWith('/explore/links.json'), { timeout: 15000 }).catch(() => {});
+  await page.waitForTimeout(300);
+  await page.evaluate(() => window.dispatchEvent(new PopStateEvent('popstate', { state: history.state })));
+  await page.waitForTimeout(300);
+  const one = page.locator('#note a[data-explore-note="ingredient"]');
+  assert.equal(await one.getAttribute('href'), ing.page);
+  await page.context().close();
+});

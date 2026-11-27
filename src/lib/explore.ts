@@ -21,10 +21,35 @@ for (const b of Object.values(buckets)) for (const [ref, item] of Object.entries
 
 const fold = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
 
+// Pages the rules below can't pair up, matched by hand (2026-11-27): the two sides call the
+// same thing by different names. Browse page slug to the explorer's page. One that stops
+// existing on either side is simply not used; nothing fails.
+const CUISINE_BY_HAND: Record<string, string> = {
+  argentinian: 'cuisine/argentine-cuisine',
+  cantonese: 'cuisine/cantonese-cuisine',
+  'indo-chinese': 'cuisine/indian-chinese-cuisine',
+  latin: 'cuisine/latin-american-cuisine',
+  nyonya: 'cuisine/peranakan-cuisine',
+  persian: 'cuisine/iranian-cuisine',
+  southern: 'cuisine/cuisine-of-the-southern-united-states',
+  'south-western': 'cuisine/cuisine-of-the-southwestern-united-states',
+  taiwanese: 'cuisine/taiwan-cuisine',
+};
+const INGREDIENT_BY_HAND: Record<string, string> = {
+  'beef-steak': 'ingredient/beefsteak',
+  'chicken-wings': 'ingredient/chicken-wings-as-food',
+  'green-onion': 'ingredient/scallion',
+  'pandan-leaves': 'ingredient/pandan',
+  'phyllo-dough': 'ingredient/filo',
+  turkey: 'ingredient/turkey-as-food',
+};
+
 // Cuisines: the same match the "Explore … on World cuisine" line used (worldCuisine()).
 function cuisineRef(b: Browse): string | undefined {
   const slug = worldCuisine(b.name)?.page.match(/\/cuisine\/([a-z0-9-]+)\/?$/)?.[1];
-  return slug && items.has(`cuisine/${slug}`) ? `cuisine/${slug}` : undefined;
+  if (slug && items.has(`cuisine/${slug}`)) return `cuisine/${slug}`;
+  const hand = CUISINE_BY_HAND[b.slug];
+  return hand && items.has(hand) ? hand : undefined;
 }
 
 // Ingredients: the explorer says which catalog item each of its ingredients is
@@ -37,15 +62,34 @@ for (const [name, link] of Object.entries((linksJson as any).links as Record<str
   const ref = explorerIngredients.get(name);
   if (ref) byCatalogId.set(link.id, [...(byCatalogId.get(link.id) ?? []), ref]);
 }
-function ingredientRef(b: Browse): string | undefined {
+// "Cherries" is "Cherry", "Sweet Potatoes" is "Sweet potato", "Fish Cakes" is "Fish cake"
+const singulars = (name: string) => [name, name.replace(/s$/, ''), name.replace(/ies$/, 'y'), name.replace(/oes$/, 'o')];
+function ingredientRuleRef(b: Browse): string | undefined {
   const refs = byCatalogId.get(b.slug) ?? [];
-  const named = refs.filter((r) => [fold(b.name), fold(b.name).replace(/s$/, ''), fold(b.slug)].includes(fold(items.get(r)!.n)));
+  const names = [...singulars(fold(b.name)), fold(b.slug)];
+  const named = refs.filter((r) => names.includes(fold(items.get(r)!.n)));
   return named[0] ?? (refs.length === 1 ? refs[0] : undefined);
+}
+// A hand match never takes a page the rules already gave to another ingredient
+const ruleRefs = new Set(INGREDIENTS.map(ingredientRuleRef).filter(Boolean));
+function ingredientRef(b: Browse): string | undefined {
+  const byRule = ingredientRuleRef(b);
+  if (byRule) return byRule;
+  const hand = INGREDIENT_BY_HAND[b.slug];
+  return hand && items.get(hand)?.t === 'ingredient' && !ruleRefs.has(hand) ? hand : undefined;
 }
 
 export function exploreRef(b: Browse): string | undefined {
   return b.kind === 'cuisine' ? cuisineRef(b) : b.kind === 'with' ? ingredientRef(b) : undefined;
 }
+
+/** Every dish the explorer has a page for. */
+export const EXPLORE_DISHES: { ref: string; name: string }[] = [...items.values()].filter((i) => i.t === 'dish').map((i) => ({ ref: i.r, name: i.n }));
+
+/** Ingredient browse pages that carry the explorer's page as their About section, by catalog id. */
+export const INGREDIENT_ABOUT: Record<string, { name: string; page: string }> = Object.fromEntries(
+  INGREDIENTS.flatMap((b) => (exploreRef(b) ? [[b.slug, { name: b.name, page: `${b.path}#about` }]] : [])),
+);
 
 /**
  * The explorer's page for this browse page, as the HTML of an "About" section: its photo,

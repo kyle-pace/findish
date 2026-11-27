@@ -100,7 +100,7 @@ Kyle found the home page cramped and the menus fussy. From filter menus on Navan
 Kyle wanted people to be able to search for a cuisine, or an ingredient, as the thing itself, without the page getting busy. The rule: one extra thing at a time, and only when the search is clearly about it.
 
 - A cuisine is a suggestion like a creator or an ingredient, and becomes a tag with a basil outline (between an ingredient's fill and a creator's tomato ring).
-- When the search is exactly one cuisine, one quiet line under the count: "Explore Thai cuisine on World cuisine". Nothing else. (It was a strip with a Wikipedia sentence for cuisines and ingredients until November 16; the sentences were dictionary definitions, so Kyle cut it to the link.)
+- When the search is exactly one cuisine, one quiet line under the count: "Explore Thai cuisine on World cuisine". Nothing else. (Since November 27 the same line serves a search that is exactly one dish or one ingredient Explore has a page for: "About Bibimbap, in Explore". One line, one link, never both.) (It was a strip with a Wikipedia sentence for cuisines and ingredients until November 16; the sentences were dictionary definitions, so Kyle cut it to the link.)
 - It's a show/hide ("About Thai cuisine"), so anyone who'd rather not see notes can close it to one quiet line; it stays closed on later searches in that browser.
 
 ## Creator pages (November 16, 2026)
@@ -302,7 +302,7 @@ Recipes for this week
 
 **What changed, against the defaults:**
 
-- **Pills to one button and plain links.** "Show on the globe" is the ink, square-shouldered button the browse pages use for "Search all"; "Wikipedia" and "Explore on the map" are links beside it. The arrow on an outside link is the explorer's "opens another site" mark and stays.
+- **Pills to one button and plain links.** "Show on the globe" is the ink, square-shouldered button the browse pages use for "Search all"; "Wikipedia" and "Explore on the map" are links beside it. Since November 27 a dish finDish has recipes for leads with "Find recipes for <dish>" instead, and "Show on the globe" becomes one of the links: recipes first, as on the rest of Explore, and still one ink button to a row. The arrow on an outside link is the explorer's "opens another site" mark and stays.
 - **Dots gone.** The colored dot beside "Dish from Korean cuisine" and the squares beside each recipe site repeated what the words say, so they're hidden (in CSS: the markup is the explorer's).
 - **Middle dots gone.** Lists of dishes, ingredients and cuisines are words with room between them, as on Every ingredient. Every word in such a list is a link, so they carry no underline until pointed at.
 - **Cards to ruled lines.** Recipe sites and cookbooks are a bold name and a muted sentence between hairlines, like the creators list. "Suggested" is a muted word after the name, not a badge.

@@ -14,6 +14,13 @@
 //   3. rotate():   a fixed shuffle, then spread out so the same part of the world, and the
 //                  same cuisine, don't come up on days close together.
 //
+// Two more things ride in the same file since 2026-11-27 (fields are only ever added, so the
+// version stays 1 and an older app ignores them):
+//   lines: one plain sentence per dish, built from the explorer's own links ("A Korean dish
+//          made with gochujang, rice and egg."), never from Wikipedia's words. lineFor().
+//   dates: the days a dish is chosen by hand instead of by the rotation, for a holiday that
+//          has a dish of its own ("2026-12-31": toshikoshi soba). OCCASIONS and datesFor().
+//
 // It reads only the explorer's copy (vendor/explore/data), so it runs wherever staging runs.
 // To keep one dish out or put one in by hand, use BLOCK and ALLOW.
 //
@@ -154,6 +161,146 @@ export function reasonOut(d) {
   return '';
 }
 
+// ---- Holidays ----
+
+/**
+ * Days with a dish of their own. `on` is "MM-DD", or a rule name worked out per year in
+ * dayOf(). `dish` is the explorer's name for it; one the data doesn't have, or has without a
+ * photo, is skipped and reported, never fatal. Kept short on purpose: only days where one
+ * dish is the obvious answer, and only dates that can be worked out or are fixed. Holidays
+ * that move by another calendar (Diwali, Eid, Hanukkah, Mid-Autumn) aren't here yet: each
+ * needs a table of dates someone has checked, like LUNAR_NEW_YEAR.
+ */
+export const OCCASIONS = [
+  { on: '01-25', occasion: 'Burns Night', dish: 'Haggis' },
+  { on: '02-02', occasion: 'Candlemas', dish: 'Crêpes Suzette' },
+  { on: 'lunar-new-year', occasion: 'Lunar New Year', dish: 'Jiaozi' },
+  { on: 'shrove-tuesday', occasion: 'Pancake Day', dish: 'Pancake' },
+  { on: 'good-friday', occasion: 'Good Friday', dish: 'Hot cross bun' },
+  { on: '09-16', occasion: 'Mexican Independence Day', dish: 'Pozole' },
+  { on: 'us-thanksgiving', occasion: 'Thanksgiving in the United States', dish: 'Pumpkin pie' },
+  { on: 'advent', occasion: 'the start of Advent', dish: 'Stollen' },
+  { on: '12-24', occasion: 'Christmas Eve', dish: 'Tamale' },
+  { on: '12-25', occasion: 'Christmas Day', dish: 'Christmas pudding' },
+  { on: '12-31', occasion: 'New Year’s Eve', dish: 'Toshikoshi soba' },
+];
+
+/** Lunar New Year's day, which no short formula gives. Add years as they come up. */
+export const LUNAR_NEW_YEAR = { 2026: '02-17', 2027: '02-06', 2028: '01-26', 2029: '02-13', 2030: '02-03' };
+
+const pad = (n) => String(n).padStart(2, '0');
+const iso = (d) => `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`;
+const utc = (y, m, d) => new Date(Date.UTC(y, m - 1, d));
+const plusDays = (d, n) => new Date(d.getTime() + n * 86_400_000);
+
+/** Easter Sunday in the Western (Gregorian) calendar: the "anonymous" algorithm. */
+export function easter(year) {
+  const a = year % 19, b = Math.floor(year / 100), c = year % 100;
+  const d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3);
+  const h = (19 * a + b - d - g + 15) % 30, i = Math.floor(c / 4), k = c % 4;
+  const l = (32 + 2 * e + 2 * i - h - k) % 7, m = Math.floor((a + 11 * h + 22 * l) / 451);
+  const month = Math.floor((h + l - 7 * m + 114) / 31), day = ((h + l - 7 * m + 114) % 31) + 1;
+  return utc(year, month, day);
+}
+
+/** The date ("YYYY-MM-DD") an occasion's `on` falls on in a year, or '' when it isn't known. */
+export function dayOf(on, year) {
+  if (/^\d\d-\d\d$/.test(on)) return `${year}-${on}`;
+  if (on === 'lunar-new-year') return LUNAR_NEW_YEAR[year] ? `${year}-${LUNAR_NEW_YEAR[year]}` : '';
+  if (on === 'shrove-tuesday') return iso(plusDays(easter(year), -47));
+  if (on === 'good-friday') return iso(plusDays(easter(year), -2));
+  if (on === 'us-thanksgiving') {
+    // The fourth Thursday of November
+    const first = utc(year, 11, 1);
+    return iso(plusDays(first, ((4 - first.getUTCDay() + 7) % 7) + 21));
+  }
+  if (on === 'advent') {
+    // The fourth Sunday before Christmas Day
+    const xmas = utc(year, 12, 25);
+    return iso(plusDays(xmas, -(xmas.getUTCDay() || 7) - 21));
+  }
+  return '';
+}
+
+/**
+ * The hand-picked days for `years`: { "YYYY-MM-DD": { dish: "dish/…", occasion } }, plus the
+ * occasions that were skipped and why. `dishes` is readDishes()'s list.
+ */
+export function datesFor(dishes, years, occasions = OCCASIONS) {
+  const byName = new Map(dishes.map((d) => [d.name, d]));
+  const dates = {};
+  const skipped = [];
+  for (const o of occasions) {
+    const d = byName.get(o.dish);
+    if (!d || !d.photo || BLOCK.has(d.name)) { skipped.push(`${o.occasion}: ${o.dish} ${!d ? 'is not in the data' : !d.photo ? 'has no photo' : 'is blocked'}`); continue; }
+    for (const y of years) {
+      const day = dayOf(o.on, y);
+      if (!day) { skipped.push(`${o.occasion} ${y}: no date known`); continue; }
+      if (dates[day]) { skipped.push(`${o.occasion} ${y}: ${day} is already ${dates[day].occasion}`); continue; }
+      dates[day] = { dish: d.ref, occasion: o.occasion };
+    }
+  }
+  return { dates: Object.fromEntries(Object.entries(dates).sort(([a], [b]) => (a < b ? -1 : 1))), skipped };
+}
+
+// ---- The line under a dish ----
+
+/** Ingredient names that are a chemist's or a botanist's word for something already listed. */
+const NOT_A_KITCHEN_WORD = new Set(['Sucrose', 'Edible salt', 'Sodium chloride', 'Water']);
+// "Beta vulgaris", "Brassica oleracea", "Capsicum annuum": a species, not what a cook calls it
+const SPECIES = /^\p{Lu}\p{Ll}+ \p{Ll}+(?:is|um|us|ae|ii|ea)$/u;
+// Kinds too vague to say: "a Korean food" reads worse than "a Korean dish"
+const VAGUE = new Set(['food', 'specialty', 'speciality', 'delicacy', 'recipe', 'meal', 'ice', 'ball', 'breakfast', 'dough', 'batter', '']);
+
+// Cuisines the explorer names by place where the sentence wants the adjective
+const ADJECTIVE = { Taiwan: 'Taiwanese' };
+
+/** "gochujang, rice and egg" */
+function listed(words) {
+  return words.length < 2 ? words.join('') : `${words.slice(0, -1).join(', ')} and ${words.at(-1)}`;
+}
+
+/**
+ * Up to three ingredients to name: one the dish is named for first, then the ones fewest other
+ * dishes use (they say the most about it). One nothing else uses is usually a stray link, and
+ * species names and the like are left out.
+ */
+export function tellingIngredients(d) {
+  const name = d.name.toLowerCase();
+  return (d.ing ?? [])
+    .filter((i) => i.links >= 2 && !NOT_A_KITCHEN_WORD.has(i.name) && !SPECIES.test(i.name))
+    .map((i) => ({ ...i, word: i.name.replace(/\s*\([^)]*\)/g, '').toLowerCase() }))
+    .sort((a, b) => Number(name.includes(b.word)) - Number(name.includes(a.word)) || a.links - b.links || (a.word < b.word ? -1 : 1))
+    .slice(0, 3)
+    .map((i) => i.word);
+}
+
+/**
+ * One sentence about a dish, from what the explorer links it to: "A Korean dish made with
+ * gochujang, rice and egg." A dish at home in more than three cuisines says how many instead
+ * of naming one. '' when there are fewer than two ingredients worth naming: no line is better
+ * than a thin one.
+ */
+export function lineFor(d) {
+  const made = tellingIngredients(d);
+  if (made.length < 2) return '';
+  const homes = d.homes ?? [];
+  if (homes.length > 3) return `Made with ${listed(made)}, and cooked in ${homes.length} cuisines.`;
+  // The name's own last word when it says what it is ("Christmas pudding", "Pumpkin pie"),
+  // else what the intro calls it
+  const last = singular(d.name.toLowerCase().split(/[^\p{L}]+/u).filter(Boolean).pop() ?? '');
+  const kind = A_DISH.has(last) && !VAGUE.has(last) ? last : kindOf(d.intro);
+  const what = VAGUE.has(kind) || NOT_A_DISH.has(kind) ? 'dish' : kind;
+  // "Korean cuisine" gives "Korean"; "Garifuna foodways" and "Cuisine of Hawaii" give nothing
+  const home = homes.filter((h) => / cuisine$/.test(h.name)).sort((a, b) => b.links - a.links || (a.name < b.name ? -1 : 1))[0];
+  const place = home ? home.name.replace(/ cuisine$/, '') : '';
+  const from = ADJECTIVE[place] ?? place;
+  const phrase = from ? `${from} ${what}` : what;
+  // By sound: "an Uzbek pastry", but "a Ukrainian", "a European", "a Ugandan"
+  const an = /^(?:[aio]|e(?!u)|u(?!krain|ni|gand|rugu|s[ae]|ti))/i.test(phrase);
+  return `${an ? 'An' : 'A'} ${phrase} made with ${listed(made)}.`;
+}
+
 /** FNV-1a, so the shuffle is the same on every build and a new dish moves few others. */
 function hash(text) {
   let h = 0x811c9dc5;
@@ -209,7 +356,8 @@ export function readDishes({ skeleton, app, intros, picked = new Set() }) {
   const out = [];
   nodes.forEach((n, i) => {
     if (!Array.isArray(n) || n[2] !== DISH || typeof n[0] !== 'string' || typeof n[1] !== 'string') return;
-    const near = [...(links.get(i) ?? [])].map((j) => nodes[j]).filter(Array.isArray);
+    const nearIdx = [...(links.get(i) ?? [])].filter((j) => Array.isArray(nodes[j]));
+    const near = nearIdx.map((j) => nodes[j]);
     const cuisines = near.filter((x) => x[2] === CUISINE).map((x) => x[1]).sort();
     // The part of the world most of its cuisines are in
     const tally = new Map();
@@ -227,13 +375,20 @@ export function readDishes({ skeleton, app, intros, picked = new Set() }) {
       cuisines,
       continent,
       ingredients: near.filter((x) => x[2] === INGREDIENT).length,
+      // For lineFor(): each ingredient and cuisine with how many pages link to it
+      ing: nearIdx.filter((j) => nodes[j][2] === INGREDIENT && typeof nodes[j][1] === 'string').map((j) => ({ name: nodes[j][1], links: links.get(j)?.size ?? 0 })),
+      homes: nearIdx.filter((j) => nodes[j][2] === CUISINE && typeof nodes[j][1] === 'string').map((j) => ({ name: nodes[j][1], links: links.get(j)?.size ?? 0 })),
       picked: cuisines.some((c) => picked.has(c)),
     });
   });
   return out;
 }
 
-/** The file the app reads. `dishes` is page addresses ("dish/bibimbap"), in showing order. */
+/**
+ * The file the app reads. `dishes` is page addresses ("dish/bibimbap"), in showing order;
+ * `lines` a sentence for each (when there is one); `dates` the hand-picked days for this year
+ * and next (`today` in `sources` sets which year, for tests).
+ */
 export function buildDaily(sources) {
   const all = readDishes(sources);
   const left = {};
@@ -249,9 +404,18 @@ export function buildDaily(sources) {
   if (featured.length < MIN_FEATURED) {
     throw new Error(`Only ${featured.length} of ${all.length} dishes can be featured (need ${MIN_FEATURED}). The explorer's data or the rules in scripts/featured-dishes.mjs need a look.`);
   }
+  const year = (sources.today ?? new Date()).getUTCFullYear();
+  const { dates, skipped } = datesFor(all, [year, year + 1]);
+  // A line for every dish that can be shown: the rotation's and the holidays'
+  const shown = new Set([...featured.map((d) => d.ref), ...Object.values(dates).map((x) => x.dish)]);
+  const lines = {};
+  for (const d of all) {
+    const line = shown.has(d.ref) ? lineFor(d) : '';
+    if (line) lines[d.ref] = line;
+  }
   return {
-    file: { version: 1, dishes: rotate(featured).map((d) => d.ref) },
-    counts: { dishes: all.length, featured: featured.length, left },
+    file: { version: 1, dishes: rotate(featured).map((d) => d.ref), lines, dates },
+    counts: { dishes: all.length, featured: featured.length, left, lines: Object.keys(lines).length, dates: Object.keys(dates).length, skipped },
   };
 }
 

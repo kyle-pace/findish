@@ -39,16 +39,28 @@ link, recipes for it from finDish, the creators who cook it, and related pages.
    `/cuisine/korean/` and `/with/tofu/` show the explorer's page as their About section, and
    `/explore/cuisine/korean-cuisine/` and `/explore/ingredient/tofu/` forward there (40
    cuisines, 132 ingredients; `src/lib/explore.ts`). Ingredient intros are left out.
-   Left in this stage: dish pages don't show finDish recipes yet (a search for the dish's
-   name is the plan) and the 20 cuisine pages and 68 ingredient pages with no match.
+   Done 2026-11-27: a dish's page leads with "Find recipes for <dish>" when finDish has
+   three or more recipes named for it (274 of 1,558 dishes that day; `/explore/links.json`,
+   `src/lib/explore-links.mjs`). And the pages with no match were gone through: nine more
+   cuisines and six more ingredients are matched by hand or by a better plural rule
+   (`CUISINE_BY_HAND`, `INGREDIENT_BY_HAND` in `src/lib/explore.ts`), so 48 of 57 cuisine
+   pages and 138 of 200 ingredient pages have an About section. Two cuisine pages went away:
+   "Europian" was a site's typo for European, and "Gluten Free" isn't a cuisine
+   (`scripts/cuisine.mjs`). What's left has no page in the explorer at all (see "Still open").
    The design pass was done the same day (`design/PLAN.md`, "Explore").
 3. **One Explore section.** Done 2026-11-26: `/explore/` shows the globe and then the
    shelves, `/discover/` forwards there, the home page and footer link to it,
    `EXPLORE_LISTED` is on, `/explore/` and `/explore/ingredients/` are in the sitemap, a
    one-cuisine search links to its page here, and About and the privacy page mention it.
    Share cards for Explore are finDish's own since the design pass.
-   Left in this stage: the ideas row offering a cuisine or dish, dish and ingredient searches linking to their
-   pages, the explorer's own About and How it's built folded into finDish's, and Confluence.
+   Done 2026-11-27: a search that is exactly one dish, or one ingredient, links to its page
+   ("About Bibimbap, in Explore"), and Confluence is current.
+   Set aside 2026-11-27: the ideas row offering a cuisine or dish. The home page was trimmed
+   to the box and two links the day this was written down, and the row it would have gone in
+   is hidden there now; Explore's own link does the job. Bring it back only if Kyle wants
+   ideas on the home page again.
+   Left in this stage: the explorer's own About and How it's built folded into finDish's
+   (Kyle wasn't sure about them).
 4. **Retire the old home.** Done 2026-11-26 (Kyle's OK): every address under
    kylepace.dev/world-cuisine/ answers with a 301 to the same place here. World cuisine's
    own Worker does it and keeps its routes (kyle-pace/world-cuisines,
@@ -63,10 +75,14 @@ link, recipes for it from finDish, the creators who cook it, and related pages.
 
 ## Still open
 
-- A dish's page (`/explore/dish/…`) shows no finDish recipes yet.
+- Nine cuisine pages (Asian, Caribbean, European, International, Italian Japanese Fusion,
+  Mediterranean, Middle Eastern, South American, Western) and 62 ingredient pages (kale,
+  kimchi, bok choy, chicken thighs, udon, wasabi and the like) have no About section because
+  the explorer has no page for them. That is a gap in world-cuisines' data, not a match to
+  fix here: add the page there and it shows up after the next Monday copy.
+- A dish's page links to a search for its name; it doesn't list recipes itself.
 - The explorer's About and How it's built pages stay out (Kyle wasn't sure about them, 2026-11-26).
-- The home page's way in is "Explore cuisines" beside "Pick one at random", on every
-  screen size (2026-11-26; it was a line hidden on short phones before the home page was trimmed).
+- The home page's way in is two links under the box, "Explore" and "The globe" (2026-11-26).
 
 ## Reordered, recipes first (2026-11-26)
 

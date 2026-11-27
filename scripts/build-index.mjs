@@ -391,7 +391,8 @@ writeFileSync(join(dirname(out), 'index-files.json'), JSON.stringify(files));
 // Just each cuisine's name and World cuisine page, for the cuisines Findish has recipes for,
 // in its own file so the page loads it only when the line shows. (Until 2026-11-16 this also
 // carried a Wikipedia sentence and ingredient notes; Kyle dropped them as filler.)
-const NOTE_CUISINE = { 'chinese american': 'american chinese', 'italian american': 'italian-american' };
+// Names the two sides spell differently. The same list is in src/lib/browse.ts; change both.
+const NOTE_CUISINE = { 'chinese american': 'american chinese', 'italian american': 'italian-american', argentinian: 'argentine', persian: 'iranian', taiwanese: 'taiwan', 'indo chinese': 'indian chinese', nyonya: 'peranakan', latin: 'latin american', 'south western': 'southwestern american' };
 const notesFile = join(root, 'vendor/world-cuisine/notes.json');
 if (existsSync(notesFile)) {
   const wc = JSON.parse(readFileSync(notesFile, 'utf8'));

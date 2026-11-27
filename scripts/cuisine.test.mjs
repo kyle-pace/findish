@@ -28,13 +28,14 @@ test('typos are fixed, and "ish" is only cut when it was added', () => {
   for (const label of ['Southern Turkish Cuisine', 'Regional Turkish Cuisine - Antakya Cuisine', 'Southern Turkish Cusine', 'Turkish cuisine']) assert.equal(foldCuisine(label), 'Turkish', label);
   assert.equal(foldCuisine('Turkish Regional Cuisine - Antakya Cuisine'), 'Turkish');
   assert.equal(foldCuisine('asian fusioin'), 'Asian');
+  assert.equal(foldCuisine('Europian/Japanese'), 'European');
   assert.equal(foldCuisine('Spanish'), 'Spanish');
   assert.equal(foldCuisine('British'), 'British');
   assert.equal(foldCuisine('Turkish'), 'Turkish');
 });
 
 test('labels that are not a cuisine leave the recipe without one', () => {
-  for (const label of ['Christmas', 'Dog Food', 'Baking', 'Desserts', 'Any flavour you want!', '']) assert.equal(foldCuisine(label), '', label);
+  for (const label of ['Christmas', 'Dog Food', 'Baking', 'Desserts', 'Any flavour you want!', 'gluten free', 'Gluten-Free', '']) assert.equal(foldCuisine(label), '', label);
 });
 
 test('a site’s usual cuisine does not override a name that leads with another', () => {

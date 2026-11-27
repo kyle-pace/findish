@@ -332,3 +332,42 @@ shelves (unchanged, the tomato shelf edge is still the bold thing); Browse, as r
 of names with counts, two to a row on a phone. No cards, no pills.
 
 Then: the links under the box became "Surprise me" (was "Pick one at random"), "Explore" and "The globe"; the line reads "Find a dish from recipe sites worth trusting."
+
+## Search and Explore: one word for one place (2026-11-26)
+
+"Browse" and "Explore" had come to mean overlapping things (Browse was a page, a section of
+Explore and a view inside the app's Explore tab), because finDish's recipe pages and World
+cuisine's explorer each brought their own words. Kyle chose model A:
+
+- **Search** is for when you know what you want: the box.
+- **Explore** is for when you don't. Everything else that leads somewhere lives in it: the
+  week's shelves, cuisines, ingredients, courses, creators and the globe. The globe is one
+  way into Explore, not a place of its own.
+- **"Browse" is never on screen.** Addresses keep their names (`/browse/`, `#browse`,
+  `browse_kind` in events) so links and charts keep working.
+
+The map, with the words people see:
+
+```
+Home (/)            the box, with Surprise me as a die inside it
+  Explore           -> /explore/
+  The globe         -> /explore/globe/
+Explore (/explore/)
+  This week's recipes        #shelves
+  Cuisines and ingredients   #browse: the most cooked twelve of each, the nine courses,
+                             "All N cuisines" -> /browse/, "all N creators" -> /creators/
+  The globe                  -> /explore/globe/
+Every cuisine, course and ingredient   /browse/ (the full lists)
+  A cuisine, course or ingredient      /cuisine/…, /course/…, /with/…
+The globe (/explore/globe/)
+  Cuisines                   the explorer's page browser (/explore/app/web.html), with a
+                             page for every cuisine, dish and ingredient
+Creators, Saved, About      footer
+```
+
+**Surprise me in the box.** On the home page the box holds a die beside the search button,
+divided from the field by a light rule; its words, "Surprise me", sit beside the die when the
+box is wider than 30rem and are read out (but hidden) when it's narrower. Under 16rem of box
+(very large text) the die and the search button share their own row. In results the die
+goes, and "Surprise me" stays in the count line. Under the box are two links only, Explore
+and The globe. Mocked up as option 3 of three on 2026-11-26.

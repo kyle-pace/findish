@@ -1,5 +1,5 @@
 ---
-// Explore (/explore/, added 2026-11-26): finDish's way to browse. In order of how directly
+// Explore (/explore/, added 2026-11-26): where to go when you don't know what to search for (model A, design/PLAN.md, "Search and Explore"). In order of how directly
 // each part gets someone to a recipe (Kyle, 2026-11-26: the globe "is a cool feature, but
 // not the most effective way to find something"): the week's recipe shelves
 // (src/components/DiscoverShelves.astro, once the Discover page), then cuisines, ingredients
@@ -42,7 +42,7 @@ const groups: { id: string; name: string; kind: string; list: Browse[]; all?: { 
   lab={{ name: 'the search', href: '/' }}
   about="/about/"
   title="Explore this week’s recipes, cuisines and ingredients: finDish"
-  description={`Recipes picked for this week, ${CUISINES.length} cuisines and ${INGREDIENTS.length} ingredients to browse, and a globe of more than ${round(cuisines.length)} of the world’s cuisines. Every recipe opens on its creator’s own site.`}
+  description={`Recipes picked for this week, ${CUISINES.length} cuisines and ${INGREDIENTS.length} ingredients, and a globe of more than ${round(cuisines.length)} of the world’s cuisines. Every recipe opens on its creator’s own site.`}
   image="/explore/share.png"
   imageAlt="A dark globe with countries colored by continent and thin routes arcing between them."
   themeColor={{ light: '#fbf5ec', dark: '#1d1714' }}
@@ -54,10 +54,10 @@ const groups: { id: string; name: string; kind: string; list: Browse[]; all?: { 
   <article class="explore-page" data-page="explore">
     <header>
       <h1>Explore</h1>
-      <p class="lede">Recipes picked for this week, and every cuisine, ingredient and course to browse.</p>
+      <p class="lede">Recipes picked for this week, every cuisine, ingredient and course, and the globe.</p>
       <nav class="jump" aria-label="On this page">
         <a href="#shelves">This week’s recipes</a>
-        <a href="#browse">Browse</a>
+        <a href="#browse">Cuisines and ingredients</a>
         <a class="globe-open" href="/explore/globe/" data-globe>
           <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9.5" /><ellipse cx="12" cy="12" rx="4" ry="9.5" /><path d="M2.5 12h19" /></svg>
           The globe
@@ -68,7 +68,7 @@ const groups: { id: string; name: string; kind: string; list: Browse[]; all?: { 
     <DiscoverShelves />
 
     <section class="creators-page browse explore-browse" id="browse" aria-labelledby="browse-h">
-      <h2 id="browse-h" class="shelves-h">Browse</h2>
+      <h2 id="browse-h" class="shelves-h">Cuisines, ingredients and courses</h2>
       {
         groups.map((g) => (
           <section class="group" aria-labelledby={g.id}>

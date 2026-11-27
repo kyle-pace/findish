@@ -1,6 +1,7 @@
 ---
 // Every browse page in one list: cuisines, courses and ingredients, each with its count.
-// The way in for people (from the footer) and for search engines. Added 2026-11-17; see
+// Linked from Explore (the full lists behind its top twelve) and for search engines. Its
+// address stays /browse/, but the page never calls itself Browse (2026-11-26). Added 2026-11-17; see
 // design/PLAN.md, "Browse pages".
 import LabLayout from 'kp-design/layouts/LabLayout.astro';
 import { jsonForScript } from '../../lib/json-script.mjs';
@@ -22,7 +23,8 @@ const ld = {
   '@type': 'BreadcrumbList',
   itemListElement: [
     { '@type': 'ListItem', position: 1, name: 'finDish', item: 'https://findish.now/' },
-    { '@type': 'ListItem', position: 2, name: 'Browse', item: 'https://findish.now/browse/' },
+    { '@type': 'ListItem', position: 2, name: 'Explore', item: 'https://findish.now/explore/' },
+    { '@type': 'ListItem', position: 3, name: 'Every cuisine, course and ingredient', item: 'https://findish.now/browse/' },
   ],
 };
 ---
@@ -33,7 +35,7 @@ const ld = {
   bar={false}
   lab={{ name: 'the search', href: '/' }}
   about="/about/"
-  title="Browse finDish by cuisine, course or ingredient"
+  title="Every cuisine, course and ingredient on finDish"
   description={`${n(totals.recipes, 'recipe')} from ${n(CREATORS.filter((c) => c.recipes).length, 'independent cook')}, sorted into ${CUISINES.length} cuisines, ${COURSES.length} courses and ${INGREDIENTS.length} ingredients. Every one opens on the cook’s own site.`}
   image="/og.png"
   imageAlt="finDish: a search box holding ginger and tofu. Recipes from The Woks of Life, Hot Thai Kitchen, Smitten Kitchen and more."
@@ -44,9 +46,9 @@ const ld = {
   <SiteHead wide />
 
   <article class="creators-page browse" data-page="browse">
-    <h1>Browse</h1>
+    <h1>Every cuisine, course and ingredient</h1>
     <p class="lede">
-      {n(totals.recipes, 'recipe')} by cuisine, by course or by something you have. Or <a href="/">search for anything</a>.
+      {n(totals.recipes, 'recipe')} by cuisine, by course or by something you have. Part of <a href="/explore/">Explore</a>, or <a href="/">search for anything</a>.
     </p>
 
     {

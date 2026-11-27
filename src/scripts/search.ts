@@ -721,7 +721,7 @@ function placeholder(tagged: boolean) {
   if (tagged) return !app.dataset.fromAsk ? 'and…' : phone() ? 'Ask a follow-up' : 'Ask a follow-up, or add an ingredient';
   if (app.dataset.fromAsk) return phone() ? 'Ask a follow-up' : 'Ask a follow-up, or search again';
   if (askReady) return phone() ? 'Dish or question' : 'A dish, ingredient or question';
-  return phone() ? 'Dish, ingredient or cuisine' : 'A dish, ingredient, cuisine or creator';
+  return phone() ? 'Dish or ingredient' : 'A dish, ingredient, cuisine or creator';
 }
 matchMedia('(max-width: 40rem)').addEventListener('change', () => (qInput.placeholder = placeholder($('box').hasAttribute('data-tags'))));
 qInput.placeholder = placeholder(false);

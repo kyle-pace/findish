@@ -23,6 +23,12 @@ export const RULES = [
   ['/world-cuisine/', '/explore/', 'html'],
   ['hostname.endsWith("kylepace.dev")', 'hostname.endsWith("findish.now")', 'html'],
   ['Back to World cuisine', 'Back to Explore', 'html'],
+  // One word for one thing (2026-11-26, model A in design/PLAN.md, "Search and Explore"):
+  // finDish never says "Browse"; the explorer's page browser is "Cuisines", as in the app.
+  ['<a href="#/" aria-current="page">Browse</a>', '<a href="#/" aria-current="page">Cuisines</a>', 'html'],
+  ['<a id="to-browse" href="web.html#/">Browse</a>', '<a id="to-browse" href="web.html#/">Cuisines</a>', 'html'],
+  ['<h1>Browse every cuisine</h1>', '<h1>Every cuisine</h1>', 'html'],
+  ['<p class="crumb"><a href="#/">Browse</a></p>', '<p class="crumb"><a href="#/">Cuisines</a></p>', 'html'],
   // Cookbook covers come from finDish's own copies (public/covers/, npm run covers), never
   // from Open Library while someone is looking at a page. A book with no copy here shows
   // its title on a plain cover, as the explorer already does when a cover won't load.

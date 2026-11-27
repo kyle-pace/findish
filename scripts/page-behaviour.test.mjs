@@ -204,8 +204,28 @@ check('links and typed lists: a creator page’s search is read as a sentence, a
   await odd.context().close();
 });
 
+check('Surprise me is a die in the box on the home page, named for screen readers, and gone in results', async () => {
+  const phone = await open('/');
+  const dice = phone.locator('#box #lucky');
+  assert.equal(await dice.isVisible(), true);
+  assert.equal(await phone.getByRole('button', { name: 'Surprise me' }).count(), 1);
+  // On a phone the die shows alone: its words are there but clipped.
+  assert.ok((await phone.locator('.dice-words').boundingBox()).width <= 1);
+  await dice.click();
+  await phone.waitForTimeout(250);
+  assert.match(await phone.evaluate(() => location.search), /pick=/);
+  assert.equal(await dice.isVisible(), false);
+  await phone.context().close();
+  const wide = await open('/', { width: 1280, height: 800 });
+  assert.ok((await wide.locator('.dice-words').boundingBox()).width > 40);
+  assert.deepEqual(await wide.locator('.home-actions a').allTextContents(), ['Explore', 'The globe']);
+  await wide.context().close();
+});
+
 check('nothing found: a word the index knows is not respelt, and all the filters can come off at once', async () => {
-  const page = await open('/?q=mapo+tofu&time=5&course=dessert');
+  // A course nothing tofu can be in 5 minutes (it was dessert until a 5-minute tofu dessert was
+  // crawled, 2026-11-26).
+  const page = await open('/?q=mapo+tofu&time=5&course=bread');
   const fixes = await page.evaluate(() => document.getElementById('fixes').textContent);
   assert.doesNotMatch(fixes, /mayo/);
   assert.match(fixes, /without the filters \(\d+ recipes\)/);

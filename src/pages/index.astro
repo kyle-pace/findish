@@ -172,6 +172,13 @@ const FILTERS = [
             document.getElementById('q').value = (new URLSearchParams(location.search).get('q') || '').trim();
           </script>
           </div>
+          <!-- "Surprise me" lives in the box on the home page (Kyle, 2026-11-26, model A:
+               Search for when you know, Explore for when you don't): a die, with its words
+               beside it when the box has room. In results it's in the count line instead. -->
+          <button class="dice lucky-box" type="button" id="lucky">
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><rect x="3.5" y="3.5" width="17" height="17" rx="3.5" fill="none" stroke="currentColor" stroke-width="2"></rect><circle cx="8.5" cy="8.5" r="1.4" fill="currentColor"></circle><circle cx="15.5" cy="8.5" r="1.4" fill="currentColor"></circle><circle cx="12" cy="12" r="1.4" fill="currentColor"></circle><circle cx="8.5" cy="15.5" r="1.4" fill="currentColor"></circle><circle cx="15.5" cy="15.5" r="1.4" fill="currentColor"></circle></svg>
+            <span class="dice-words">Surprise me</span>
+          </button>
           <button class="go" type="submit">
             <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2.4"></circle><path d="m15.5 15.5 5 5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"></path></svg>
             <span class="visually-hidden">Find recipes</span>
@@ -186,7 +193,6 @@ const FILTERS = [
         <p id="q-hint" class="visually-hidden">Suggestions appear as you type. Pick an ingredient, cuisine or creator to add it to your search. Backspace in an empty box removes the last one. While the box is empty, your recent searches and saved recipes are listed under it; they are kept on this device only.</p>
         <p class="visually-hidden" id="announce" role="status" aria-live="polite"></p>
         <p class="home-actions">
-          <button class="lucky" type="button" id="lucky">Surprise me</button>
           {EXPLORE_LISTED && <a class="lucky" href="/explore/" data-explore="home">Explore</a>}
           {EXPLORE_LISTED && <a class="lucky" href="/explore/globe/" data-explore="home-globe">The globe</a>}
         </p>
@@ -308,7 +314,7 @@ const FILTERS = [
           <a href="https://thewoksoflife.com/?s=">The Woks of Life</a>,
           <a href="https://hot-thai-kitchen.com/?s=">Hot Thai Kitchen</a> and
           <a href="https://smittenkitchen.com/?s=">Smitten Kitchen</a> directly, see
-          <a href="/creators/">every creator here</a>, or <a href="/browse/">browse by cuisine, course and ingredient</a>.
+          <a href="/creators/">every creator here</a>, or <a href="/browse/">every cuisine, course and ingredient</a>.
         </p>
       </noscript>
     </div>
@@ -495,7 +501,7 @@ const FILTERS = [
     }
   }
 
-  /* The home page is the name, one line, the box, two ways to browse and one line of
+  /* The home page is the name, one line, the box, the two ways into Explore and one line of
      dishes to try (Kyle, 2026-11-26: it had grown cluttered, and the box is the point).
      The ingredient and creator lines are still drawn, for "nothing found", but don't show
      here; creators are in the footer and ingredients in Explore. */
@@ -714,6 +720,55 @@ const FILTERS = [
     outline: none;
   }
 
+  /* "Surprise me" in the box: home page only. A plain word button with a die; under 30rem
+     of box the words hide (still read out) and the die alone shows. */
+  .dice {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-width: 2.75rem;
+    height: 2.75rem;
+    padding: 0 var(--space-3);
+    border: 0;
+    border-left: 1px solid var(--line);
+    border-radius: 0;
+    background: transparent;
+    color: var(--ink);
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .dice:hover {
+    color: var(--accent-ink);
+  }
+
+  .dice:focus-visible {
+    outline: 3px solid var(--ink);
+    outline-offset: 2px;
+    border-radius: 0.35rem;
+  }
+
+  [data-mode='results'] .dice {
+    display: none;
+  }
+
+  @container (max-width: 30rem) {
+    .dice {
+      justify-content: center;
+      padding: 0;
+    }
+
+    .dice-words {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+  }
+
   .go {
     flex: none;
     display: grid;
@@ -745,6 +800,11 @@ const FILTERS = [
 
     .go {
       width: 100%;
+    }
+
+    .dice {
+      flex: 1;
+      border-left: 0;
     }
   }
 

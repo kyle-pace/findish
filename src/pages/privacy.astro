@@ -12,7 +12,7 @@ import '../styles/theme.css';
 import '../styles/prose.css';
 import { ASSISTANTS_PAGE } from '../lib/assistants';
 
-const updated = 'November 26, 2026';
+const updated = 'November 27, 2026';
 ---
 
 <LabLayout
@@ -30,14 +30,14 @@ const updated = 'November 26, 2026';
   <SiteHead />
   <article class="prose" data-page="privacy">
     <h1>finDish privacy</h1>
-    <p class="updated">For the search page, its server for AI assistants and the weekly program that collects recipes. Updated {updated}.</p>
+    <p class="updated">For the search page, the finDish app for iPhone and iPad, the server for AI assistants and the weekly program that collects recipes. Updated {updated}.</p>
 
     <section aria-labelledby="short">
       <h2 id="short">The short version</h2>
       <p>
         There are no accounts, ads or sign-ups, and nothing is sold or shared for advertising. The words you type into the search aren’t
-        recorded; a search is only counted by what it matched on finDish’s own lists, like a dish or an ingredient. The server for AI assistants answers each question and keeps nothing about it. The only thing collected is anonymous usage
-        from the search page, and you can turn that off below.
+        recorded; a search is only counted by what it matched on finDish’s own lists, like a dish or an ingredient. The server for AI assistants answers each question and keeps nothing about it. The only thing collected is anonymous usage:
+        the search page sends it unless you turn it off below, and the app sends it only if you turn it on.
       </p>
     </section>
 
@@ -101,6 +101,40 @@ const updated = 'November 26, 2026';
       </p>
     </section>
 
+    <section aria-labelledby="app">
+      <h2 id="app">The finDish app for iPhone and iPad</h2>
+      <p>
+        There’s no account. The app downloads finDish’s index of recipes from this site and searches it on your device, so what you type
+        stays there. When you describe what you want in your own words, the app reads it with Apple’s on-device model (or simple rules
+        where that isn’t available); it isn’t sent anywhere.
+      </p>
+      <p>
+        Kept only on your device: the recipes you save, with their photos so they open offline, the creators you star, and Explore’s
+        saved and recent pages and look-ups. Deleting the app deletes them.
+      </p>
+      <p>
+        Like the website, the app loads the index and Explore’s pages from this site, recipe photos from each creator’s own site, and
+        Explore’s photos from Wikimedia Commons. The globe in Explore is this site’s own globe, and it asks Wikipedia for a cuisine’s
+        introduction when you open one. Each of those servers sees your IP address when it sends something, as with any download.
+      </p>
+      <p>
+        A recipe opens on the creator’s own site, inside the app. That site runs as it would in Safari, with its own cookies, ads and
+        privacy rules. “Just the recipe” reads the recipe the page itself publishes and lays it out on your device; nothing about it is
+        sent to finDish.
+      </p>
+      <p>
+        <strong>Anonymous usage is off unless you turn it on</strong>, with “Share anonymous usage” in the app’s Settings. When it’s on,
+        the app sends <a href="https://amplitude.com">Amplitude</a> counts of which features get used, like “opened the third result,
+        from The Woks of Life” or “saved a recipe”, with a random ID made on your device. It never sends what you type, the recipes you
+        save or any account or advertising ID, and it doesn’t store your IP address, city or carrier. Turn the switch off and it stops.
+      </p>
+      <p>
+        While the app is in testing, it’s installed through Apple’s TestFlight. Apple may share crash reports, your device model and
+        system version, and any feedback you choose to send through TestFlight with me, under
+        <a href="https://www.apple.com/legal/privacy/">Apple’s privacy policy</a>.
+      </p>
+    </section>
+
     <section aria-labelledby="assistants">
       <h2 id="assistants">AI assistants</h2>
       <p>
@@ -130,8 +164,8 @@ const updated = 'November 26, 2026';
     <section aria-labelledby="sharing">
       <h2 id="sharing">Who else is involved</h2>
       <p>
-        Nothing is sold, and nothing is shared for advertising. Two services help run the site and only do that job: Cloudflare hosts it and{' '}
-        <a href="https://amplitude.com">Amplitude</a> holds the anonymous usage. Apart from the recipe photos, everything, fonts included, is
+        Nothing is sold, and nothing is shared for advertising. Two services help run the site and the app and only do that job: Cloudflare hosts the site and{' '}
+        <a href="https://amplitude.com">Amplitude</a> holds the anonymous usage. Apple delivers the app. Apart from the recipe photos, everything, fonts included, is
         served from this site.
       </p>
       <p>
